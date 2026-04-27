@@ -1,0 +1,511 @@
+<!DOCTYPE html><html lang="cn" class="scroll-smooth"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="canonical" href="https://blog.sixbones.dev/posts/openprose-case-study/"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/katex@0.15.1/dist/katex.css" integrity="sha384-WsHMgfkABRyG494OmuiNmkAOk8nhO1qE+Y6wns6v+EoNoTNxrWxYpl5ZYWFOLPCM" crossorigin="anonymous"><meta name="generator" content="Astro v6.1.9"><!-- General Meta Tags --><title>OpenProse 案例研究：当 DSL 的执行器是大模型 | 六个骨头的博客</title><meta name="title" content="OpenProse 案例研究：当 DSL 的执行器是大模型 | 六个骨头的博客"><meta name="description" content="以 OpenProse 为例，分析当领域专用语言的执行器由大模型充当时，为何会出现「形式确定、执行却不确定」的脱节，以及对多 Agent 与智能体式编程的设计启示。"><meta name="author" content="六个骨头"><link rel="sitemap" href="/sitemap-index.xml"><!-- Article Published/Modified time --><meta property="article:published_time" content="2026-01-25T00:00:00.000Z"><meta property="article:modified_time" content="2026-01-25T00:00:00.000Z"><!-- Twitter --><meta property="twitter:card" content="summary_large_image"><meta property="twitter:url" content="https://blog.sixbones.dev/posts/openprose-case-study/"><meta property="twitter:title" content="OpenProse 案例研究：当 DSL 的执行器是大模型 | 六个骨头的博客"><meta property="twitter:description" content="以 OpenProse 为例，分析当领域专用语言的执行器由大模型充当时，为何会出现「形式确定、执行却不确定」的脱节，以及对多 Agent 与智能体式编程的设计启示。"><meta property="twitter:image" content="https://blog.sixbones.dev/posts/openprose-case-study/index.png"><!-- Google JSON-LD Structured data --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"OpenProse 案例研究：当 DSL 的执行器是大模型 | 六个骨头的博客","image":"https://blog.sixbones.dev/posts/openprose-case-study/index.png","datePublished":"2026-01-25T00:00:00.000Z","dateModified":"2026-01-25T00:00:00.000Z","author":[{"@type":"Person","name":"六个骨头","url":"https://blog.sixbones.dev/"}]}</script><!-- Google Font --><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet"><meta name="theme-color" content=""><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.XKloMPd3.js"></script><script src="/toggle-theme.js"></script><link rel="stylesheet" href="/_astro/Footer-DPUJBJz0.css">
+<style>@keyframes astroFadeInOut{0%{opacity:1}to{opacity:0}}@keyframes astroFadeIn{0%{opacity:0;mix-blend-mode:plus-lighter}to{opacity:1;mix-blend-mode:plus-lighter}}@keyframes astroFadeOut{0%{opacity:1;mix-blend-mode:plus-lighter}to{opacity:0;mix-blend-mode:plus-lighter}}@keyframes astroSlideFromRight{0%{transform:translate(100%)}}@keyframes astroSlideFromLeft{0%{transform:translate(-100%)}}@keyframes astroSlideToRight{to{transform:translate(100%)}}@keyframes astroSlideToLeft{to{transform:translate(-100%)}}@media (prefers-reduced-motion){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*),[data-astro-transition-scope]{animation:none!important}}
+</style><script type="module" src="/_astro/page.CGluN7T_.js"></script><style>[data-astro-transition-scope="astro-fam6wyqg-1"] { view-transition-name: open-prose-\6848\4F8B\7814\7A76\FF1A\5F53-dsl-\7684\6267\884C\5668\662F\5927\6A21\578B; }@layer astro { ::view-transition-old(open-prose-\6848\4F8B\7814\7A76\FF1A\5F53-dsl-\7684\6267\884C\5668\662F\5927\6A21\578B) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(open-prose-\6848\4F8B\7814\7A76\FF1A\5F53-dsl-\7684\6267\884C\5668\662F\5927\6A21\578B) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(open-prose-\6848\4F8B\7814\7A76\FF1A\5F53-dsl-\7684\6267\884C\5668\662F\5927\6A21\578B) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(open-prose-\6848\4F8B\7814\7A76\FF1A\5F53-dsl-\7684\6267\884C\5668\662F\5927\6A21\578B) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-fam6wyqg-1"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-fam6wyqg-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-fam6wyqg-1"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-fam6wyqg-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-fam6wyqg-1"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-fam6wyqg-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-fam6wyqg-1"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-fam6wyqg-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-2"] { view-transition-name: open-prose; }@layer astro { ::view-transition-old(open-prose) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(open-prose) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(open-prose) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(open-prose) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-3"] { view-transition-name: \591A\667A\80FD\4F53; }@layer astro { ::view-transition-old(\591A\667A\80FD\4F53) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(\591A\667A\80FD\4F53) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(\591A\667A\80FD\4F53) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(\591A\667A\80FD\4F53) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-4"] { view-transition-name: \8BBE\8BA1\8303\5F0F; }@layer astro { ::view-transition-old(\8BBE\8BA1\8303\5F0F) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(\8BBE\8BA1\8303\5F0F) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(\8BBE\8BA1\8303\5F0F) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(\8BBE\8BA1\8303\5F0F) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-4"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-4"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-4"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-4"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-4"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-4"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-4"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-4"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-5"] { view-transition-name: dsl; }@layer astro { ::view-transition-old(dsl) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(dsl) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(dsl) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(dsl) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-5"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-5"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-5"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-5"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-5"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-5"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-5"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-5"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-6"] { view-transition-name: \786E\5B9A\6027; }@layer astro { ::view-transition-old(\786E\5B9A\6027) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(\786E\5B9A\6027) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(\786E\5B9A\6027) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(\786E\5B9A\6027) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-6"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-6"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-6"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-6"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-6"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-6"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-6"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-6"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style></head> <body>  <header> <a id="skip-to-content" href="#main-content" class="absolute -top-full left-16 z-50 bg-background px-3 py-2 text-accent backdrop-blur-lg transition-all focus:top-4">
+Skip to content
+</a> <div id="nav-container" class="mx-auto flex max-w-3xl flex-col items-center justify-between sm:flex-row"> <div id="top-nav-wrap" class="relative flex w-full items-baseline justify-between bg-background p-4 sm:items-center sm:py-6"> <a href="/" class="absolute py-1 text-2xl leading-7 font-semibold whitespace-nowrap sm:static"> 首页 </a> <nav id="nav-menu" class="flex w-full flex-col items-center sm:ml-2 sm:flex-row sm:justify-end sm:space-x-4 sm:py-0"> <button id="menu-btn" class="focus-outline self-end p-2 sm:hidden" aria-label="Open Menu" aria-expanded="false" aria-controls="menu-items"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden" id="close-icon"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-menu-deep" id="menu-icon"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 6h16" /><path d="M7 12h13" /><path d="M10 18h10" /></svg> </button> <ul id="menu-items" class="mt-4 grid w-44 grid-cols-2 place-content-center gap-2 [&#38;>li>a]:block [&#38;>li>a]:px-4 [&#38;>li>a]:py-3 [&#38;>li>a]:text-center [&#38;>li>a]:font-medium [&#38;>li>a]:hover:text-accent sm:[&#38;>li>a]:px-2 sm:[&#38;>li>a]:py-1 hidden sm:mt-0 sm:ml-0 sm:flex sm:w-auto sm:gap-x-5 sm:gap-y-0"> <li class="col-span-2"> <a href="/posts" class="active-nav">
+文章
+</a> </li> <li class="col-span-2"> <a href="/tags">
+标签
+</a> </li> <li class="col-span-2"> <a href="/archives" class="group inline-block hover:text-accent focus-outline flex justify-center p-3 sm:p-1" aria-label="archives" title="Archives"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden sm:inline-block"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 4m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z" /><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" /><path d="M10 12l4 0" /></svg> <span class="sm:sr-only">Archives</span> </a> </li> <li class="col-span-1 flex items-center justify-center"> <a href="/search" class="group inline-block hover:text-accent focus-outline flex p-3 sm:p-1" aria-label="search" title="Search"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-search"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" /><path d="M21 21l-6 -6" /></svg> <span class="sr-only">Search</span> </a> </li> <li class="col-span-1 flex items-center justify-center"> <button id="theme-btn" class="focus-outline relative size-12 p-4 sm:size-8 hover:[&>svg]:stroke-accent" title="Toggles light & dark" aria-label="auto" aria-live="polite"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute top-[50%] left-[50%] -translate-[50%] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" /></svg> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute top-[50%] left-[50%] -translate-[50%] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M14.828 14.828a4 4 0 1 0 -5.656 -5.656a4 4 0 0 0 5.656 5.656z" /><path d="M6.343 17.657l-1.414 1.414" /><path d="M6.343 6.343l-1.414 -1.414" /><path d="M17.657 6.343l1.414 -1.414" /><path d="M17.657 17.657l1.414 1.414" /><path d="M4 12h-2" /><path d="M12 4v-2" /><path d="M20 12h2" /><path d="M12 20v2" /></svg> </button> </li> </ul> </nav> </div> </div> <div class="max-w-3xl mx-auto px-4"> <hr class="border-border" aria-hidden="true"> </div> </header> <script type="module">function e(){let e=document.querySelector(`#menu-btn`),t=document.querySelector(`#menu-items`),n=document.querySelector(`#menu-icon`),r=document.querySelector(`#close-icon`);!e||!t||!n||!r||e.addEventListener(`click`,()=>{let i=e.getAttribute(`aria-expanded`)===`true`;e.setAttribute(`aria-expanded`,i?`false`:`true`),e.setAttribute(`aria-label`,i?`Open Menu`:`Close Menu`),t.classList.toggle(`hidden`),n.classList.toggle(`hidden`),r.classList.toggle(`hidden`)})}e(),document.addEventListener(`astro:after-swap`,e);</script> <div class="mx-auto flex w-full max-w-3xl items-center justify-start px-2"><a id="back-button" href="/" class="group inline-block hover:text-accent focus-outline mt-8 mb-2 flex hover:text-foreground/75"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 6l-6 6l6 6" /></svg><span>返回</span></a></div><script type="module">function e(){let e=document.querySelector(`#back-button`),t=sessionStorage.getItem(`backUrl`);t&&e&&(e.href=t)}document.addEventListener(`astro:page-load`,e),e();</script> <main id="main-content" class="mx-auto w-full max-w-3xl px-4 pb-12" data-pagefind-body> <h1 class="inline-block text-2xl font-bold text-accent sm:text-3xl" data-astro-transition-scope="astro-fam6wyqg-1"> OpenProse 案例研究：当 DSL 的执行器是大模型 </h1> <div class="flex items-center gap-4"> <div class="flex items-end space-x-2 opacity-80 my-2"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 min-w-[1.375rem]"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" /><path d="M16 3v4" /><path d="M8 3v4" /><path d="M4 11h16" /><path d="M7 14h.013" /><path d="M10.01 14h.005" /><path d="M13.01 14h.005" /><path d="M16.015 14h.005" /><path d="M13.015 17h.005" /><path d="M7.01 17h.005" /><path d="M10.01 17h.005" /></svg> <span class="sr-only">发布于</span> <span class="text-sm italic sm:text-base"> <time datetime="2026-01-25T00:00:00.000Z">2026年1月25日</time> </span> </div> <div class="opacity-80 max-sm:hidden"><span aria-hidden="true" class="max-sm:hidden">
+|
+</span><a class="space-x-1.5 hover:opacity-75" href="https://github.com/zrr1999/sixbones.dev/edit/main/data/blog/openprose-case-study.md" rel="noopener noreferrer" target="_blank"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg><span class="italic max-sm:text-sm sm:inline">建议修改</span></a></div> </div> <article id="article" class="mx-auto prose mt-8 max-w-3xl"> <p>在多 Agent 与智能体式系统设计中，常见一条原则：<strong>明确区分确定性层与不确定性层</strong>——控制流、数据流与安全相关部分应尽量确定、可验证，语义理解与创造性生成则可交给大模型。<a href="https://github.com/openprose/prose">OpenProse</a> 把<strong>大模型当作 DSL 的执行器</strong>，用「理解」替代「解析」来驱动执行。本文以它为例，分析这种设计为何导致「形式像程序、执行却不确定」，以及能提炼出哪些设计启示。更系统的范式讨论见《<a href="/posts/multi-agent-design-paradigms">多 Agent 系统设计范式：从理论到实践的完整指南</a>》。</p>
+<h2 id="openprose-简介"><a aria-hidden="true" tabindex="-1" href="#openprose-简介"><span class="icon icon-link"></span></a>OpenProse 简介</h2>
+<p><a href="https://github.com/openprose/prose">OpenProse</a> 旨在提供一种「面向 AI 会话的编程语言」。其核心理念是：<strong>长期运行的 AI 会话本身即一台图灵完备的计算机，OpenProse 是为其设计的编程语言</strong>。</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="yaml"><code><span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># 定义专门的智能体</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#7FDBCA">agent researcher</span><span style="color:#D32F2F;--shiki-dark:#D6DEEB">:</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#7FDBCA">  model</span><span style="color:#D32F2F;--shiki-dark:#D6DEEB">:</span><span style="color:#22863A;--shiki-dark:#ECC48D"> sonnet</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#7FDBCA">  prompt</span><span style="color:#D32F2F;--shiki-dark:#D6DEEB">:</span><span style="color:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="color:#22863A;--shiki-dark:#ECC48D">You are a research assistant</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#7FDBCA">agent writer</span><span style="color:#D32F2F;--shiki-dark:#D6DEEB">:</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#7FDBCA">  model</span><span style="color:#D32F2F;--shiki-dark:#D6DEEB">:</span><span style="color:#22863A;--shiki-dark:#ECC48D"> opus</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#7FDBCA">  prompt</span><span style="color:#D32F2F;--shiki-dark:#D6DEEB">:</span><span style="color:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="color:#22863A;--shiki-dark:#ECC48D">You are a technical writer</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># 执行工作流</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#7FDBCA">session</span><span style="color:#D32F2F;--shiki-dark:#D6DEEB">:</span><span style="color:#22863A;--shiki-dark:#ECC48D"> researcher</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#7FDBCA">  prompt</span><span style="color:#D32F2F;--shiki-dark:#D6DEEB">:</span><span style="color:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="color:#22863A;--shiki-dark:#ECC48D">Research recent developments in quantum computing</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#7FDBCA">session</span><span style="color:#D32F2F;--shiki-dark:#D6DEEB">:</span><span style="color:#22863A;--shiki-dark:#ECC48D"> writer</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#7FDBCA">  prompt</span><span style="color:#D32F2F;--shiki-dark:#D6DEEB">:</span><span style="color:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="color:#22863A;--shiki-dark:#ECC48D">Write a summary of the research findings</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span></span></code></pre>
+<h2 id="设计取向与执行模式"><a aria-hidden="true" tabindex="-1" href="#设计取向与执行模式"><span class="icon icon-link"></span></a>设计取向与执行模式</h2>
+<p>OpenProse 的文档明确其设计原则：追求「<strong>理解</strong>」而非「<strong>解析</strong>」，虚拟机是「智能的」而非「机械的」。因此，它<strong>用大模型去理解并执行 DSL</strong>，而不是用传统解释器做词法、语法分析与确定性执行。</p>
+<p>两种执行模式可概括为：</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>模式</th><th>流程</th><th>结果</th></tr></thead><tbody><tr><td><strong>传统 DSL</strong></td><td>代码 → 词法/语法分析 → 抽象语法树 → 解释器机械执行</td><td>确定性</td></tr><tr><td><strong>OpenProse</strong></td><td>.prose 文件 → 大模型阅读理解 → 大模型按自身理解执行</td><td>不确定</td></tr></tbody></table>
+<p>根据其文档，会话同时扮演解释器与运行时，<strong>不依赖严格的形式匹配，而依赖对上下文与意图的理解</strong>。这带来两类现象：</p>
+<ol>
+<li>
+<p><strong>语法作为「建议」而非「指令」</strong></p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="yaml"><code><span class="line"><span style="color:#D32F2F;--shiki-dark:#7FDBCA">parallel</span><span style="color:#D32F2F;--shiki-dark:#D6DEEB">:</span><span style="color:#22863A;--shiki-dark:#ECC48D"> a = session "Task A"</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#ECC48D">  b = session "Task B"</span></span></code></pre>
+<ul>
+<li>传统解释器：必须并行执行两个任务。</li>
+<li>OpenProse：大模型识别出「应并行」，但具体如何调度、是否真并行，由大模型决定。</li>
+</ul>
+</li>
+<li>
+<p><strong>执行逻辑内嵌于大模型</strong></p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="yaml"><code><span class="line"><span style="color:#D32F2F;--shiki-dark:#7FDBCA">repeat 3</span><span style="color:#D32F2F;--shiki-dark:#D6DEEB">:</span><span style="color:#22863A;--shiki-dark:#ECC48D"> session "Improve the draft"</span></span></code></pre>
+<ul>
+<li>传统解释器：严格重复 3 次，每次调用一致。</li>
+<li>OpenProse：大模型仅能识别出语法写的是「需重复 3 次」；<strong>是否真会执行 3 次</strong>、以及每次「Improve the draft」的具体行为，都由大模型自行决定，无法从机制上保证。</li>
+</ul>
+</li>
+</ol>
+<h2 id="根本问题用概率系统模拟确定性执行器"><a aria-hidden="true" tabindex="-1" href="#根本问题用概率系统模拟确定性执行器"><span class="icon icon-link"></span></a>根本问题：用概率系统模拟确定性执行器</h2>
+<p>OpenProse 在概念上要求大模型充当<strong>符合规范的执行器</strong>，而大模型只能<strong>模拟</strong>该角色，无法从机制上保证与规范一致。</p>
+<p><strong>类比</strong>：若让演员「扮演计算器」计算「234 + 567」——多数时候会得到 801，但无法保证下次不会：因计算错误得到 800 或 802；因理解偏差将题目当作「估算」而给出约数；或因自行判断「问题无意义」而拒绝回答。</p>
+<p><strong>示例</strong>：对于按顺序的两个 session：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="yaml"><code><span class="line"><span style="color:#D32F2F;--shiki-dark:#7FDBCA">session</span><span style="color:#D32F2F;--shiki-dark:#D6DEEB">:</span><span style="color:#22863A;--shiki-dark:#ECC48D"> researcher</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#7FDBCA">  prompt</span><span style="color:#D32F2F;--shiki-dark:#D6DEEB">:</span><span style="color:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="color:#22863A;--shiki-dark:#ECC48D">Research quantum computing</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#7FDBCA">session</span><span style="color:#D32F2F;--shiki-dark:#D6DEEB">:</span><span style="color:#22863A;--shiki-dark:#ECC48D"> writer</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#7FDBCA">  prompt</span><span style="color:#D32F2F;--shiki-dark:#D6DEEB">:</span><span style="color:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="color:#22863A;--shiki-dark:#ECC48D">Write a summary of the research findings</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span></span></code></pre>
+<p>若按确定性语义理解，通常会期望：先完成 researcher，再启动 writer，并将前者输出传给后者。实践中，大模型有时会按此执行，也可能：将两个任务合并在同一 session；在中间插入自认为需要的验证步骤；误判 session 边界，把整段程序当作一次长对话；或因上下文截断而丢失部分状态。</p>
+<p><strong>要点</strong>：问题不在于个例出错，而在于<strong>即使语法结构是确定的（如顺序、重复、分支），也无法被确定性执行</strong>。</p>
+<h2 id="深层原因"><a aria-hidden="true" tabindex="-1" href="#深层原因"><span class="icon icon-link"></span></a>深层原因</h2>
+<h3 id="dsl-的两面性"><a aria-hidden="true" tabindex="-1" href="#dsl-的两面性"><span class="icon icon-link"></span></a>DSL 的两面性</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>层面</th><th>设计意图</th><th>实际效果</th></tr></thead><tbody><tr><td><strong>语法层</strong></td><td>提供结构化、明确的控制流</td><td>外表类似传统编程语言</td></tr><tr><td><strong>执行层</strong></td><td>依赖大模型理解并模拟执行</td><td>行为本质上是概率性的</td></tr></tbody></table>
+<p>开发者面对的是语法层给出的<strong>确定性表象</strong>，得到的却是执行层的<strong>概率性行为</strong>。</p>
+<h3 id="认知错位"><a aria-hidden="true" tabindex="-1" href="#认知错位"><span class="icon icon-link"></span></a>认知错位</h3>
+<p>形式化语法容易让人产生<strong>确定性错觉</strong>。例如：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="yaml"><code><span class="line"><span style="color:#D32F2F;--shiki-dark:#7FDBCA">for item in items</span><span style="color:#D32F2F;--shiki-dark:#D6DEEB">:</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#ECC48D">  result = session "Process {item}"</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#7FDBCA">  if **result is valid**</span><span style="color:#D32F2F;--shiki-dark:#D6DEEB">:</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#ECC48D">    output result</span></span></code></pre>
+<p>外表接近 Python、JavaScript 等确定性语言，实则：<code>for</code> 表示「由大模型理解要遍历」而非传统迭代；<code>session</code> 表示「启动子对话」而非固定语义的函数调用；<code>if</code> 表示「由大模型判断条件」而非确定性的分支。表象与机制不一致，易高估可预测性。</p>
+<h3 id="执行器的双重角色"><a aria-hidden="true" tabindex="-1" href="#执行器的双重角色"><span class="icon icon-link"></span></a>执行器的双重角色</h3>
+<p>OpenProse 的「虚拟机」即大模型本身，同时承担：</p>
+<ul>
+<li><strong>解释器</strong>：解析 DSL 语法、识别结构；</li>
+<li><strong>执行引擎</strong>：完成具体任务（如 research、write）。</li>
+</ul>
+<p>二者在元层次上纠缠。对于 <code>session "Review the code and identify bugs"</code>，模型既要识别这是 <code>session</code> 语句，又要执行「Review the code…」这一任务，并自行划分「哪是语法、哪是任务描述」。<strong>角色边界模糊</strong>，容易出现混淆与误判。</p>
+<h2 id="影响适用场景与局限"><a aria-hidden="true" tabindex="-1" href="#影响适用场景与局限"><span class="icon icon-link"></span></a>影响：适用场景与局限</h2>
+<h3 id="原型与探索阶段的优势"><a aria-hidden="true" tabindex="-1" href="#原型与探索阶段的优势"><span class="icon icon-link"></span></a>原型与探索阶段的优势</h3>
+<ul>
+<li><strong>学习成本低</strong>：如 <code>session "Do A"</code>、<code>session "Do B"</code>，即使不熟悉编程也能推断大意。</li>
+<li><strong>便于快速表达意图</strong>：用自然语言描述任务即可，无需掌握复杂 API。</li>
+<li><strong>一定程度的「智能」行为</strong>：大模型可能识别隐含依赖、自行处理部分边缘情况。</li>
+<li><strong>容错与自我修正</strong>：可能自动纠正轻微语法问题或补全缺失上下文。</li>
+</ul>
+<h3 id="生产与标准化阶段的局限"><a aria-hidden="true" tabindex="-1" href="#生产与标准化阶段的局限"><span class="icon icon-link"></span></a>生产与标准化阶段的局限</h3>
+<ul>
+<li><strong>执行不可复现</strong>：同一段代码多次运行，控制流可能不同（如 <code>repeat 5</code> 有时执行 5 次、有时 3 次）。</li>
+<li><strong>难以可靠测试</strong>：既难以定义「正确」行为，也难以稳定地模拟或隔离大模型内部状态。</li>
+<li><strong>调试困难</strong>：失败时难以定位是语法理解、并行实现、结果传递还是任务语义导致。</li>
+<li><strong>版本与行为脱节</strong>：.prose 文件相同，行为仍可能随模型、对话历史、提示词而变，版本控制无法对应到稳定行为。</li>
+<li><strong>无法证明执行轨迹</strong>：难以证明「每次执行具体做了什么」。</li>
+</ul>
+<h2 id="可能的缓解方向"><a aria-hidden="true" tabindex="-1" href="#可能的缓解方向"><span class="icon icon-link"></span></a>可能的缓解方向</h2>
+<ol>
+<li><strong>用真实解释器执行控制流</strong>：由传统编译器/解释器处理 <code>repeat</code>、<code>parallel</code>、<code>if</code> 等，大模型只负责「任务内容」的生成与理解。</li>
+<li><strong>显式标出不确定性边界</strong>：在 DSL 中区分「确定性区域」与「智能体区域」。</li>
+<li><strong>提供验证与对照</strong>：编译时做语法检查，运行时记录实际控制流，便于与预期对照。</li>
+<li><strong>分离语言层次</strong>：例如第一层确定性控制流、第二层智能体配置、第三层自然语言任务描述。</li>
+</ol>
+<h2 id="对多-agent-设计的启示"><a aria-hidden="true" tabindex="-1" href="#对多-agent-设计的启示"><span class="icon icon-link"></span></a>对多 Agent 设计的启示</h2>
+<ul>
+<li><strong>元层次边界</strong>：当「解释器」本身由大模型充当时，语法理解与任务执行的边界容易模糊，需在设计中显式划分。</li>
+<li><strong>形式与实现一致</strong>：若语法呈现传统程序般的确定性，就应由确定性解释器执行；若依赖大模型判断，应在语法或注释中显式标出（如 <code>**...**</code>）。设计方向应是<strong>用确定性引擎调用大模型</strong>，而不是<strong>用大模型模拟确定性执行器</strong>。</li>
+<li><strong>适用边界</strong>：OpenProse 式设计适合原型探索与快速表达，不适合要求可复现、可测试、可审计的生产环境。</li>
+</ul>
+<h2 id="更普适的设计原则"><a aria-hidden="true" tabindex="-1" href="#更普适的设计原则"><span class="icon icon-link"></span></a>更普适的设计原则</h2>
+<ol>
+<li><strong>分离确定与不确定</strong>：在架构上明确哪些环节必须确定、可验证，哪些允许概率性。</li>
+<li><strong>表象与本质一致</strong>：本质若为概率性，表象就应有所体现，避免「形式确定、执行不确定」。</li>
+<li><strong>控制流不交给大模型解析</strong>：控制结构应由传统解释器解析与驱动，大模型只承担需要语义理解或生成的部分。</li>
+<li><strong>保留确定性路径</strong>：即使在智能体式系统中，也预留可选的、不经过大模型的执行路径，作为「逃生舱」。</li>
+</ol>
+<h2 id="结论"><a aria-hidden="true" tabindex="-1" href="#结论"><span class="icon icon-link"></span></a>结论</h2>
+<p>OpenProse 的核心矛盾在于：<strong>要求大模型「模拟」一个确定性执行器，而大模型本质上是概率系统</strong>。这类问题无法通过改进提示词或更换模型从根本上解决，而是设计范式的选择问题。</p>
+<h2 id="参考文献"><a aria-hidden="true" tabindex="-1" href="#参考文献"><span class="icon icon-link"></span></a>参考文献</h2>
+<ol>
+<li><a href="https://github.com/openprose/prose">OpenProse - Programming Language for AI Sessions</a></li>
+<li><a href="https://github.com/openprose/prose/blob/main/skills/open-prose/compiler.md">OpenProse Language Specification</a></li>
+<li><a href="https://github.com/openprose/prose#readme">OpenProse Design Philosophy</a></li>
+<li><a href="/posts/multi-agent-design-paradigms">多 Agent 系统设计范式：从理论到实践的完整指南</a></li>
+</ol> </article> <hr class="my-8 border-dashed"> <div class="opacity-80 sm:hidden"><span aria-hidden="true" class="max-sm:hidden">
+|
+</span><a class="space-x-1.5 hover:opacity-75" href="https://github.com/zrr1999/sixbones.dev/edit/main/data/blog/openprose-case-study.md" rel="noopener noreferrer" target="_blank"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg><span class="italic max-sm:text-sm sm:inline">建议修改</span></a></div> <ul class="mt-4 mb-8 sm:my-8"> <li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/open-prose/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-2"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>OpenProse</span> </a> </li><li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/多智能体/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-3"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>多智能体</span> </a> </li><li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/设计范式/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-4"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>设计范式</span> </a> </li><li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/dsl/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-5"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>DSL</span> </a> </li><li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/确定性/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-6"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>确定性</span> </a> </li> </ul> <div class="flex flex-col items-center justify-between gap-6 sm:flex-row sm:items-end sm:gap-4"> <div class="flex flex-col flex-wrap items-center justify-center gap-1 sm:items-start"> <span class="italic">分享这篇文章：</span> <div class="text-center"> <a href="https://wa.me/?text=https://blog.sixbones.dev/posts/openprose-case-study/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post via WhatsApp"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 21l1.65 -3.8a9 9 0 1 1 3.4 2.9l-5.05 .9" /><path d="M9 10a.5 .5 0 0 0 1 0v-1a.5 .5 0 0 0 -1 0v1a5 5 0 0 0 5 5h1a.5 .5 0 0 0 0 -1h-1a.5 .5 0 0 0 0 1" /></svg> <span class="sr-only">Share this post via WhatsApp</span> </a><a href="https://www.facebook.com/sharer.php?u=https://blog.sixbones.dev/posts/openprose-case-study/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post on Facebook"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 10v4h3v7h4v-7h3l1 -4h-4v-2a1 1 0 0 1 1 -1h3v-4h-3a5 5 0 0 0 -5 5v2h-3" /></svg> <span class="sr-only">Share this post on Facebook</span> </a><a href="https://x.com/intent/post?url=https://blog.sixbones.dev/posts/openprose-case-study/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post on X"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 4l11.733 16h4.267l-11.733 -16z" /><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" /></svg> <span class="sr-only">Share this post on X</span> </a><a href="https://t.me/share/url?url=https://blog.sixbones.dev/posts/openprose-case-study/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post via Telegram"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 10l-4 4l6 6l4 -16l-18 7l4 2l2 6l3 -4" /></svg> <span class="sr-only">Share this post via Telegram</span> </a><a href="https://pinterest.com/pin/create/button/?url=https://blog.sixbones.dev/posts/openprose-case-study/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post on Pinterest"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M8 20l4 -9" /><path d="M10.7 14c.437 1.263 1.43 2 2.55 2c2.071 0 3.75 -1.554 3.75 -4a5 5 0 1 0 -9.7 1.7" /><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /></svg> <span class="sr-only">Share this post on Pinterest</span> </a><a href="mailto:?subject=See%20this%20post&#38;body=https://blog.sixbones.dev/posts/openprose-case-study/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post via email"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" /><path d="M3 7l9 6l9 -6" /></svg> <span class="sr-only">Share this post via email</span> </a> </div> </div> <button id="back-to-top" class="focus-outline py-1 whitespace-nowrap hover:opacity-75"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block rotate-90"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 6l-6 6l6 6" /></svg> <span>返回顶部</span> </button> </div> <hr class="my-6 border-dashed"> <!-- Previous/Next Post Buttons --> <div data-pagefind-ignore class="grid grid-cols-1 gap-6 sm:grid-cols-2"> <a href="/posts/multi-agent-design-paradigms" class="flex w-full gap-1 hover:opacity-75"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block flex-none"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 6l-6 6l6 6" /></svg> <div> <span>上一篇</span> <div class="text-sm text-accent/85">多 Agent 系统设计范式：从理论到实践的完整指南</div> </div> </a> <a href="/posts/pycapsule-dlpack" class="flex w-full justify-end gap-1 text-right hover:opacity-75 sm:col-start-2"> <div> <span>下一篇</span> <div class="text-sm text-accent/85">PyCapsule：Python 与其他语言之间的指针传递桥梁</div> </div> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block flex-none"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M9 6l6 6l-6 6" /></svg> </a> </div> <div class="giscus"></div> <script data-astro-rerun src="https://giscus.app/client.js" data-repo="zrr1999/sixbones.dev" data-repo-id="MDEwOlJlcG9zaXRvcnkzMTY0NTU2NDg=" data-category="General" data-category-id="DIC_kwDOEty64M4Chlof" data-mapping="pathname" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="preferred_color_scheme" data-lang="zh-CN" data-loading="lazy" crossorigin="anonymous" async></script> </main> <footer class="w-full mt-auto"> <div class="max-w-3xl mx-auto px-0"> <hr class="border-border" aria-hidden="true"> </div> <div class="flex flex-col items-center justify-between py-6 sm:flex-row-reverse sm:py-4"> <div class="flex-wrap justify-center gap-1 flex"> <a href="https://github.com/zrr1999" class="group inline-block hover:text-accent p-2 hover:rotate-6 sm:p-1" title=" 六个骨头的博客 on Github"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" /></svg> <span class="sr-only"> 六个骨头的博客 on Github</span> </a><a href="mailto:zrr1999@qq.com" class="group inline-block hover:text-accent p-2 hover:rotate-6 sm:p-1" title="Send an email to 六个骨头的博客"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" /><path d="M3 7l9 6l9 -6" /></svg> <span class="sr-only">Send an email to 六个骨头的博客</span> </a> </div> <div class="my-2 flex flex-col items-center whitespace-nowrap sm:flex-row"> <span>&#169; 2024-2026 <a href="https://github.com/zrr1999">Zhan Rongrui</a></span> </div> </div> </footer>  </body></html> <script data-astro-rerun>
+  /** Create a progress indicator
+   *  at the top */
+  function createProgressBar() {
+    // Create the main container div
+    const progressContainer = document.createElement("div");
+    progressContainer.className =
+      "progress-container fixed top-0 z-10 h-1 w-full bg-background";
+
+    // Create the progress bar div
+    const progressBar = document.createElement("div");
+    progressBar.className = "progress-bar h-1 w-0 bg-accent";
+    progressBar.id = "myBar";
+
+    // Append the progress bar to the progress container
+    progressContainer.appendChild(progressBar);
+
+    // Append the progress container to the document body or any other desired parent element
+    document.body.appendChild(progressContainer);
+  }
+  createProgressBar();
+
+  /** Update the progress bar
+   *  when user scrolls */
+  function updateScrollProgress() {
+    document.addEventListener("scroll", () => {
+      const winScroll =
+        document.body.scrollTop || document.documentElement.scrollTop;
+      const height =
+        document.documentElement.scrollHeight -
+        document.documentElement.clientHeight;
+      const scrolled = (winScroll / height) * 100;
+      if (document) {
+        const myBar = document.getElementById("myBar");
+        if (myBar) {
+          myBar.style.width = scrolled + "%";
+        }
+      }
+    });
+  }
+  updateScrollProgress();
+
+  /** Attaches links to headings in the document,
+   *  allowing sharing of sections easily */
+  function addHeadingLinks() {
+    const headings = Array.from(
+      document.querySelectorAll("h2, h3, h4, h5, h6")
+    );
+    for (const heading of headings) {
+      heading.classList.add("group");
+      const link = document.createElement("a");
+      link.className =
+        "heading-link ml-2 opacity-0 group-hover:opacity-100 focus:opacity-100";
+      link.href = "#" + heading.id;
+
+      const span = document.createElement("span");
+      span.ariaHidden = "true";
+      span.innerText = "#";
+      link.appendChild(span);
+      heading.appendChild(link);
+    }
+  }
+  addHeadingLinks();
+
+  /** Attaches copy buttons to code blocks in the document,
+   * allowing users to copy code easily. */
+  function attachCopyButtons() {
+    const copyButtonLabel = "Copy";
+    const codeBlocks = Array.from(
+      document.querySelectorAll("pre:not(.mermaid)")
+    );
+
+    for (const codeBlock of codeBlocks) {
+      const wrapper = document.createElement("div");
+      wrapper.style.position = "relative";
+
+      const copyButton = document.createElement("button");
+      copyButton.className =
+        "copy-code absolute right-3 -top-3 rounded bg-muted px-2 py-1 text-xs leading-4 text-foreground font-medium";
+      copyButton.innerHTML = copyButtonLabel;
+      codeBlock.setAttribute("tabindex", "0");
+      codeBlock.appendChild(copyButton);
+
+      // wrap codebock with relative parent element
+      codeBlock?.parentNode?.insertBefore(wrapper, codeBlock);
+      wrapper.appendChild(codeBlock);
+
+      copyButton.addEventListener("click", async () => {
+        await copyCode(codeBlock, copyButton);
+      });
+    }
+
+    async function copyCode(block, button) {
+      const code = block.querySelector("code");
+      const text = code?.innerText;
+
+      await navigator.clipboard.writeText(text ?? "");
+
+      // visual feedback that task is completed
+      button.innerText = "Copied";
+
+      setTimeout(() => {
+        button.innerText = copyButtonLabel;
+      }, 700);
+    }
+  }
+  attachCopyButtons();
+
+  /** Scrolls the document to the top when
+   * the "Back to Top" button is clicked. */
+  function backToTop() {
+    document.querySelector("#back-to-top")?.addEventListener("click", () => {
+      document.body.scrollTop = 0; // For Safari
+      document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+    });
+  }
+  backToTop();
+
+  /* Go to page start after page swap */
+  document.addEventListener("astro:after-swap", () =>
+    window.scrollTo({ left: 0, top: 0, behavior: "instant" })
+  );
+</script>

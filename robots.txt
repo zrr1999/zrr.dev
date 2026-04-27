@@ -1,0 +1,5 @@
+
+User-agent: *
+Allow: /
+
+Sitemap: https://blog.sixbones.dev/sitemap-index.xml

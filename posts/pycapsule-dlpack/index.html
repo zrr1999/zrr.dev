@@ -1,0 +1,673 @@
+<!DOCTYPE html><html lang="cn" class="scroll-smooth"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="canonical" href="https://blog.sixbones.dev/posts/pycapsule-dlpack/"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/katex@0.15.1/dist/katex.css" integrity="sha384-WsHMgfkABRyG494OmuiNmkAOk8nhO1qE+Y6wns6v+EoNoTNxrWxYpl5ZYWFOLPCM" crossorigin="anonymous"><meta name="generator" content="Astro v6.1.9"><!-- General Meta Tags --><title>PyCapsule：Python 与其他语言之间的指针传递桥梁 | 六个骨头的博客</title><meta name="title" content="PyCapsule：Python 与其他语言之间的指针传递桥梁 | 六个骨头的博客"><meta name="description" content="介绍 PyCapsule 的概念、原理和在 DLPack 中的作用"><meta name="author" content="六个骨头"><link rel="sitemap" href="/sitemap-index.xml"><!-- Article Published/Modified time --><meta property="article:published_time" content="2026-01-19T00:00:00.000Z"><meta property="article:modified_time" content="2026-01-25T00:00:00.000Z"><!-- Twitter --><meta property="twitter:card" content="summary_large_image"><meta property="twitter:url" content="https://blog.sixbones.dev/posts/pycapsule-dlpack/"><meta property="twitter:title" content="PyCapsule：Python 与其他语言之间的指针传递桥梁 | 六个骨头的博客"><meta property="twitter:description" content="介绍 PyCapsule 的概念、原理和在 DLPack 中的作用"><meta property="twitter:image" content="https://blog.sixbones.dev/posts/pycapsule-dlpack/index.png"><!-- Google JSON-LD Structured data --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"PyCapsule：Python 与其他语言之间的指针传递桥梁 | 六个骨头的博客","image":"https://blog.sixbones.dev/posts/pycapsule-dlpack/index.png","datePublished":"2026-01-19T00:00:00.000Z","dateModified":"2026-01-25T00:00:00.000Z","author":[{"@type":"Person","name":"六个骨头","url":"https://blog.sixbones.dev/"}]}</script><!-- Google Font --><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet"><meta name="theme-color" content=""><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.XKloMPd3.js"></script><script src="/toggle-theme.js"></script><link rel="stylesheet" href="/_astro/Footer-DPUJBJz0.css">
+<style>@keyframes astroFadeInOut{0%{opacity:1}to{opacity:0}}@keyframes astroFadeIn{0%{opacity:0;mix-blend-mode:plus-lighter}to{opacity:1;mix-blend-mode:plus-lighter}}@keyframes astroFadeOut{0%{opacity:1;mix-blend-mode:plus-lighter}to{opacity:0;mix-blend-mode:plus-lighter}}@keyframes astroSlideFromRight{0%{transform:translate(100%)}}@keyframes astroSlideFromLeft{0%{transform:translate(-100%)}}@keyframes astroSlideToRight{to{transform:translate(100%)}}@keyframes astroSlideToLeft{to{transform:translate(-100%)}}@media (prefers-reduced-motion){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*),[data-astro-transition-scope]{animation:none!important}}
+</style><script type="module" src="/_astro/page.CGluN7T_.js"></script><style>[data-astro-transition-scope="astro-fam6wyqg-1"] { view-transition-name: py-capsule\FF1A-python-\4E0E\5176\4ED6\8BED\8A00\4E4B\95F4\7684\6307\9488\4F20\9012\6865\6881; }@layer astro { ::view-transition-old(py-capsule\FF1A-python-\4E0E\5176\4ED6\8BED\8A00\4E4B\95F4\7684\6307\9488\4F20\9012\6865\6881) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(py-capsule\FF1A-python-\4E0E\5176\4ED6\8BED\8A00\4E4B\95F4\7684\6307\9488\4F20\9012\6865\6881) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(py-capsule\FF1A-python-\4E0E\5176\4ED6\8BED\8A00\4E4B\95F4\7684\6307\9488\4F20\9012\6865\6881) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(py-capsule\FF1A-python-\4E0E\5176\4ED6\8BED\8A00\4E4B\95F4\7684\6307\9488\4F20\9012\6865\6881) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-fam6wyqg-1"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-fam6wyqg-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-fam6wyqg-1"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-fam6wyqg-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-fam6wyqg-1"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-fam6wyqg-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-fam6wyqg-1"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-fam6wyqg-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-2"] { view-transition-name: python; }@layer astro { ::view-transition-old(python) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(python) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(python) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(python) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-3"] { view-transition-name: c; }@layer astro { ::view-transition-old(c) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(c) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(c) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(c) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-4"] { view-transition-name: dl-pack; }@layer astro { ::view-transition-old(dl-pack) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(dl-pack) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(dl-pack) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(dl-pack) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-4"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-4"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-4"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-4"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-4"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-4"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-4"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-4"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-5"] { view-transition-name: py-capsule; }@layer astro { ::view-transition-old(py-capsule) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(py-capsule) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(py-capsule) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(py-capsule) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-5"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-5"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-5"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-5"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-5"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-5"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-5"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-5"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-6"] { view-transition-name: boning; }@layer astro { ::view-transition-old(boning) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(boning) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(boning) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(boning) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-6"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-6"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-6"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-6"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-6"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-6"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-6"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-6"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style></head> <body>  <header> <a id="skip-to-content" href="#main-content" class="absolute -top-full left-16 z-50 bg-background px-3 py-2 text-accent backdrop-blur-lg transition-all focus:top-4">
+Skip to content
+</a> <div id="nav-container" class="mx-auto flex max-w-3xl flex-col items-center justify-between sm:flex-row"> <div id="top-nav-wrap" class="relative flex w-full items-baseline justify-between bg-background p-4 sm:items-center sm:py-6"> <a href="/" class="absolute py-1 text-2xl leading-7 font-semibold whitespace-nowrap sm:static"> 首页 </a> <nav id="nav-menu" class="flex w-full flex-col items-center sm:ml-2 sm:flex-row sm:justify-end sm:space-x-4 sm:py-0"> <button id="menu-btn" class="focus-outline self-end p-2 sm:hidden" aria-label="Open Menu" aria-expanded="false" aria-controls="menu-items"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden" id="close-icon"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-menu-deep" id="menu-icon"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 6h16" /><path d="M7 12h13" /><path d="M10 18h10" /></svg> </button> <ul id="menu-items" class="mt-4 grid w-44 grid-cols-2 place-content-center gap-2 [&#38;>li>a]:block [&#38;>li>a]:px-4 [&#38;>li>a]:py-3 [&#38;>li>a]:text-center [&#38;>li>a]:font-medium [&#38;>li>a]:hover:text-accent sm:[&#38;>li>a]:px-2 sm:[&#38;>li>a]:py-1 hidden sm:mt-0 sm:ml-0 sm:flex sm:w-auto sm:gap-x-5 sm:gap-y-0"> <li class="col-span-2"> <a href="/posts" class="active-nav">
+文章
+</a> </li> <li class="col-span-2"> <a href="/tags">
+标签
+</a> </li> <li class="col-span-2"> <a href="/archives" class="group inline-block hover:text-accent focus-outline flex justify-center p-3 sm:p-1" aria-label="archives" title="Archives"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden sm:inline-block"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 4m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z" /><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" /><path d="M10 12l4 0" /></svg> <span class="sm:sr-only">Archives</span> </a> </li> <li class="col-span-1 flex items-center justify-center"> <a href="/search" class="group inline-block hover:text-accent focus-outline flex p-3 sm:p-1" aria-label="search" title="Search"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-search"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" /><path d="M21 21l-6 -6" /></svg> <span class="sr-only">Search</span> </a> </li> <li class="col-span-1 flex items-center justify-center"> <button id="theme-btn" class="focus-outline relative size-12 p-4 sm:size-8 hover:[&>svg]:stroke-accent" title="Toggles light & dark" aria-label="auto" aria-live="polite"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute top-[50%] left-[50%] -translate-[50%] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" /></svg> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute top-[50%] left-[50%] -translate-[50%] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M14.828 14.828a4 4 0 1 0 -5.656 -5.656a4 4 0 0 0 5.656 5.656z" /><path d="M6.343 17.657l-1.414 1.414" /><path d="M6.343 6.343l-1.414 -1.414" /><path d="M17.657 6.343l1.414 -1.414" /><path d="M17.657 17.657l1.414 1.414" /><path d="M4 12h-2" /><path d="M12 4v-2" /><path d="M20 12h2" /><path d="M12 20v2" /></svg> </button> </li> </ul> </nav> </div> </div> <div class="max-w-3xl mx-auto px-4"> <hr class="border-border" aria-hidden="true"> </div> </header> <script type="module">function e(){let e=document.querySelector(`#menu-btn`),t=document.querySelector(`#menu-items`),n=document.querySelector(`#menu-icon`),r=document.querySelector(`#close-icon`);!e||!t||!n||!r||e.addEventListener(`click`,()=>{let i=e.getAttribute(`aria-expanded`)===`true`;e.setAttribute(`aria-expanded`,i?`false`:`true`),e.setAttribute(`aria-label`,i?`Open Menu`:`Close Menu`),t.classList.toggle(`hidden`),n.classList.toggle(`hidden`),r.classList.toggle(`hidden`)})}e(),document.addEventListener(`astro:after-swap`,e);</script> <div class="mx-auto flex w-full max-w-3xl items-center justify-start px-2"><a id="back-button" href="/" class="group inline-block hover:text-accent focus-outline mt-8 mb-2 flex hover:text-foreground/75"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 6l-6 6l6 6" /></svg><span>返回</span></a></div><script type="module">function e(){let e=document.querySelector(`#back-button`),t=sessionStorage.getItem(`backUrl`);t&&e&&(e.href=t)}document.addEventListener(`astro:page-load`,e),e();</script> <main id="main-content" class="mx-auto w-full max-w-3xl px-4 pb-12" data-pagefind-body> <h1 class="inline-block text-2xl font-bold text-accent sm:text-3xl" data-astro-transition-scope="astro-fam6wyqg-1"> PyCapsule：Python 与其他语言之间的指针传递桥梁 </h1> <div class="flex items-center gap-4"> <div class="flex items-end space-x-2 opacity-80 my-2"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 min-w-[1.375rem]"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" /><path d="M16 3v4" /><path d="M8 3v4" /><path d="M4 11h16" /><path d="M7 14h.013" /><path d="M10.01 14h.005" /><path d="M13.01 14h.005" /><path d="M16.015 14h.005" /><path d="M13.015 17h.005" /><path d="M7.01 17h.005" /><path d="M10.01 17h.005" /></svg> <span class="text-sm italic sm:text-base">
+更新于
+</span> <span class="text-sm italic sm:text-base"> <time datetime="2026-01-25T00:00:00.000Z">2026年1月25日</time> </span> </div> <div class="opacity-80 max-sm:hidden"><span aria-hidden="true" class="max-sm:hidden">
+|
+</span><a class="space-x-1.5 hover:opacity-75" href="https://github.com/zrr1999/sixbones.dev/edit/main/data/blog/pycapsule-dlpack.md" rel="noopener noreferrer" target="_blank"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg><span class="italic max-sm:text-sm sm:inline">建议修改</span></a></div> </div> <article id="article" class="mx-auto prose mt-8 max-w-3xl"> <p>在开发深度学习框架 <a href="https://github.com/boning-ai/boning">Boning</a> 的过程中，我深入研究了 DLPack 协议，这是实现跨框架张量零拷贝共享的核心机制。
+在这个过程中，我遇到了 PyCapsule 这个关键概念——它是 Python 和 C 代码之间传递指针的桥梁，是实现 DLPack 互操作的基础。</p>
+<p>本文将从基础概念开始，通过通俗的比喻和实际例子，深入解释 PyCapsule 是什么、为什么需要它，以及它在 DLPack 中的具体作用。</p>
+<h2 id="什么是-pycapsule"><a aria-hidden="true" tabindex="-1" href="#什么是-pycapsule"><span class="icon icon-link"></span></a>什么是 PyCapsule？</h2>
+<p>PyCapsule 是 Python 的一个特殊对象类型，用于在 Python 和 C 代码之间传递指针。可以把它理解为一个”包装盒”，里面装着 C 指针，Python 代码可以传递这个盒子，但不能直接打开。</p>
+<h3 id="核心特点"><a aria-hidden="true" tabindex="-1" href="#核心特点"><span class="icon icon-link"></span></a>核心特点</h3>
+<ul>
+<li><strong>指针容器</strong>：存储 C 语言中的指针（<code>void*</code>）</li>
+<li><strong>类型安全</strong>：通过名称标签标识内容类型</li>
+<li><strong>自动清理</strong>：通过 deleter 函数自动管理资源生命周期</li>
+<li><strong>Python 不可见</strong>：Python 代码无法直接访问内部指针，只能传递对象</li>
+</ul>
+<h2 id="通俗比喻"><a aria-hidden="true" tabindex="-1" href="#通俗比喻"><span class="icon icon-link"></span></a>通俗比喻</h2>
+<p>可以把 PyCapsule 理解为一个<strong>带标签的快递包裹</strong>：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>┌─────────────────────────────────┐</span></span>
+<span class="line"><span>│   PyCapsule（快递盒）            │</span></span>
+<span class="line"><span>│                                 │</span></span>
+<span class="line"><span>│   ┌─────────────────────┐     │</span></span>
+<span class="line"><span>│   │  C 指针（实际物品）   │     │</span></span>
+<span class="line"><span>│   │  0x7f8a1b2c3d4      │     │</span></span>
+<span class="line"><span>│   └─────────────────────┘     │</span></span>
+<span class="line"><span>│                                 │</span></span>
+<span class="line"><span>│   标签: "dltensor"              │</span></span>
+<span class="line"><span>│   收件人: NumPy/PyTorch         │</span></span>
+<span class="line"><span>└─────────────────────────────────┘</span></span></code></pre>
+<p><strong>工作流程</strong>：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Python 代码（寄件人）  →  PyCapsule（包裹）  →  C 代码（收件人）</span></span>
+<span class="line"><span>─────────────────────────────────────────────────────────────</span></span>
+<span class="line"><span>创建包裹并放入指针  →   [C 指针]          →   验证标签，打开包裹</span></span>
+<span class="line"><span>                                                          │</span></span>
+<span class="line"><span>传递给 NumPy       →   [C 指针]          →   取出指针使用</span></span>
+<span class="line"><span>                                                          │</span></span>
+<span class="line"><span>使用完毕后         →   [C 指针]          →   自动销毁内容</span></span></code></pre>
+<p><strong>关键点</strong>：</p>
+<ul>
+<li><strong>Python 代码</strong>：只能传递这个盒子，不能直接看里面</li>
+<li><strong>C 代码</strong>：可以打开盒子，取出指针使用</li>
+<li><strong>标签</strong>：标识盒子里装的是什么类型的东西（如 “dltensor”）</li>
+<li><strong>自动清理</strong>：当包裹被销毁时，自动清理内部资源</li>
+</ul>
+<h2 id="为什么需要-pycapsule"><a aria-hidden="true" tabindex="-1" href="#为什么需要-pycapsule"><span class="icon icon-link"></span></a>为什么需要 PyCapsule？</h2>
+<h3 id="问题python-和-c-之间的数据传递"><a aria-hidden="true" tabindex="-1" href="#问题python-和-c-之间的数据传递"><span class="icon icon-link"></span></a>问题：Python 和 C 之间的数据传递</h3>
+<p>在深度学习框架的互操作中，我们经常需要将张量数据从一个框架传递到另一个框架，比如从 Boning（Rust）传递到 NumPy（C）。但这里有一个根本问题：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="python"><code><span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># Python 代码</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">tensor </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#6F42C1;--shiki-dark:#B2CCD6"> create_tensor</span><span style="color:#212121;--shiki-dark:#D6DEEB">()</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">  # 这是 Rust/Python 对象</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># 问题：如何把 Rust 内存指针传给 NumPy？</span></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># Python 不能直接操作指针！</span></span></code></pre>
+<p>Python 作为高级语言，不能直接操作内存指针。但 C 代码需要指针来访问数据。如何解决这个矛盾？</p>
+<h3 id="解决方案pycapsule-作为桥梁"><a aria-hidden="true" tabindex="-1" href="#解决方案pycapsule-作为桥梁"><span class="icon icon-link"></span></a>解决方案：PyCapsule 作为桥梁</h3>
+<p>PyCapsule 提供了一个安全的机制，让 Python 可以传递指针，而 C 代码可以提取和使用指针：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="rust"><code><span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// Rust 代码</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#C792EA">let</span><span style="color:#24292EFF;--shiki-dark:#C5E478"> c_pointer</span><span style="color:#D32F2F;--shiki-dark:#C792EA"> =</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic"> get_memory_pointer</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">();  </span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// 获取 C 指针</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// 包装成 PyCapsule</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#C792EA">let</span><span style="color:#24292EFF;--shiki-dark:#C5E478"> capsule</span><span style="color:#D32F2F;--shiki-dark:#C792EA"> =</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic"> PyCapsule_New</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#C5E478">    c_pointer</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">,        </span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// 实际数据（C 指针）</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#D9F5DD">    "</span><span style="color:#22863A;--shiki-dark:#ECC48D">dltensor</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">,       </span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// 类型标签</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#C5E478">    deleter</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">           // 清理函数</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// 返回给 Python</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#C792EA;--shiki-dark-font-style:italic">return</span><span style="color:#24292EFF;--shiki-dark:#C5E478"> capsule</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">;  </span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// Python 可以传递这个对象</span></span></code></pre>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="python"><code><span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># Python 代码</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">capsule </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> tensor</span><span style="color:#212121;--shiki-dark:#D6DEEB">.</span><span style="color:#6F42C1;--shiki-dark:#B2CCD6">__dlpack__</span><span style="color:#212121;--shiki-dark:#D6DEEB">()</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">  # 收到 PyCapsule</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># 传递给 NumPy</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">np_array </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> np</span><span style="color:#212121;--shiki-dark:#D6DEEB">.</span><span style="color:#6F42C1;--shiki-dark:#B2CCD6">from_dlpack</span><span style="color:#212121;--shiki-dark:#D6DEEB">(</span><span style="color:#212121;--shiki-dark:#82AAFF">capsule</span><span style="color:#212121;--shiki-dark:#D6DEEB">)</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">  # NumPy 内部打开 PyCapsule，取出指针</span></span></code></pre>
+<h2 id="pycapsule-的结构"><a aria-hidden="true" tabindex="-1" href="#pycapsule-的结构"><span class="icon icon-link"></span></a>PyCapsule 的结构</h2>
+<h3 id="内部组成"><a aria-hidden="true" tabindex="-1" href="#内部组成"><span class="icon icon-link"></span></a>内部组成</h3>
+<p>PyCapsule 在 C 层面的结构大致如下：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#D32F2F;--shiki-dark:#C792EA">typedef</span><span style="color:#D32F2F;--shiki-dark:#C792EA"> struct</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> {</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">    PyObject_HEAD</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#C792EA">    void</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA"> *</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">pointer;</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">              // 存储的 C 指针</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#C792EA;--shiki-dark-font-style:italic">    const</span><span style="color:#D32F2F;--shiki-dark:#C792EA"> char</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA"> *</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">name;</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">           // 类型标签（如 "dltensor"）</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#C792EA">    void</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA"> *</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">context;</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">              // 上下文（可选）</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">    PyCapsule_Destructor destructor;</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">  // 清理函数</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">} PyCapsule;</span></span></code></pre>
+<h3 id="创建过程在-dlpack-中"><a aria-hidden="true" tabindex="-1" href="#创建过程在-dlpack-中"><span class="icon icon-link"></span></a>创建过程（在 DLPack 中）</h3>
+<p>在 DLPack 实现中，创建 PyCapsule 的过程如下：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="rust"><code><span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// 1. 准备 C 数据</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#C792EA">let</span><span style="color:#24292EFF;--shiki-dark:#C5E478"> managed_tensor</span><span style="color:#D32F2F;--shiki-dark:#C792EA"> =</span><span style="color:#6F42C1;--shiki-dark:#D6DEEB"> Box</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA">::</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">new</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span><span style="color:#6F42C1;--shiki-dark:#D6DEEB">DLManagedTensorVersioned</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> { </span><span style="color:#D32F2F;--shiki-dark:#7FDBCA">...</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> });</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#C792EA">let</span><span style="color:#24292EFF;--shiki-dark:#C5E478"> pointer</span><span style="color:#D32F2F;--shiki-dark:#C792EA"> =</span><span style="color:#6F42C1;--shiki-dark:#D6DEEB"> Box</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA">::</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">into_raw</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span><span style="color:#24292EFF;--shiki-dark:#C5E478">managed_tensor</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">) </span><span style="color:#D32F2F;--shiki-dark:#C792EA">as</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA"> *</span><span style="color:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#C792EA;--shiki-dark-font-style:italic">mut</span><span style="color:#24292EFF;--shiki-dark:#C5E478"> c_void</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// 2. 创建 PyCapsule</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#C792EA">let</span><span style="color:#24292EFF;--shiki-dark:#C5E478"> capsule</span><span style="color:#D32F2F;--shiki-dark:#C792EA"> =</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic"> PyCapsule_New</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#C5E478">    pointer</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">,                    </span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// ← C 指针</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#ECC48D">    b</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#22863A;--shiki-dark:#ECC48D">dltensor</span><span style="color:#22863A;--shiki-dark:#F78C6C">\0</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA">.</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">as_ptr</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(),     </span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// ← 名称标签</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#D6DEEB">    Some</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span><span style="color:#24292EFF;--shiki-dark:#C5E478">pycapsule_deleter</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">),    </span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// ← 清理函数</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// 3. 返回给 Python</span></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// Python 收到的是一个 PyCapsule 对象</span></span></code></pre>
+<h2 id="实际例子"><a aria-hidden="true" tabindex="-1" href="#实际例子"><span class="icon icon-link"></span></a>实际例子</h2>
+<h3 id="例子-1dlpack-张量传递"><a aria-hidden="true" tabindex="-1" href="#例子-1dlpack-张量传递"><span class="icon icon-link"></span></a>例子 1：DLPack 张量传递</h3>
+<p>这是 PyCapsule 在 DLPack 中的典型应用场景：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="python"><code><span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># 步骤 1: Boning 创建 PyCapsule</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#C792EA;--shiki-dark-font-style:italic">from</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> boning</span><span style="color:#212121;--shiki-dark:#D6DEEB">.</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">core</span><span style="color:#212121;--shiki-dark:#D6DEEB">.</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">_core </span><span style="color:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#C792EA;--shiki-dark-font-style:italic">import</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> Tensor</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">tensor </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#6F42C1;--shiki-dark:#B2CCD6"> create_boning_tensor</span><span style="color:#212121;--shiki-dark:#D6DEEB">()</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">capsule </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> tensor</span><span style="color:#212121;--shiki-dark:#D6DEEB">.</span><span style="color:#6F42C1;--shiki-dark:#B2CCD6">__dlpack__</span><span style="color:#212121;--shiki-dark:#D6DEEB">()</span></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># ↑ 返回 PyCapsule，里面装着 DLManagedTensorVersioned 的 C 指针</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># 步骤 2: 传递给 NumPy</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#C792EA;--shiki-dark-font-style:italic">import</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> numpy </span><span style="color:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#C792EA;--shiki-dark-font-style:italic">as</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> np</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">np_array </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> np</span><span style="color:#212121;--shiki-dark:#D6DEEB">.</span><span style="color:#6F42C1;--shiki-dark:#B2CCD6">from_dlpack</span><span style="color:#212121;--shiki-dark:#D6DEEB">(</span><span style="color:#212121;--shiki-dark:#82AAFF">capsule</span><span style="color:#212121;--shiki-dark:#D6DEEB">)</span></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># ↑ NumPy 内部：</span></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">#   1. 验证 capsule 名称是 "dltensor"</span></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">#   2. 打开 PyCapsule，取出 C 指针</span></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">#   3. 使用指针创建 NumPy 数组（零拷贝）</span></span></code></pre>
+<p>这个过程实现了<strong>零拷贝</strong>的数据共享：NumPy 直接使用 Boning 张量的内存，不需要复制数据。</p>
+<h3 id="例子-2文件句柄传递"><a aria-hidden="true" tabindex="-1" href="#例子-2文件句柄传递"><span class="icon icon-link"></span></a>例子 2：文件句柄传递</h3>
+<p>PyCapsule 也可以用于传递其他类型的资源：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// C 代码</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">FILE</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA">*</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> file </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic"> fopen</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#22863A;--shiki-dark:#ECC48D">data.txt</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#212121;--shiki-dark:#D6DEEB">,</span><span style="color:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="color:#22863A;--shiki-dark:#ECC48D">r</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// 包装成 PyCapsule</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">PyObject</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA">*</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> capsule </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic"> PyCapsule_New</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">    file</span><span style="color:#212121;--shiki-dark:#D6DEEB">,</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">              // C 文件指针</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#D9F5DD">    "</span><span style="color:#22863A;--shiki-dark:#ECC48D">file_handle</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#212121;--shiki-dark:#D6DEEB">,</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">     // 类型标签</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">    file_deleter</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">       // 关闭文件的函数</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">);</span></span></code></pre>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="python"><code><span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># Python 代码</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">capsule </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#6F42C1;--shiki-dark:#B2CCD6"> open_file_capsule</span><span style="color:#212121;--shiki-dark:#D6DEEB">()</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">  # 收到 PyCapsule</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># 传递给其他 C 函数</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B2CCD6">read_data</span><span style="color:#212121;--shiki-dark:#D6DEEB">(</span><span style="color:#212121;--shiki-dark:#82AAFF">capsule</span><span style="color:#212121;--shiki-dark:#D6DEEB">)</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">  # C 函数内部打开 PyCapsule，使用文件指针</span></span></code></pre>
+<h3 id="例子-3回调函数传递"><a aria-hidden="true" tabindex="-1" href="#例子-3回调函数传递"><span class="icon icon-link"></span></a>例子 3：回调函数传递</h3>
+<p>PyCapsule 还可以传递函数指针：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// C 代码</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#C792EA">void</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic"> callback</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span><span style="color:#D32F2F;--shiki-dark:#C792EA">int</span><span style="color:#24292EFF;--shiki-dark:#D7DBE0"> x</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">) { </span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">printf</span><span style="color:#6F42C1;--shiki-dark:#82AAFF">(</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#1976D2;--shiki-dark:#82AAFF">%d</span><span style="color:#22863A;--shiki-dark:#F78C6C">\n</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#212121;--shiki-dark:#82AAFF">,</span><span style="color:#6F42C1;--shiki-dark:#82AAFF"> x)</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">; }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// 包装成 PyCapsule</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">PyObject</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA">*</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> capsule </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic"> PyCapsule_New</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">    callback</span><span style="color:#212121;--shiki-dark:#D6DEEB">,</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">          // 函数指针</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#D9F5DD">    "</span><span style="color:#22863A;--shiki-dark:#ECC48D">callback_func</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#212121;--shiki-dark:#D6DEEB">,</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">   // 类型标签</span></span>
+<span class="line"><span style="color:#1976D2;--shiki-dark:#82AAFF">    NULL</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">               // 不需要清理</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">);</span></span></code></pre>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="python"><code><span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># Python 代码</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">capsule </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#6F42C1;--shiki-dark:#B2CCD6"> get_callback</span><span style="color:#212121;--shiki-dark:#D6DEEB">()</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B2CCD6">call_c_function</span><span style="color:#212121;--shiki-dark:#D6DEEB">(</span><span style="color:#212121;--shiki-dark:#82AAFF">capsule</span><span style="color:#212121;--shiki-dark:#D6DEEB">)</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">  # C 函数取出函数指针并调用</span></span></code></pre>
+<h2 id="pycapsule-vs-其他-python-对象"><a aria-hidden="true" tabindex="-1" href="#pycapsule-vs-其他-python-对象"><span class="icon icon-link"></span></a>PyCapsule vs 其他 Python 对象</h2>
+<h3 id="对比表"><a aria-hidden="true" tabindex="-1" href="#对比表"><span class="icon icon-link"></span></a>对比表</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>特性</th><th>PyCapsule</th><th>PyObject</th><th>PyBytes</th></tr></thead><tbody><tr><td><strong>内容</strong></td><td>C 指针</td><td>Python 对象</td><td>字节数据</td></tr><tr><td><strong>Python 可见</strong></td><td>❌ 只能传递</td><td>✅ 完全可见</td><td>✅ 完全可见</td></tr><tr><td><strong>C 可见</strong></td><td>✅ 可以提取指针</td><td>⚠️ 需要转换</td><td>✅ 可以获取数据</td></tr><tr><td><strong>用途</strong></td><td>传递指针</td><td>通用对象</td><td>传递数据</td></tr><tr><td><strong>内存管理</strong></td><td>手动（通过 deleter）</td><td>自动（GC）</td><td>自动（GC）</td></tr></tbody></table>
+<h3 id="实际对比"><a aria-hidden="true" tabindex="-1" href="#实际对比"><span class="icon icon-link"></span></a>实际对比</h3>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="python"><code><span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># PyBytes - Python 可以查看内容</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">data </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#D32F2F;--shiki-dark:#C792EA"> b</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#22863A;--shiki-dark:#ECC48D">hello</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#C5E478">print</span><span style="color:#212121;--shiki-dark:#D6DEEB">(</span><span style="color:#212121;--shiki-dark:#82AAFF">data</span><span style="color:#212121;--shiki-dark:#D6DEEB">)</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">  # ✅ 可以打印: b'hello'</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># PyCapsule - Python 不能查看内容</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">capsule </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> tensor</span><span style="color:#212121;--shiki-dark:#D6DEEB">.</span><span style="color:#6F42C1;--shiki-dark:#B2CCD6">__dlpack__</span><span style="color:#212121;--shiki-dark:#D6DEEB">()</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#C5E478">print</span><span style="color:#212121;--shiki-dark:#D6DEEB">(</span><span style="color:#212121;--shiki-dark:#82AAFF">capsule</span><span style="color:#212121;--shiki-dark:#D6DEEB">)</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">  # ❌ 只能看到: &#x3C;capsule object "dltensor" at 0x...></span></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># 无法直接访问里面的指针</span></span></code></pre>
+<h2 id="dlpack-中的完整流程"><a aria-hidden="true" tabindex="-1" href="#dlpack-中的完整流程"><span class="icon icon-link"></span></a>DLPack 中的完整流程</h2>
+<h3 id="创建阶段"><a aria-hidden="true" tabindex="-1" href="#创建阶段"><span class="icon icon-link"></span></a>创建阶段</h3>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="rust"><code><span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// Rust 层</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#C792EA">let</span><span style="color:#24292EFF;--shiki-dark:#C5E478"> managed</span><span style="color:#D32F2F;--shiki-dark:#C792EA"> =</span><span style="color:#6F42C1;--shiki-dark:#D6DEEB"> Box</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA">::</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">new</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span><span style="color:#6F42C1;--shiki-dark:#D6DEEB">DLManagedTensorVersioned</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> { </span><span style="color:#D32F2F;--shiki-dark:#7FDBCA">...</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> });</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#C792EA">let</span><span style="color:#24292EFF;--shiki-dark:#C5E478"> pointer</span><span style="color:#D32F2F;--shiki-dark:#C792EA"> =</span><span style="color:#6F42C1;--shiki-dark:#D6DEEB"> Box</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA">::</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">into_raw</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span><span style="color:#24292EFF;--shiki-dark:#C5E478">managed</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#C792EA">let</span><span style="color:#24292EFF;--shiki-dark:#C5E478"> capsule</span><span style="color:#D32F2F;--shiki-dark:#C792EA"> =</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic"> PyCapsule_New</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#C5E478">    pointer</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">,           </span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// ← 存储 C 指针</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#D9F5DD">    "</span><span style="color:#22863A;--shiki-dark:#ECC48D">dltensor</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">,        </span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// ← 类型标识</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#C5E478">    deleter</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">            // ← 清理函数</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">);</span></span></code></pre>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="python"><code><span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># Python 层</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">capsule </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> tensor</span><span style="color:#212121;--shiki-dark:#D6DEEB">.</span><span style="color:#6F42C1;--shiki-dark:#B2CCD6">__dlpack__</span><span style="color:#212121;--shiki-dark:#D6DEEB">()</span></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># ↑ 收到 PyCapsule 对象</span></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># Python 不知道里面是什么，但可以传递</span></span></code></pre>
+<h3 id="使用阶段"><a aria-hidden="true" tabindex="-1" href="#使用阶段"><span class="icon icon-link"></span></a>使用阶段</h3>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="python"><code><span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># Python 层</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">np_array </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> np</span><span style="color:#212121;--shiki-dark:#D6DEEB">.</span><span style="color:#6F42C1;--shiki-dark:#B2CCD6">from_dlpack</span><span style="color:#212121;--shiki-dark:#D6DEEB">(</span><span style="color:#212121;--shiki-dark:#82AAFF">capsule</span><span style="color:#212121;--shiki-dark:#D6DEEB">)</span></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># ↑ 传递给 NumPy</span></span></code></pre>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// NumPy 内部（C 代码）</span></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// 1. 验证类型</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#C792EA;--shiki-dark-font-style:italic">if</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> (</span><span style="color:#D32F2F;--shiki-dark:#C792EA">!</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">PyCapsule_IsValid</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(capsule</span><span style="color:#212121;--shiki-dark:#D6DEEB">,</span><span style="color:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="color:#22863A;--shiki-dark:#ECC48D">dltensor</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">)) {</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#C792EA;--shiki-dark-font-style:italic">    return</span><span style="color:#1976D2;--shiki-dark:#82AAFF"> NULL</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">;</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">  // 不是 DLPack capsule</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// 2. 提取指针</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#C792EA">void</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA">*</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> ptr </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic"> PyCapsule_GetPointer</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(capsule</span><span style="color:#212121;--shiki-dark:#D6DEEB">,</span><span style="color:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="color:#22863A;--shiki-dark:#ECC48D">dltensor</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// 3. 使用指针</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">DLManagedTensorVersioned</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA">*</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> tensor </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> (DLManagedTensorVersioned</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA">*</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">)ptr;</span></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// 现在可以访问 tensor->dl_tensor.data 等字段</span></span></code></pre>
+<h3 id="清理阶段"><a aria-hidden="true" tabindex="-1" href="#清理阶段"><span class="icon icon-link"></span></a>清理阶段</h3>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// 当 PyCapsule 被销毁时</span></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// Python GC 调用 deleter</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">pycapsule_deleter</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(capsule) {</span></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">    // 提取指针</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#C792EA">    void</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA">*</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> ptr </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic"> PyCapsule_GetPointer</span><span style="color:#6F42C1;--shiki-dark:#82AAFF">(capsule</span><span style="color:#212121;--shiki-dark:#82AAFF">,</span><span style="color:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="color:#22863A;--shiki-dark:#ECC48D">dltensor</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#6F42C1;--shiki-dark:#82AAFF">)</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">    // 调用实际的清理函数</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">    deleter_callback</span><span style="color:#6F42C1;--shiki-dark:#82AAFF">(ptr)</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">;</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">}</span></span></code></pre>
+<h2 id="为什么不用其他方式"><a aria-hidden="true" tabindex="-1" href="#为什么不用其他方式"><span class="icon icon-link"></span></a>为什么不用其他方式？</h2>
+<h3 id="为什么不直接用-pyobject"><a aria-hidden="true" tabindex="-1" href="#为什么不直接用-pyobject"><span class="icon icon-link"></span></a>为什么不直接用 PyObject？</h3>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="python"><code><span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># 如果直接返回 PyObject</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">tensor </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#6F42C1;--shiki-dark:#B2CCD6"> create_tensor</span><span style="color:#212121;--shiki-dark:#D6DEEB">()</span></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># 问题：NumPy 如何获取 C 指针？</span></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># Python 对象没有暴露 C 指针的接口</span></span></code></pre>
+<p>Python 对象是高级抽象，不直接暴露底层指针。即使有指针，也无法安全地传递给 C 代码。</p>
+<h3 id="为什么不序列化"><a aria-hidden="true" tabindex="-1" href="#为什么不序列化"><span class="icon icon-link"></span></a>为什么不序列化？</h3>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="python"><code><span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># 如果序列化数据</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">data </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> tensor</span><span style="color:#212121;--shiki-dark:#D6DEEB">.</span><span style="color:#6F42C1;--shiki-dark:#B2CCD6">serialize</span><span style="color:#212121;--shiki-dark:#D6DEEB">()</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">  # 转换为字节</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">np_array </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> np</span><span style="color:#212121;--shiki-dark:#D6DEEB">.</span><span style="color:#6F42C1;--shiki-dark:#B2CCD6">frombuffer</span><span style="color:#212121;--shiki-dark:#D6DEEB">(</span><span style="color:#212121;--shiki-dark:#82AAFF">data</span><span style="color:#212121;--shiki-dark:#D6DEEB">)</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">  # 问题：需要复制数据！</span></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># ❌ 失去了零拷贝的优势</span></span></code></pre>
+<p>序列化会复制数据，失去了零拷贝的优势，性能开销大。</p>
+<h3 id="pycapsule-的优势"><a aria-hidden="true" tabindex="-1" href="#pycapsule-的优势"><span class="icon icon-link"></span></a>PyCapsule 的优势</h3>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="python"><code><span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># 使用 PyCapsule</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">capsule </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> tensor</span><span style="color:#212121;--shiki-dark:#D6DEEB">.</span><span style="color:#6F42C1;--shiki-dark:#B2CCD6">__dlpack__</span><span style="color:#212121;--shiki-dark:#D6DEEB">()</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">  # 只传递指针，不复制数据</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">np_array </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> np</span><span style="color:#212121;--shiki-dark:#D6DEEB">.</span><span style="color:#6F42C1;--shiki-dark:#B2CCD6">from_dlpack</span><span style="color:#212121;--shiki-dark:#D6DEEB">(</span><span style="color:#212121;--shiki-dark:#82AAFF">capsule</span><span style="color:#212121;--shiki-dark:#D6DEEB">)</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">  # ✅ 零拷贝！</span></span></code></pre>
+<p>PyCapsule 只传递指针，不复制数据，实现了真正的零拷贝。</p>
+<h2 id="实际应用场景"><a aria-hidden="true" tabindex="-1" href="#实际应用场景"><span class="icon icon-link"></span></a>实际应用场景</h2>
+<h3 id="场景-1跨语言库互操作"><a aria-hidden="true" tabindex="-1" href="#场景-1跨语言库互操作"><span class="icon icon-link"></span></a>场景 1：跨语言库互操作</h3>
+<p>这是 DLPack 的核心应用场景：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Boning (Rust)  →  PyCapsule  →  NumPy (C)</span></span>
+<span class="line"><span>     ↓                              ↓</span></span>
+<span class="line"><span>  创建张量                      使用张量</span></span>
+<span class="line"><span>   (内存)                      (同一块内存)</span></span></code></pre>
+<p>通过 PyCapsule，不同语言实现的框架可以共享同一块内存，实现零拷贝的数据传递。</p>
+<h3 id="场景-2回调函数传递"><a aria-hidden="true" tabindex="-1" href="#场景-2回调函数传递"><span class="icon icon-link"></span></a>场景 2：回调函数传递</h3>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="python"><code><span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># Python 定义回调</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#C792EA">def</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic"> callback</span><span style="color:#24292EFF;--shiki-dark:#D9F5DD">(</span><span style="color:#FF9800;--shiki-dark:#7FDBCA">x</span><span style="color:#24292EFF;--shiki-dark:#D9F5DD">)</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">:</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#C5E478">    print</span><span style="color:#212121;--shiki-dark:#D6DEEB">(</span><span style="color:#212121;--shiki-dark:#82AAFF">x</span><span style="color:#212121;--shiki-dark:#D6DEEB">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># 包装成 PyCapsule 传给 C</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">capsule </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#6F42C1;--shiki-dark:#B2CCD6"> wrap_callback</span><span style="color:#212121;--shiki-dark:#D6DEEB">(</span><span style="color:#212121;--shiki-dark:#82AAFF">callback</span><span style="color:#212121;--shiki-dark:#D6DEEB">)</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B2CCD6">c_function</span><span style="color:#212121;--shiki-dark:#D6DEEB">(</span><span style="color:#212121;--shiki-dark:#82AAFF">capsule</span><span style="color:#212121;--shiki-dark:#D6DEEB">)</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">  # C 函数可以调用 Python 函数</span></span></code></pre>
+<h3 id="场景-3资源管理"><a aria-hidden="true" tabindex="-1" href="#场景-3资源管理"><span class="icon icon-link"></span></a>场景 3：资源管理</h3>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="python"><code><span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># 打开文件</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">file_capsule </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#6F42C1;--shiki-dark:#B2CCD6"> open_file</span><span style="color:#212121;--shiki-dark:#D6DEEB">(</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#22863A;--shiki-dark:#ECC48D">data.txt</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#212121;--shiki-dark:#D6DEEB">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># 传递给 C 函数处理</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B2CCD6">process_file</span><span style="color:#212121;--shiki-dark:#D6DEEB">(</span><span style="color:#212121;--shiki-dark:#82AAFF">file_capsule</span><span style="color:#212121;--shiki-dark:#D6DEEB">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic"># 当 capsule 被销毁时，自动关闭文件（通过 deleter）</span></span></code></pre>
+<p>PyCapsule 的 deleter 机制确保了资源的正确释放，避免了内存泄漏。</p>
+<h2 id="安全考虑"><a aria-hidden="true" tabindex="-1" href="#安全考虑"><span class="icon icon-link"></span></a>安全考虑</h2>
+<h3 id="类型验证"><a aria-hidden="true" tabindex="-1" href="#类型验证"><span class="icon icon-link"></span></a>类型验证</h3>
+<p>PyCapsule 通过名称标签进行类型验证，确保传递的是正确类型的指针：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">// 验证 capsule 类型</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#C792EA;--shiki-dark-font-style:italic">if</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> (</span><span style="color:#D32F2F;--shiki-dark:#C792EA">!</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">PyCapsule_IsValid</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(capsule</span><span style="color:#212121;--shiki-dark:#D6DEEB">,</span><span style="color:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="color:#22863A;--shiki-dark:#ECC48D">dltensor</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">)) {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">    PyErr_SetString</span><span style="color:#6F42C1;--shiki-dark:#82AAFF">(PyExc_ValueError</span><span style="color:#212121;--shiki-dark:#82AAFF">,</span><span style="color:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="color:#22863A;--shiki-dark:#ECC48D">Invalid DLPack capsule</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#6F42C1;--shiki-dark:#82AAFF">)</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">;</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#C792EA;--shiki-dark-font-style:italic">    return</span><span style="color:#1976D2;--shiki-dark:#82AAFF"> NULL</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">;</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">}</span></span></code></pre>
+<h3 id="生命周期管理"><a aria-hidden="true" tabindex="-1" href="#生命周期管理"><span class="icon icon-link"></span></a>生命周期管理</h3>
+<p>通过 deleter 函数确保资源正确释放：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="rust"><code><span class="line"><span style="color:#D32F2F;--shiki-dark:#C792EA">extern</span><span style="color:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="color:#22863A;--shiki-dark:#ECC48D">C</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#D32F2F;--shiki-dark:#C792EA"> fn</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic"> pycapsule_deleter</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span><span style="color:#24292EFF;--shiki-dark:#C5E478">capsule</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA">:</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA"> *</span><span style="color:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#C792EA;--shiki-dark-font-style:italic">mut</span><span style="color:#6F42C1;--shiki-dark:#D6DEEB"> PyObject</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">) {</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#C792EA">    let</span><span style="color:#24292EFF;--shiki-dark:#C5E478"> ptr</span><span style="color:#D32F2F;--shiki-dark:#C792EA"> =</span><span style="color:#D32F2F;--shiki-dark:#C792EA"> unsafe</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> { </span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">PyCapsule_GetPointer</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span><span style="color:#24292EFF;--shiki-dark:#C5E478">capsule</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">, </span><span style="color:#22863A;--shiki-dark:#ECC48D">b</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#22863A;--shiki-dark:#ECC48D">dltensor</span><span style="color:#22863A;--shiki-dark:#F78C6C">\0</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA">.</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">as_ptr</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">()) };</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#C792EA;--shiki-dark-font-style:italic">    if</span><span style="color:#D32F2F;--shiki-dark:#C792EA"> !</span><span style="color:#24292EFF;--shiki-dark:#C5E478">ptr</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA">.</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">is_null</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">() {</span></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">        // 调用实际的清理函数</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#C792EA">        let</span><span style="color:#24292EFF;--shiki-dark:#C5E478"> managed</span><span style="color:#D32F2F;--shiki-dark:#C792EA"> =</span><span style="color:#24292EFF;--shiki-dark:#C5E478"> ptr</span><span style="color:#D32F2F;--shiki-dark:#C792EA"> as</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA"> *</span><span style="color:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#C792EA;--shiki-dark-font-style:italic">mut</span><span style="color:#6F42C1;--shiki-dark:#D6DEEB"> DLManagedTensorVersioned</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">;</span></span>
+<span class="line"><span style="color:#D32F2F;--shiki-dark:#C792EA">        unsafe</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> {</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">            (</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA">*</span><span style="color:#24292EFF;--shiki-dark:#C5E478">managed</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">)</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA">.</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">deleter</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA">.</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">unwrap</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">()(</span><span style="color:#24292EFF;--shiki-dark:#C5E478">managed</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">);</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">        }</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">    }</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">}</span></span></code></pre>
+<h2 id="总结"><a aria-hidden="true" tabindex="-1" href="#总结"><span class="icon icon-link"></span></a>总结</h2>
+<p>PyCapsule 是：</p>
+<ol>
+<li><strong>一个”包装盒”</strong>：把 C 指针包装成 Python 对象</li>
+<li><strong>一个”桥梁”</strong>：让 Python 和 C 代码可以安全地传递指针</li>
+<li><strong>一个”标签系统”</strong>：通过名称标识内容类型</li>
+<li><strong>一个”资源管理器”</strong>：通过 deleter 自动清理资源</li>
+</ol>
+<p>在 DLPack 中，PyCapsule 让不同框架可以零拷贝地共享张量数据，这是跨框架互操作的核心机制！</p>
+<h3 id="关键点"><a aria-hidden="true" tabindex="-1" href="#关键点"><span class="icon icon-link"></span></a>关键点</h3>
+<ul>
+<li><strong>Python 代码</strong>：只能传递 PyCapsule，不能直接访问内容</li>
+<li><strong>C 代码</strong>：可以打开 PyCapsule，提取指针使用</li>
+<li><strong>类型安全</strong>：通过名称验证确保类型匹配</li>
+<li><strong>自动清理</strong>：通过 deleter 确保资源正确释放</li>
+<li><strong>零拷贝</strong>：只传递指针，不复制数据，实现高效的数据共享</li>
+</ul>
+<p>通过理解 PyCapsule，我们可以更好地理解 DLPack 协议的工作原理，以及如何在不同框架之间实现高效的张量数据共享。这对于开发深度学习框架和实现跨框架互操作至关重要。</p> </article> <hr class="my-8 border-dashed"> <div class="opacity-80 sm:hidden"><span aria-hidden="true" class="max-sm:hidden">
+|
+</span><a class="space-x-1.5 hover:opacity-75" href="https://github.com/zrr1999/sixbones.dev/edit/main/data/blog/pycapsule-dlpack.md" rel="noopener noreferrer" target="_blank"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg><span class="italic max-sm:text-sm sm:inline">建议修改</span></a></div> <ul class="mt-4 mb-8 sm:my-8"> <li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/python/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-2"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>Python</span> </a> </li><li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/c/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-3"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>C</span> </a> </li><li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/dl-pack/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-4"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>DLPack</span> </a> </li><li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/py-capsule/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-5"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>PyCapsule</span> </a> </li><li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/boning/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-6"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>Boning</span> </a> </li> </ul> <div class="flex flex-col items-center justify-between gap-6 sm:flex-row sm:items-end sm:gap-4"> <div class="flex flex-col flex-wrap items-center justify-center gap-1 sm:items-start"> <span class="italic">分享这篇文章：</span> <div class="text-center"> <a href="https://wa.me/?text=https://blog.sixbones.dev/posts/pycapsule-dlpack/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post via WhatsApp"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 21l1.65 -3.8a9 9 0 1 1 3.4 2.9l-5.05 .9" /><path d="M9 10a.5 .5 0 0 0 1 0v-1a.5 .5 0 0 0 -1 0v1a5 5 0 0 0 5 5h1a.5 .5 0 0 0 0 -1h-1a.5 .5 0 0 0 0 1" /></svg> <span class="sr-only">Share this post via WhatsApp</span> </a><a href="https://www.facebook.com/sharer.php?u=https://blog.sixbones.dev/posts/pycapsule-dlpack/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post on Facebook"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 10v4h3v7h4v-7h3l1 -4h-4v-2a1 1 0 0 1 1 -1h3v-4h-3a5 5 0 0 0 -5 5v2h-3" /></svg> <span class="sr-only">Share this post on Facebook</span> </a><a href="https://x.com/intent/post?url=https://blog.sixbones.dev/posts/pycapsule-dlpack/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post on X"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 4l11.733 16h4.267l-11.733 -16z" /><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" /></svg> <span class="sr-only">Share this post on X</span> </a><a href="https://t.me/share/url?url=https://blog.sixbones.dev/posts/pycapsule-dlpack/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post via Telegram"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 10l-4 4l6 6l4 -16l-18 7l4 2l2 6l3 -4" /></svg> <span class="sr-only">Share this post via Telegram</span> </a><a href="https://pinterest.com/pin/create/button/?url=https://blog.sixbones.dev/posts/pycapsule-dlpack/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post on Pinterest"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M8 20l4 -9" /><path d="M10.7 14c.437 1.263 1.43 2 2.55 2c2.071 0 3.75 -1.554 3.75 -4a5 5 0 1 0 -9.7 1.7" /><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /></svg> <span class="sr-only">Share this post on Pinterest</span> </a><a href="mailto:?subject=See%20this%20post&#38;body=https://blog.sixbones.dev/posts/pycapsule-dlpack/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post via email"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" /><path d="M3 7l9 6l9 -6" /></svg> <span class="sr-only">Share this post via email</span> </a> </div> </div> <button id="back-to-top" class="focus-outline py-1 whitespace-nowrap hover:opacity-75"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block rotate-90"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 6l-6 6l6 6" /></svg> <span>返回顶部</span> </button> </div> <hr class="my-6 border-dashed"> <!-- Previous/Next Post Buttons --> <div data-pagefind-ignore class="grid grid-cols-1 gap-6 sm:grid-cols-2"> <a href="/posts/openprose-case-study" class="flex w-full gap-1 hover:opacity-75"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block flex-none"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 6l-6 6l6 6" /></svg> <div> <span>上一篇</span> <div class="text-sm text-accent/85">OpenProse 案例研究：当 DSL 的执行器是大模型</div> </div> </a> <a href="/posts/eq-type-lsp" class="flex w-full justify-end gap-1 text-right hover:opacity-75 sm:col-start-2"> <div> <span>下一篇</span> <div class="text-sm text-accent/85">__eq__ 的返回类型与里氏替换原则</div> </div> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block flex-none"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M9 6l6 6l-6 6" /></svg> </a> </div> <div class="giscus"></div> <script data-astro-rerun src="https://giscus.app/client.js" data-repo="zrr1999/sixbones.dev" data-repo-id="MDEwOlJlcG9zaXRvcnkzMTY0NTU2NDg=" data-category="General" data-category-id="DIC_kwDOEty64M4Chlof" data-mapping="pathname" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="preferred_color_scheme" data-lang="zh-CN" data-loading="lazy" crossorigin="anonymous" async></script> </main> <footer class="w-full mt-auto"> <div class="max-w-3xl mx-auto px-0"> <hr class="border-border" aria-hidden="true"> </div> <div class="flex flex-col items-center justify-between py-6 sm:flex-row-reverse sm:py-4"> <div class="flex-wrap justify-center gap-1 flex"> <a href="https://github.com/zrr1999" class="group inline-block hover:text-accent p-2 hover:rotate-6 sm:p-1" title=" 六个骨头的博客 on Github"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" /></svg> <span class="sr-only"> 六个骨头的博客 on Github</span> </a><a href="mailto:zrr1999@qq.com" class="group inline-block hover:text-accent p-2 hover:rotate-6 sm:p-1" title="Send an email to 六个骨头的博客"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" /><path d="M3 7l9 6l9 -6" /></svg> <span class="sr-only">Send an email to 六个骨头的博客</span> </a> </div> <div class="my-2 flex flex-col items-center whitespace-nowrap sm:flex-row"> <span>&#169; 2024-2026 <a href="https://github.com/zrr1999">Zhan Rongrui</a></span> </div> </div> </footer>  </body></html> <script data-astro-rerun>
+  /** Create a progress indicator
+   *  at the top */
+  function createProgressBar() {
+    // Create the main container div
+    const progressContainer = document.createElement("div");
+    progressContainer.className =
+      "progress-container fixed top-0 z-10 h-1 w-full bg-background";
+
+    // Create the progress bar div
+    const progressBar = document.createElement("div");
+    progressBar.className = "progress-bar h-1 w-0 bg-accent";
+    progressBar.id = "myBar";
+
+    // Append the progress bar to the progress container
+    progressContainer.appendChild(progressBar);
+
+    // Append the progress container to the document body or any other desired parent element
+    document.body.appendChild(progressContainer);
+  }
+  createProgressBar();
+
+  /** Update the progress bar
+   *  when user scrolls */
+  function updateScrollProgress() {
+    document.addEventListener("scroll", () => {
+      const winScroll =
+        document.body.scrollTop || document.documentElement.scrollTop;
+      const height =
+        document.documentElement.scrollHeight -
+        document.documentElement.clientHeight;
+      const scrolled = (winScroll / height) * 100;
+      if (document) {
+        const myBar = document.getElementById("myBar");
+        if (myBar) {
+          myBar.style.width = scrolled + "%";
+        }
+      }
+    });
+  }
+  updateScrollProgress();
+
+  /** Attaches links to headings in the document,
+   *  allowing sharing of sections easily */
+  function addHeadingLinks() {
+    const headings = Array.from(
+      document.querySelectorAll("h2, h3, h4, h5, h6")
+    );
+    for (const heading of headings) {
+      heading.classList.add("group");
+      const link = document.createElement("a");
+      link.className =
+        "heading-link ml-2 opacity-0 group-hover:opacity-100 focus:opacity-100";
+      link.href = "#" + heading.id;
+
+      const span = document.createElement("span");
+      span.ariaHidden = "true";
+      span.innerText = "#";
+      link.appendChild(span);
+      heading.appendChild(link);
+    }
+  }
+  addHeadingLinks();
+
+  /** Attaches copy buttons to code blocks in the document,
+   * allowing users to copy code easily. */
+  function attachCopyButtons() {
+    const copyButtonLabel = "Copy";
+    const codeBlocks = Array.from(
+      document.querySelectorAll("pre:not(.mermaid)")
+    );
+
+    for (const codeBlock of codeBlocks) {
+      const wrapper = document.createElement("div");
+      wrapper.style.position = "relative";
+
+      const copyButton = document.createElement("button");
+      copyButton.className =
+        "copy-code absolute right-3 -top-3 rounded bg-muted px-2 py-1 text-xs leading-4 text-foreground font-medium";
+      copyButton.innerHTML = copyButtonLabel;
+      codeBlock.setAttribute("tabindex", "0");
+      codeBlock.appendChild(copyButton);
+
+      // wrap codebock with relative parent element
+      codeBlock?.parentNode?.insertBefore(wrapper, codeBlock);
+      wrapper.appendChild(codeBlock);
+
+      copyButton.addEventListener("click", async () => {
+        await copyCode(codeBlock, copyButton);
+      });
+    }
+
+    async function copyCode(block, button) {
+      const code = block.querySelector("code");
+      const text = code?.innerText;
+
+      await navigator.clipboard.writeText(text ?? "");
+
+      // visual feedback that task is completed
+      button.innerText = "Copied";
+
+      setTimeout(() => {
+        button.innerText = copyButtonLabel;
+      }, 700);
+    }
+  }
+  attachCopyButtons();
+
+  /** Scrolls the document to the top when
+   * the "Back to Top" button is clicked. */
+  function backToTop() {
+    document.querySelector("#back-to-top")?.addEventListener("click", () => {
+      document.body.scrollTop = 0; // For Safari
+      document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+    });
+  }
+  backToTop();
+
+  /* Go to page start after page swap */
+  document.addEventListener("astro:after-swap", () =>
+    window.scrollTo({ left: 0, top: 0, behavior: "instant" })
+  );
+</script>

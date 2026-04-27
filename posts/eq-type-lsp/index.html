@@ -1,0 +1,521 @@
+<!DOCTYPE html><html lang="cn" class="scroll-smooth"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="canonical" href="https://blog.sixbones.dev/posts/eq-type-lsp/"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/katex@0.15.1/dist/katex.css" integrity="sha384-WsHMgfkABRyG494OmuiNmkAOk8nhO1qE+Y6wns6v+EoNoTNxrWxYpl5ZYWFOLPCM" crossorigin="anonymous"><meta name="generator" content="Astro v6.1.9"><!-- General Meta Tags --><title>__eq__ 的返回类型与里氏替换原则 | 六个骨头的博客</title><meta name="title" content="__eq__ 的返回类型与里氏替换原则 | 六个骨头的博客"><meta name="description" content="讨论 object.__eq__ 返回 bool 与里氏替换原则的冲突、返回非 bool 的特定情形（如 NumPy、array-api 规范下的数组），以及 typeshed 与各社区的实践取舍"><meta name="author" content="六个骨头"><link rel="sitemap" href="/sitemap-index.xml"><!-- Article Published/Modified time --><meta property="article:published_time" content="2026-01-24T00:00:00.000Z"><meta property="article:modified_time" content="2026-01-24T00:00:00.000Z"><!-- Twitter --><meta property="twitter:card" content="summary_large_image"><meta property="twitter:url" content="https://blog.sixbones.dev/posts/eq-type-lsp/"><meta property="twitter:title" content="__eq__ 的返回类型与里氏替换原则 | 六个骨头的博客"><meta property="twitter:description" content="讨论 object.__eq__ 返回 bool 与里氏替换原则的冲突、返回非 bool 的特定情形（如 NumPy、array-api 规范下的数组），以及 typeshed 与各社区的实践取舍"><meta property="twitter:image" content="https://blog.sixbones.dev/posts/eq-type-lsp/index.png"><!-- Google JSON-LD Structured data --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"__eq__ 的返回类型与里氏替换原则 | 六个骨头的博客","image":"https://blog.sixbones.dev/posts/eq-type-lsp/index.png","datePublished":"2026-01-24T00:00:00.000Z","dateModified":"2026-01-24T00:00:00.000Z","author":[{"@type":"Person","name":"六个骨头","url":"https://blog.sixbones.dev/"}]}</script><!-- Google Font --><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet"><meta name="theme-color" content=""><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.XKloMPd3.js"></script><script src="/toggle-theme.js"></script><link rel="stylesheet" href="/_astro/Footer-DPUJBJz0.css">
+<style>@keyframes astroFadeInOut{0%{opacity:1}to{opacity:0}}@keyframes astroFadeIn{0%{opacity:0;mix-blend-mode:plus-lighter}to{opacity:1;mix-blend-mode:plus-lighter}}@keyframes astroFadeOut{0%{opacity:1;mix-blend-mode:plus-lighter}to{opacity:0;mix-blend-mode:plus-lighter}}@keyframes astroSlideFromRight{0%{transform:translate(100%)}}@keyframes astroSlideFromLeft{0%{transform:translate(-100%)}}@keyframes astroSlideToRight{to{transform:translate(100%)}}@keyframes astroSlideToLeft{to{transform:translate(-100%)}}@media (prefers-reduced-motion){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*),[data-astro-transition-scope]{animation:none!important}}
+</style><script type="module" src="/_astro/page.CGluN7T_.js"></script><style>[data-astro-transition-scope="astro-fam6wyqg-1"] { view-transition-name: eq-\7684\8FD4\56DE\7C7B\578B\4E0E\91CC\6C0F\66FF\6362\539F\5219; }@layer astro { ::view-transition-old(eq-\7684\8FD4\56DE\7C7B\578B\4E0E\91CC\6C0F\66FF\6362\539F\5219) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(eq-\7684\8FD4\56DE\7C7B\578B\4E0E\91CC\6C0F\66FF\6362\539F\5219) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(eq-\7684\8FD4\56DE\7C7B\578B\4E0E\91CC\6C0F\66FF\6362\539F\5219) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(eq-\7684\8FD4\56DE\7C7B\578B\4E0E\91CC\6C0F\66FF\6362\539F\5219) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-fam6wyqg-1"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-fam6wyqg-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-fam6wyqg-1"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-fam6wyqg-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-fam6wyqg-1"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-fam6wyqg-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-fam6wyqg-1"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-fam6wyqg-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-2"] { view-transition-name: python; }@layer astro { ::view-transition-old(python) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(python) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(python) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(python) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-3"] { view-transition-name: \7C7B\578B\7CFB\7EDF; }@layer astro { ::view-transition-old(\7C7B\578B\7CFB\7EDF) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(\7C7B\578B\7CFB\7EDF) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(\7C7B\578B\7CFB\7EDF) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(\7C7B\578B\7CFB\7EDF) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-4"] { view-transition-name: \91CC\6C0F\66FF\6362\539F\5219; }@layer astro { ::view-transition-old(\91CC\6C0F\66FF\6362\539F\5219) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(\91CC\6C0F\66FF\6362\539F\5219) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(\91CC\6C0F\66FF\6362\539F\5219) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(\91CC\6C0F\66FF\6362\539F\5219) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-4"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-4"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-4"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-4"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-4"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-4"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-4"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-4"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-5"] { view-transition-name: array-api; }@layer astro { ::view-transition-old(array-api) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(array-api) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(array-api) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(array-api) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-5"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-5"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-5"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-5"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-5"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-5"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-5"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-5"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-6"] { view-transition-name: num-py; }@layer astro { ::view-transition-old(num-py) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(num-py) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(num-py) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(num-py) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-6"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-6"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-6"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-6"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-6"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-6"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-6"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-6"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-7"] { view-transition-name: typeshed; }@layer astro { ::view-transition-old(typeshed) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(typeshed) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(typeshed) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(typeshed) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-7"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-7"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-7"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-7"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-7"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-7"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-7"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-7"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style></head> <body>  <header> <a id="skip-to-content" href="#main-content" class="absolute -top-full left-16 z-50 bg-background px-3 py-2 text-accent backdrop-blur-lg transition-all focus:top-4">
+Skip to content
+</a> <div id="nav-container" class="mx-auto flex max-w-3xl flex-col items-center justify-between sm:flex-row"> <div id="top-nav-wrap" class="relative flex w-full items-baseline justify-between bg-background p-4 sm:items-center sm:py-6"> <a href="/" class="absolute py-1 text-2xl leading-7 font-semibold whitespace-nowrap sm:static"> 首页 </a> <nav id="nav-menu" class="flex w-full flex-col items-center sm:ml-2 sm:flex-row sm:justify-end sm:space-x-4 sm:py-0"> <button id="menu-btn" class="focus-outline self-end p-2 sm:hidden" aria-label="Open Menu" aria-expanded="false" aria-controls="menu-items"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden" id="close-icon"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-menu-deep" id="menu-icon"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 6h16" /><path d="M7 12h13" /><path d="M10 18h10" /></svg> </button> <ul id="menu-items" class="mt-4 grid w-44 grid-cols-2 place-content-center gap-2 [&#38;>li>a]:block [&#38;>li>a]:px-4 [&#38;>li>a]:py-3 [&#38;>li>a]:text-center [&#38;>li>a]:font-medium [&#38;>li>a]:hover:text-accent sm:[&#38;>li>a]:px-2 sm:[&#38;>li>a]:py-1 hidden sm:mt-0 sm:ml-0 sm:flex sm:w-auto sm:gap-x-5 sm:gap-y-0"> <li class="col-span-2"> <a href="/posts" class="active-nav">
+文章
+</a> </li> <li class="col-span-2"> <a href="/tags">
+标签
+</a> </li> <li class="col-span-2"> <a href="/archives" class="group inline-block hover:text-accent focus-outline flex justify-center p-3 sm:p-1" aria-label="archives" title="Archives"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden sm:inline-block"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 4m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z" /><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" /><path d="M10 12l4 0" /></svg> <span class="sm:sr-only">Archives</span> </a> </li> <li class="col-span-1 flex items-center justify-center"> <a href="/search" class="group inline-block hover:text-accent focus-outline flex p-3 sm:p-1" aria-label="search" title="Search"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-search"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" /><path d="M21 21l-6 -6" /></svg> <span class="sr-only">Search</span> </a> </li> <li class="col-span-1 flex items-center justify-center"> <button id="theme-btn" class="focus-outline relative size-12 p-4 sm:size-8 hover:[&>svg]:stroke-accent" title="Toggles light & dark" aria-label="auto" aria-live="polite"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute top-[50%] left-[50%] -translate-[50%] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" /></svg> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute top-[50%] left-[50%] -translate-[50%] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M14.828 14.828a4 4 0 1 0 -5.656 -5.656a4 4 0 0 0 5.656 5.656z" /><path d="M6.343 17.657l-1.414 1.414" /><path d="M6.343 6.343l-1.414 -1.414" /><path d="M17.657 6.343l1.414 -1.414" /><path d="M17.657 17.657l1.414 1.414" /><path d="M4 12h-2" /><path d="M12 4v-2" /><path d="M20 12h2" /><path d="M12 20v2" /></svg> </button> </li> </ul> </nav> </div> </div> <div class="max-w-3xl mx-auto px-4"> <hr class="border-border" aria-hidden="true"> </div> </header> <script type="module">function e(){let e=document.querySelector(`#menu-btn`),t=document.querySelector(`#menu-items`),n=document.querySelector(`#menu-icon`),r=document.querySelector(`#close-icon`);!e||!t||!n||!r||e.addEventListener(`click`,()=>{let i=e.getAttribute(`aria-expanded`)===`true`;e.setAttribute(`aria-expanded`,i?`false`:`true`),e.setAttribute(`aria-label`,i?`Open Menu`:`Close Menu`),t.classList.toggle(`hidden`),n.classList.toggle(`hidden`),r.classList.toggle(`hidden`)})}e(),document.addEventListener(`astro:after-swap`,e);</script> <div class="mx-auto flex w-full max-w-3xl items-center justify-start px-2"><a id="back-button" href="/" class="group inline-block hover:text-accent focus-outline mt-8 mb-2 flex hover:text-foreground/75"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 6l-6 6l6 6" /></svg><span>返回</span></a></div><script type="module">function e(){let e=document.querySelector(`#back-button`),t=sessionStorage.getItem(`backUrl`);t&&e&&(e.href=t)}document.addEventListener(`astro:page-load`,e),e();</script> <main id="main-content" class="mx-auto w-full max-w-3xl px-4 pb-12" data-pagefind-body> <h1 class="inline-block text-2xl font-bold text-accent sm:text-3xl" data-astro-transition-scope="astro-fam6wyqg-1"> __eq__ 的返回类型与里氏替换原则 </h1> <div class="flex items-center gap-4"> <div class="flex items-end space-x-2 opacity-80 my-2"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 min-w-[1.375rem]"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" /><path d="M16 3v4" /><path d="M8 3v4" /><path d="M4 11h16" /><path d="M7 14h.013" /><path d="M10.01 14h.005" /><path d="M13.01 14h.005" /><path d="M16.015 14h.005" /><path d="M13.015 17h.005" /><path d="M7.01 17h.005" /><path d="M10.01 17h.005" /></svg> <span class="sr-only">发布于</span> <span class="text-sm italic sm:text-base"> <time datetime="2026-01-24T00:00:00.000Z">2026年1月24日</time> </span> </div> <div class="opacity-80 max-sm:hidden"><span aria-hidden="true" class="max-sm:hidden">
+|
+</span><a class="space-x-1.5 hover:opacity-75" href="https://github.com/zrr1999/sixbones.dev/edit/main/data/blog/eq-type-lsp.md" rel="noopener noreferrer" target="_blank"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg><span class="italic max-sm:text-sm sm:inline">建议修改</span></a></div> </div> <article id="article" class="mx-auto prose mt-8 max-w-3xl"> <p>在 Python 的静态类型生态里，<code>object.__eq__</code> 被 typeshed 和 CPython 文档标成 <code>-> bool</code>。不涉及数组库时，这通常没问题；但在<strong>特定情况下</strong>会暴露矛盾：一旦涉及 NumPy 或符合 <a href="https://data-apis.org/array-api/latest/API_specification/generated/array_api.array.__eq__.html">array-api 规范</a> 的数组类型，<code>__eq__</code> 实际返回的是<strong>布尔数组</strong>。若按<strong>里氏替换原则</strong>（LSP）严格理解，子类返回 <code>ndarray[bool]</code> 就是在违背基类契约；若把 <code>object.__eq__</code> 视为 <code>-> Any</code>，类型系统对 <code>==</code> 的推理能力又会大大削弱。</p>
+<p>本文结合 <a href="https://discuss.python.org/t/make-type-hints-for-eq-of-primitives-less-strict/34240/10">Discuss 上关于 <code>__eq__</code> 类型放宽的讨论</a>、<a href="https://github.com/python/typeshed/issues/8217">typeshed #8217</a> 与 <a href="https://github.com/python/typeshed/issues/3685">#3685</a>、<a href="https://github.com/numpy/numpy/issues/17368">NumPy #17368</a> / <a href="https://github.com/numpy/numpy/pull/17778">#17778</a> 以及 <a href="https://github.com/data-apis/array-api/issues/229">array-api #229</a> 的讨论，梳理 <code>__eq__</code> 返回类型与里氏替换原则的冲突从何而来、为何难解，以及各方的取舍。</p>
+<h2 id="cpython-的-equality-运行时机制"><a aria-hidden="true" tabindex="-1" href="#cpython-的-equality-运行时机制"><span class="icon icon-link"></span></a>CPython 的 equality 运行时机制</h2>
+<p><code>==</code> 在 CPython 里的行为可以概括为：</p>
+<ol>
+<li>先调<strong>左操作数</strong>的 <code>__eq__(self, other)</code>；</li>
+<li>若不存在或返回 <code>NotImplemented</code>，再调<strong>右操作数</strong>的 <code>__eq__(other, self)</code>；</li>
+<li>若仍不存在或返回 <code>NotImplemented</code>，则退化成<strong>对象同一性比较</strong>（<code>id(a) == id(b)</code>）。</li>
+</ol>
+<p>因此，<code>object</code> 在运行时<strong>并没有</strong>一个「永远返回 <code>bool</code>」的 <code>__eq__</code> 实现；文档里建议自定义类让 <code>__eq__</code> 返回 <code>bool</code> 或 <code>NotImplemented</code>，但语言本身并不强制。一旦某个类（比如 NumPy 的 <code>ndarray</code>）让 <code>__eq__</code> 返回数组，<code>a == b</code> 在运行时的类型就可以是 <code>ndarray</code>，而不是 <code>bool</code>。</p>
+<p>换句话说：<strong>运行时的 equality 协议是「可扩展、可覆盖」的，类型系统若想同时兼顾里氏替换原则、文档约定和返回非 bool 的这类特例，就会撞墙。</strong></p>
+<h2 id="typeshed-与里氏替换原则object__eq__---bool-的含义"><a aria-hidden="true" tabindex="-1" href="#typeshed-与里氏替换原则object__eq__---bool-的含义"><span class="icon icon-link"></span></a>typeshed 与里氏替换原则：<code>object.__eq__ -> bool</code> 的含义</h2>
+<p>在 <a href="https://github.com/python/typeshed">typeshed</a> 和 stdlib 的 <code>builtins.pyi</code> 里，<code>object</code> 和常见内建类型被标成：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="text"><code><span class="line"><span>def __eq__(self, __x: object) -> bool: ...</span></span></code></pre>
+<p>若按里氏替换原则理解：</p>
+<ul>
+<li>子类重写 <code>__eq__</code> 时，<strong>返回类型应当是 <code>bool</code> 的子类型</strong>（在常见类型系统里就等于 <code>bool</code>）；</li>
+<li>因此，任何声明 <code>__eq__ -> ndarray[bool]</code> 或 <code>-> Array</code> 的类，在类型论意义上都是在<strong>违背里氏替换原则</strong>。</li>
+</ul>
+<p><a href="https://github.com/python/typeshed/issues/8217">typeshed #8217</a> 里举了一个很好的例子：自定义 <code>Matrix</code> 的 <code>__eq__</code> 返回 <code>Matrix[bool]</code>。当写 <code>float == matrix</code> 时：</p>
+<ul>
+<li><strong>静态上</strong>：<code>float.__eq__(self, __x: object) -> bool</code> 的 <code>object</code> 可以接受 <code>Matrix</code>，类型检查器推断 <code>float == matrix</code> 为 <code>bool</code>；</li>
+<li><strong>运行时</strong>：<code>float.__eq__</code> 对 <code>Matrix</code> 返回 <code>NotImplemented</code>，解释器会去调 <code>Matrix.__eq__(float)</code>，得到 <code>Matrix[bool]</code>。</li>
+</ul>
+<p>于是出现了<strong>静态类型与运行时类型不一致</strong>，根源正是：primitives 的 stub 把 <code>__eq__</code> 标成「接受任意 <code>object</code>、返回 <code>bool</code>」，而实际对「无法处理」的类型会返回 <code>NotImplemented</code>，把皮球踢给右边。</p>
+<p>在 <a href="https://github.com/python/typeshed/issues/3685">typeshed #3685</a> 中曾有人提议：将 <code>object.__eq__</code>（以及其他比较方法）的返回类型改为 <code>Any</code>，这样「子类可把返回类型重写为任意类型」，并指出「<code>__eq__</code> 不返回 bool 非常常见，尤其是 NumPy 数组的逐元素比较」。该提议未获采纳，typeshed 仍维持 <code>-> bool</code>。</p>
+<p>Discuss 上则有人提议：让 <code>object.__eq__</code> 标成 <code>-> NotImplemented</code>，并为 <code>float</code>、<code>complex</code> 等写更窄的签名（例如 <code>float.__eq__(self, other: int | float) -> bool</code>），以更忠实于 CPython 的 <code>float_richcompare</code> 等实现。这样做的代价是：几乎所有重写 <code>__eq__</code> 的类都会和 <code>object</code> 的签名「不兼容」，需要 <code># type: ignore</code>，等于把矛盾转嫁到用户代码。typeshed 维护者最终没有采纳，<strong>继续沿用 <code>-> bool</code></strong>，相当于在类型层面做了一次「善意谎言」：假设绝大多数 <code>__eq__</code> 都会返回 <code>bool</code>。</p>
+<h2 id="返回非-bool-的-__eq__numpy-与-array-api-规范"><a aria-hidden="true" tabindex="-1" href="#返回非-bool-的-__eq__numpy-与-array-api-规范"><span class="icon icon-link"></span></a>返回非 bool 的 <code>__eq__</code>：NumPy 与 array-api 规范</h2>
+<p>文档和 typeshed 的「<code>__eq__</code> 返回 <code>bool</code>」并非 runtime 唯一现实。典型例子是 NumPy 与 <a href="https://data-apis.org/array-api/latest/API_specification/generated/array_api.array.__eq__.html">array-api 规范</a>（array-api 是规范，NumPy 等库是实现方）。规范中定义：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="text"><code><span class="line"><span>array.__eq__(other: int|float|complex|bool|array, /) -> array</span></span></code></pre>
+<p>返回的是<strong>元素级布尔结果的数组</strong>（dtype 为 <code>bool</code>），而不是标量 <code>bool</code>，以便支持向量化、加速器库和与 <code>equal()</code> 等函数的语义对齐。NumPy 的 <code>ndarray</code> 以及遵守 array-api 规范的实现都遵循这一点：<code>arr == 3</code> 的类型是 <code>ndarray[bool]</code>，不是 <code>bool</code>。因此，<strong>在类型层面</strong>，这些类的 <code>__eq__</code> 若写清楚，就应当是 <code>-> Self</code> 或 <code>-> NDArray[bool]</code> 一类的数组类型，与 <code>object.__eq__ -> bool</code> 在里氏替换原则下直接冲突。</p>
+<h2 id="两种应对方式不标-vs--type-ignoreoverride"><a aria-hidden="true" tabindex="-1" href="#两种应对方式不标-vs--type-ignoreoverride"><span class="icon icon-link"></span></a>两种应对方式：不标 vs <code># type: ignore[override]</code></h2>
+<p>在 <a href="https://github.com/numpy/numpy/issues/17368">NumPy #17368</a> 中，社区把 <code>ndarray</code> / <code>generic</code> 的类型标注拆成多步。<strong>早期的</strong> <a href="https://github.com/numpy/numpy/pull/17778">PR #17778</a> 做比较运算的注解时，作者 <a href="https://github.com/numpy/numpy/pull/17778">BvB93</a> 曾写明：</p>
+<blockquote>
+<p>The equivalency operators (<strong><code>__eq__</code></strong> and <strong><code>__ne__</code></strong>) were deliberately <strong>excluded</strong> as it is currently <strong>impossible</strong> to properly type them due to the existence of <code>object.__eq__</code>.</p>
+</blockquote>
+<p>也就是说：<code>__eq__</code>、<code>__ne__</code> 一旦标成 <code>-> ndarray[bool]</code>，就会和 <code>object.__eq__ -> bool</code> 形成 override 不兼容，类型检查器会报错；当时 NumPy 选择了<strong>不标</strong>。<strong>此后</strong>类型 stubs 持续演进，NumPy 现已对 <code>__eq__</code> / <code>__ne__</code> 提供标注，通常需配合 <code># type: ignore[override]</code> 等方式以绕过与 <code>object</code> 的 override 冲突，思路与 array-api #229 一致。</p>
+<p><a href="https://github.com/data-apis/array-api/issues/229">array-api #229</a> 在讨论可 vendoring 的数组 Protocol 时，对 <code>__eq__</code> 和 <code>__ne__</code> <strong>显式写出</strong>了 <code>other: Union[bool, int, float, A]</code> 与 <code>-> A</code>，并在两处都加上 <code># type: ignore[override]</code>，注释理由为：<code>object.__eq__</code> 接受任意 <code>object</code>、返回 <code>bool</code>，而 Protocol 需要收紧参数类型并让返回类型为数组 <code>A</code>，因此必须 override 且只能用 <code>type: ignore</code> 压制与基类签名的冲突。这可以视为在类型上如实刻画数组的 <code>__eq__</code>，同时承认对里氏替换原则的违背。</p>
+<h2 id="三种类型标注的取舍"><a aria-hidden="true" tabindex="-1" href="#三种类型标注的取舍"><span class="icon icon-link"></span></a>三种类型标注的取舍</h2>
+<p>可以把 <code>object.__eq__</code> 的标注粗分为三种路线：</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>路线</th><th>做法</th><th>对里氏替换原则</th><th>对 <code>==</code> 的静态推理</th><th>对返回非 bool 的子类</th></tr></thead><tbody><tr><td><strong>A. 保持 <code>-> bool</code></strong></td><td>维持 typeshed 现状</td><td>与数组等冲突，形式上违背里氏替换原则</td><td>最好：<code>x == y</code> 可视为 <code>bool</code></td><td>只能不标或 <code># type: ignore</code></td></tr><tr><td><strong>B. 改为 <code>-> Any</code></strong></td><td>基类返回 <code>Any</code></td><td>子类可返回任意类型，override 合法</td><td>很差：<code>x == y</code> 失去具体类型</td><td>可标 <code>-> NDArray[bool]</code> 等</td></tr><tr><td><strong>C. 特例化</strong></td><td><code>object</code> 仍 <code>-> bool</code>，子类单独标并接受违背里氏替换原则</td><td>对子类显式违背里氏替换原则</td><td>在已知类型上较好；<code>object</code> 上仍 <code>bool</code></td><td>需 <code># type: ignore[override]</code> 或 checker 特判</td></tr></tbody></table>
+<ul>
+<li><strong>A</strong>：typeshed 和大多数类型检查器目前的实际选择；最大化「普通代码里 <code>==</code> 为 <code>bool</code>」的假设，代价是返回数组的 <code>__eq__</code> 无法诚实地标出来（早年 NumPy 的不标、以及现今 NumPy、array-api #229 的 <code># type: ignore[override]</code> 都落在此格局下）。</li>
+<li><strong>B</strong>：理论上最「老实」——既然有的子类真的会返回非 bool，把基类标成 <code>Any</code> 可以避免 override 错误；但 <code>Any</code> 会传染，<code>obj == x</code> 整体变成 <code>Any</code>，条件分支、重载解析都会变差，工程上牺牲太大。</li>
+<li><strong>C</strong>：array-api #229 的 Protocol 即为一例：在类型上写出数组的 <code>__eq__</code> 签名，用 <code># type: ignore[override]</code> 显式接受对里氏替换原则的违背。</li>
+</ul>
+<h2 id="object__eq__---any-的问题"><a aria-hidden="true" tabindex="-1" href="#object__eq__---any-的问题"><span class="icon icon-link"></span></a><code>object.__eq__ -> Any</code> 的问题</h2>
+<p>若采用 B，把 <code>object.__eq__</code> 视为 <code>-> Any</code>：</p>
+<ol>
+<li>
+<p><strong>丧失对 <code>==</code> 的静态约束</strong>
+对类型为 <code>object</code> 的变量，<code>x == y</code> 只能是 <code>Any</code>，无法在 <code>if x == y:</code> 等分支中利用「结果为 bool」做窄化或优化。</p>
+</li>
+<li>
+<p><strong>掩盖错误的 <code>__eq__</code> 实现</strong>
+当前 <code>-> bool</code> 至少能在子类写出 <code>-> int</code>、<code>-> list</code> 时给出不兼容提示；改成 <code>-> Any</code> 后，任何返回类型都「合法」，类型检查器无法再帮你抓这类错误。</p>
+</li>
+<li>
+<p><strong>与文档和教学不一致</strong>
+官方教程和 PEP 都鼓励 <code>__eq__</code> 返回 <code>bool</code> 或 <code>NotImplemented</code>；类型系统若退到 <code>Any</code>，就相当于承认「我们放弃用类型表达这份契约」，对新手和规范遵守者都不友好。</p>
+</li>
+<li>
+<p><strong>不解决 primitives 的 <code>NotImplemented</code> 建模问题</strong>
+<a href="https://discuss.python.org/t/make-type-hints-for-eq-of-primitives-less-strict/34240/10">Discuss 的讨论</a> 更关注的是：<code>float.__eq__(str)</code> 等会在运行时返回 <code>NotImplemented</code>，若把 <code>other</code> 标成 <code>object</code>，就无法在类型上区分「会返回 bool」和「会返回 NotImplemented」的情况。把 <code>object.__eq__</code> 改成 <code>Any</code> 对 primitives 的精确建模没有帮助，只是把不精确往上挪了一层。</p>
+</li>
+</ol>
+<h2 id="结论"><a aria-hidden="true" tabindex="-1" href="#结论"><span class="icon icon-link"></span></a>结论</h2>
+<ul>
+<li>
+<p><strong>严格的里氏替换原则与 Python 的现实生态无法同时满足</strong>：
+CPython 的 equality 协议允许 <code>__eq__</code> 返回非 bool，NumPy、符合 array-api 规范的数组类型等又正式把 <code>__eq__</code> 定义为返回数组，这与「<code>object.__eq__</code> 返回 <code>bool</code>」的抽象在类型论上直接冲突。</p>
+</li>
+<li>
+<p><strong><code>object.__eq__ -> bool</code></strong>：
+是 typeshed 和主流类型检查器的<strong>工程折中</strong>：牺牲与返回数组之类型的里氏替换原则一致性、也牺牲对「primitives 何时返回 <code>NotImplemented</code>」的精确描述，以保留对绝大多数业务代码中 <code>==</code> 结果为 <code>bool</code> 的推理能力。</p>
+</li>
+<li>
+<p><strong><code>object.__eq__ -> Any</code></strong>（如 typeshed #3685 所提议）：
+在 override 层面更宽松，理论上可让 NumPy、符合 array-api 规范的 <code>__eq__</code> 等合法地标成 <code>-> NDArray[bool]</code>，但会严重削弱对 <code>==</code> 的通用静态检查，并放大「错误 <code>__eq__</code> 实现」漏网的可能，<strong>工程上得不偿失</strong>，故未被采纳。</p>
+</li>
+<li>
+<p><strong>实践中的折中</strong>：
+<strong>早期</strong> NumPy 在 <a href="https://github.com/numpy/numpy/pull/17778">PR #17778</a> 中曾刻意不标注 <code>__eq__</code> / <code>__ne__</code>；<strong>现在</strong> NumPy 与 array-api <a href="https://github.com/data-apis/array-api/issues/229">#229</a> 的 Protocol 一样，已对 <code>__eq__</code>/<code>__ne__</code> 显式写出数组签名并加上 <code># type: ignore[override]</code>。二者都承认：在现有 <code>object.__eq__</code> 设计下，<strong>无法既符合里氏替换原则又正确刻画返回非 bool 的 <code>__eq__</code></strong>，只能用 <code>type: ignore</code> 局部妥协。</p>
+</li>
+</ul>
+<p>长远来看，若希望返回数组的 <code>__eq__</code> 在类型系统中不被当成异类，要么需要类型系统对 <code>__eq__</code> 做<strong>特殊重载规则</strong>（例如对 <code>NDArray</code> 的 <code>==</code> 单独推断为 <code>NDArray[bool]</code>），要么需要在 PEP / typeshed 层面对「可返回非 bool 的 <code>__eq__</code>」给出显式例外说明，把「违背里氏替换原则」从隐式变成显式约定。在此之前，<strong><code>object.__eq__ -> bool</code> 加上「不标」或 <code># type: ignore[override]</code>，是各方在当下最务实的妥协。</strong></p>
+<h2 id="参考资料"><a aria-hidden="true" tabindex="-1" href="#参考资料"><span class="icon icon-link"></span></a>参考资料</h2>
+<ul>
+<li><a href="https://discuss.python.org/t/make-type-hints-for-eq-of-primitives-less-strict/34240/10">Make type hints for <code>__eq__</code> of primitives less strict — Python Discuss</a></li>
+<li><a href="https://github.com/python/typeshed/issues/8217"><code>__eq__</code>’s type hint for primitives accept <code>object</code> while in many cases it returns <code>NotImplemented</code> — typeshed #8217</a></li>
+<li><a href="https://github.com/python/typeshed/issues/3685">object.__eq__ and other comparisons should have return type Any — typeshed #3685</a></li>
+<li><a href="https://github.com/numpy/numpy/issues/17368">ENH: Add annotations to <code>ndarray</code> and <code>generic</code> — NumPy #17368</a></li>
+<li><a href="https://github.com/numpy/numpy/pull/17778">ENH: Add annotations for comparison operations — NumPy #17778</a>（早期曾排除 <code>__eq__</code>/<code>__ne__</code>，后 NumPy 已补上标注）</li>
+<li><a href="https://github.com/data-apis/array-api/issues/229">Protocol for array objects — array-api #229</a></li>
+<li><a href="https://data-apis.org/array-api/latest/API_specification/generated/array_api.array.__eq__.html">array.__eq__ — Array API Standard</a></li>
+</ul> </article> <hr class="my-8 border-dashed"> <div class="opacity-80 sm:hidden"><span aria-hidden="true" class="max-sm:hidden">
+|
+</span><a class="space-x-1.5 hover:opacity-75" href="https://github.com/zrr1999/sixbones.dev/edit/main/data/blog/eq-type-lsp.md" rel="noopener noreferrer" target="_blank"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg><span class="italic max-sm:text-sm sm:inline">建议修改</span></a></div> <ul class="mt-4 mb-8 sm:my-8"> <li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/python/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-2"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>Python</span> </a> </li><li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/类型系统/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-3"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>类型系统</span> </a> </li><li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/里氏替换原则/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-4"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>里氏替换原则</span> </a> </li><li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/array-api/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-5"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>array-api</span> </a> </li><li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/num-py/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-6"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>NumPy</span> </a> </li><li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/typeshed/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-7"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>typeshed</span> </a> </li> </ul> <div class="flex flex-col items-center justify-between gap-6 sm:flex-row sm:items-end sm:gap-4"> <div class="flex flex-col flex-wrap items-center justify-center gap-1 sm:items-start"> <span class="italic">分享这篇文章：</span> <div class="text-center"> <a href="https://wa.me/?text=https://blog.sixbones.dev/posts/eq-type-lsp/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post via WhatsApp"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 21l1.65 -3.8a9 9 0 1 1 3.4 2.9l-5.05 .9" /><path d="M9 10a.5 .5 0 0 0 1 0v-1a.5 .5 0 0 0 -1 0v1a5 5 0 0 0 5 5h1a.5 .5 0 0 0 0 -1h-1a.5 .5 0 0 0 0 1" /></svg> <span class="sr-only">Share this post via WhatsApp</span> </a><a href="https://www.facebook.com/sharer.php?u=https://blog.sixbones.dev/posts/eq-type-lsp/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post on Facebook"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 10v4h3v7h4v-7h3l1 -4h-4v-2a1 1 0 0 1 1 -1h3v-4h-3a5 5 0 0 0 -5 5v2h-3" /></svg> <span class="sr-only">Share this post on Facebook</span> </a><a href="https://x.com/intent/post?url=https://blog.sixbones.dev/posts/eq-type-lsp/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post on X"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 4l11.733 16h4.267l-11.733 -16z" /><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" /></svg> <span class="sr-only">Share this post on X</span> </a><a href="https://t.me/share/url?url=https://blog.sixbones.dev/posts/eq-type-lsp/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post via Telegram"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 10l-4 4l6 6l4 -16l-18 7l4 2l2 6l3 -4" /></svg> <span class="sr-only">Share this post via Telegram</span> </a><a href="https://pinterest.com/pin/create/button/?url=https://blog.sixbones.dev/posts/eq-type-lsp/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post on Pinterest"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M8 20l4 -9" /><path d="M10.7 14c.437 1.263 1.43 2 2.55 2c2.071 0 3.75 -1.554 3.75 -4a5 5 0 1 0 -9.7 1.7" /><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /></svg> <span class="sr-only">Share this post on Pinterest</span> </a><a href="mailto:?subject=See%20this%20post&#38;body=https://blog.sixbones.dev/posts/eq-type-lsp/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post via email"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" /><path d="M3 7l9 6l9 -6" /></svg> <span class="sr-only">Share this post via email</span> </a> </div> </div> <button id="back-to-top" class="focus-outline py-1 whitespace-nowrap hover:opacity-75"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block rotate-90"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 6l-6 6l6 6" /></svg> <span>返回顶部</span> </button> </div> <hr class="my-6 border-dashed"> <!-- Previous/Next Post Buttons --> <div data-pagefind-ignore class="grid grid-cols-1 gap-6 sm:grid-cols-2"> <a href="/posts/pycapsule-dlpack" class="flex w-full gap-1 hover:opacity-75"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block flex-none"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 6l-6 6l6 6" /></svg> <div> <span>上一篇</span> <div class="text-sm text-accent/85">PyCapsule：Python 与其他语言之间的指针传递桥梁</div> </div> </a> <a href="/posts/pytest-introduction" class="flex w-full justify-end gap-1 text-right hover:opacity-75 sm:col-start-2"> <div> <span>下一篇</span> <div class="text-sm text-accent/85">Pytest：Python 测试框架入门指南</div> </div> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block flex-none"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M9 6l6 6l-6 6" /></svg> </a> </div> <div class="giscus"></div> <script data-astro-rerun src="https://giscus.app/client.js" data-repo="zrr1999/sixbones.dev" data-repo-id="MDEwOlJlcG9zaXRvcnkzMTY0NTU2NDg=" data-category="General" data-category-id="DIC_kwDOEty64M4Chlof" data-mapping="pathname" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="preferred_color_scheme" data-lang="zh-CN" data-loading="lazy" crossorigin="anonymous" async></script> </main> <footer class="w-full mt-auto"> <div class="max-w-3xl mx-auto px-0"> <hr class="border-border" aria-hidden="true"> </div> <div class="flex flex-col items-center justify-between py-6 sm:flex-row-reverse sm:py-4"> <div class="flex-wrap justify-center gap-1 flex"> <a href="https://github.com/zrr1999" class="group inline-block hover:text-accent p-2 hover:rotate-6 sm:p-1" title=" 六个骨头的博客 on Github"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" /></svg> <span class="sr-only"> 六个骨头的博客 on Github</span> </a><a href="mailto:zrr1999@qq.com" class="group inline-block hover:text-accent p-2 hover:rotate-6 sm:p-1" title="Send an email to 六个骨头的博客"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" /><path d="M3 7l9 6l9 -6" /></svg> <span class="sr-only">Send an email to 六个骨头的博客</span> </a> </div> <div class="my-2 flex flex-col items-center whitespace-nowrap sm:flex-row"> <span>&#169; 2024-2026 <a href="https://github.com/zrr1999">Zhan Rongrui</a></span> </div> </div> </footer>  </body></html> <script data-astro-rerun>
+  /** Create a progress indicator
+   *  at the top */
+  function createProgressBar() {
+    // Create the main container div
+    const progressContainer = document.createElement("div");
+    progressContainer.className =
+      "progress-container fixed top-0 z-10 h-1 w-full bg-background";
+
+    // Create the progress bar div
+    const progressBar = document.createElement("div");
+    progressBar.className = "progress-bar h-1 w-0 bg-accent";
+    progressBar.id = "myBar";
+
+    // Append the progress bar to the progress container
+    progressContainer.appendChild(progressBar);
+
+    // Append the progress container to the document body or any other desired parent element
+    document.body.appendChild(progressContainer);
+  }
+  createProgressBar();
+
+  /** Update the progress bar
+   *  when user scrolls */
+  function updateScrollProgress() {
+    document.addEventListener("scroll", () => {
+      const winScroll =
+        document.body.scrollTop || document.documentElement.scrollTop;
+      const height =
+        document.documentElement.scrollHeight -
+        document.documentElement.clientHeight;
+      const scrolled = (winScroll / height) * 100;
+      if (document) {
+        const myBar = document.getElementById("myBar");
+        if (myBar) {
+          myBar.style.width = scrolled + "%";
+        }
+      }
+    });
+  }
+  updateScrollProgress();
+
+  /** Attaches links to headings in the document,
+   *  allowing sharing of sections easily */
+  function addHeadingLinks() {
+    const headings = Array.from(
+      document.querySelectorAll("h2, h3, h4, h5, h6")
+    );
+    for (const heading of headings) {
+      heading.classList.add("group");
+      const link = document.createElement("a");
+      link.className =
+        "heading-link ml-2 opacity-0 group-hover:opacity-100 focus:opacity-100";
+      link.href = "#" + heading.id;
+
+      const span = document.createElement("span");
+      span.ariaHidden = "true";
+      span.innerText = "#";
+      link.appendChild(span);
+      heading.appendChild(link);
+    }
+  }
+  addHeadingLinks();
+
+  /** Attaches copy buttons to code blocks in the document,
+   * allowing users to copy code easily. */
+  function attachCopyButtons() {
+    const copyButtonLabel = "Copy";
+    const codeBlocks = Array.from(
+      document.querySelectorAll("pre:not(.mermaid)")
+    );
+
+    for (const codeBlock of codeBlocks) {
+      const wrapper = document.createElement("div");
+      wrapper.style.position = "relative";
+
+      const copyButton = document.createElement("button");
+      copyButton.className =
+        "copy-code absolute right-3 -top-3 rounded bg-muted px-2 py-1 text-xs leading-4 text-foreground font-medium";
+      copyButton.innerHTML = copyButtonLabel;
+      codeBlock.setAttribute("tabindex", "0");
+      codeBlock.appendChild(copyButton);
+
+      // wrap codebock with relative parent element
+      codeBlock?.parentNode?.insertBefore(wrapper, codeBlock);
+      wrapper.appendChild(codeBlock);
+
+      copyButton.addEventListener("click", async () => {
+        await copyCode(codeBlock, copyButton);
+      });
+    }
+
+    async function copyCode(block, button) {
+      const code = block.querySelector("code");
+      const text = code?.innerText;
+
+      await navigator.clipboard.writeText(text ?? "");
+
+      // visual feedback that task is completed
+      button.innerText = "Copied";
+
+      setTimeout(() => {
+        button.innerText = copyButtonLabel;
+      }, 700);
+    }
+  }
+  attachCopyButtons();
+
+  /** Scrolls the document to the top when
+   * the "Back to Top" button is clicked. */
+  function backToTop() {
+    document.querySelector("#back-to-top")?.addEventListener("click", () => {
+      document.body.scrollTop = 0; // For Safari
+      document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+    });
+  }
+  backToTop();
+
+  /* Go to page start after page swap */
+  document.addEventListener("astro:after-swap", () =>
+    window.scrollTo({ left: 0, top: 0, behavior: "instant" })
+  );
+</script>

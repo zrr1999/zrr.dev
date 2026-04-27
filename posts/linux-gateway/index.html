@@ -1,0 +1,414 @@
+<!DOCTYPE html><html lang="cn" class="scroll-smooth"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="canonical" href="https://blog.sixbones.dev/posts/linux-gateway/"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/katex@0.15.1/dist/katex.css" integrity="sha384-WsHMgfkABRyG494OmuiNmkAOk8nhO1qE+Y6wns6v+EoNoTNxrWxYpl5ZYWFOLPCM" crossorigin="anonymous"><meta name="generator" content="Astro v6.1.9"><!-- General Meta Tags --><title>利用 nftables 搭建 Linux 网关 | 六个骨头的博客</title><meta name="title" content="利用 nftables 搭建 Linux 网关 | 六个骨头的博客"><meta name="description" content="与 OpenWRT 相比，自建 Linux 网关更加灵活，而且可以使用自己熟悉的任何发行版（以 ArchLinux 为例）"><meta name="author" content="六个骨头"><link rel="sitemap" href="/sitemap-index.xml"><!-- Article Published/Modified time --><meta property="article:published_time" content="2024-08-21T00:00:00.000Z"><meta property="article:modified_time" content="2024-10-04T00:00:00.000Z"><!-- Twitter --><meta property="twitter:card" content="summary_large_image"><meta property="twitter:url" content="https://blog.sixbones.dev/posts/linux-gateway/"><meta property="twitter:title" content="利用 nftables 搭建 Linux 网关 | 六个骨头的博客"><meta property="twitter:description" content="与 OpenWRT 相比，自建 Linux 网关更加灵活，而且可以使用自己熟悉的任何发行版（以 ArchLinux 为例）"><meta property="twitter:image" content="https://blog.sixbones.dev/posts/linux-gateway/index.png"><!-- Google JSON-LD Structured data --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"利用 nftables 搭建 Linux 网关 | 六个骨头的博客","image":"https://blog.sixbones.dev/posts/linux-gateway/index.png","datePublished":"2024-08-21T00:00:00.000Z","dateModified":"2024-10-04T00:00:00.000Z","author":[{"@type":"Person","name":"六个骨头","url":"https://blog.sixbones.dev/"}]}</script><!-- Google Font --><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet"><meta name="theme-color" content=""><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.XKloMPd3.js"></script><script src="/toggle-theme.js"></script><link rel="stylesheet" href="/_astro/Footer-DPUJBJz0.css">
+<style>@keyframes astroFadeInOut{0%{opacity:1}to{opacity:0}}@keyframes astroFadeIn{0%{opacity:0;mix-blend-mode:plus-lighter}to{opacity:1;mix-blend-mode:plus-lighter}}@keyframes astroFadeOut{0%{opacity:1;mix-blend-mode:plus-lighter}to{opacity:0;mix-blend-mode:plus-lighter}}@keyframes astroSlideFromRight{0%{transform:translate(100%)}}@keyframes astroSlideFromLeft{0%{transform:translate(-100%)}}@keyframes astroSlideToRight{to{transform:translate(100%)}}@keyframes astroSlideToLeft{to{transform:translate(-100%)}}@media (prefers-reduced-motion){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*),[data-astro-transition-scope]{animation:none!important}}
+</style><script type="module" src="/_astro/page.CGluN7T_.js"></script><style>[data-astro-transition-scope="astro-fam6wyqg-1"] { view-transition-name: \5229\7528-nftables-\642D\5EFA-linux-\7F51\5173; }@layer astro { ::view-transition-old(\5229\7528-nftables-\642D\5EFA-linux-\7F51\5173) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(\5229\7528-nftables-\642D\5EFA-linux-\7F51\5173) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(\5229\7528-nftables-\642D\5EFA-linux-\7F51\5173) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(\5229\7528-nftables-\642D\5EFA-linux-\7F51\5173) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-fam6wyqg-1"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-fam6wyqg-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-fam6wyqg-1"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-fam6wyqg-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-fam6wyqg-1"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-fam6wyqg-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-fam6wyqg-1"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-fam6wyqg-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-2"] { view-transition-name: \7F51\7EDC; }@layer astro { ::view-transition-old(\7F51\7EDC) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(\7F51\7EDC) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(\7F51\7EDC) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(\7F51\7EDC) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-3"] { view-transition-name: \8DEF\7531; }@layer astro { ::view-transition-old(\8DEF\7531) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(\8DEF\7531) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(\8DEF\7531) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(\8DEF\7531) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style></head> <body>  <header> <a id="skip-to-content" href="#main-content" class="absolute -top-full left-16 z-50 bg-background px-3 py-2 text-accent backdrop-blur-lg transition-all focus:top-4">
+Skip to content
+</a> <div id="nav-container" class="mx-auto flex max-w-3xl flex-col items-center justify-between sm:flex-row"> <div id="top-nav-wrap" class="relative flex w-full items-baseline justify-between bg-background p-4 sm:items-center sm:py-6"> <a href="/" class="absolute py-1 text-2xl leading-7 font-semibold whitespace-nowrap sm:static"> 首页 </a> <nav id="nav-menu" class="flex w-full flex-col items-center sm:ml-2 sm:flex-row sm:justify-end sm:space-x-4 sm:py-0"> <button id="menu-btn" class="focus-outline self-end p-2 sm:hidden" aria-label="Open Menu" aria-expanded="false" aria-controls="menu-items"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden" id="close-icon"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-menu-deep" id="menu-icon"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 6h16" /><path d="M7 12h13" /><path d="M10 18h10" /></svg> </button> <ul id="menu-items" class="mt-4 grid w-44 grid-cols-2 place-content-center gap-2 [&#38;>li>a]:block [&#38;>li>a]:px-4 [&#38;>li>a]:py-3 [&#38;>li>a]:text-center [&#38;>li>a]:font-medium [&#38;>li>a]:hover:text-accent sm:[&#38;>li>a]:px-2 sm:[&#38;>li>a]:py-1 hidden sm:mt-0 sm:ml-0 sm:flex sm:w-auto sm:gap-x-5 sm:gap-y-0"> <li class="col-span-2"> <a href="/posts" class="active-nav">
+文章
+</a> </li> <li class="col-span-2"> <a href="/tags">
+标签
+</a> </li> <li class="col-span-2"> <a href="/archives" class="group inline-block hover:text-accent focus-outline flex justify-center p-3 sm:p-1" aria-label="archives" title="Archives"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden sm:inline-block"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 4m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z" /><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" /><path d="M10 12l4 0" /></svg> <span class="sm:sr-only">Archives</span> </a> </li> <li class="col-span-1 flex items-center justify-center"> <a href="/search" class="group inline-block hover:text-accent focus-outline flex p-3 sm:p-1" aria-label="search" title="Search"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-search"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" /><path d="M21 21l-6 -6" /></svg> <span class="sr-only">Search</span> </a> </li> <li class="col-span-1 flex items-center justify-center"> <button id="theme-btn" class="focus-outline relative size-12 p-4 sm:size-8 hover:[&>svg]:stroke-accent" title="Toggles light & dark" aria-label="auto" aria-live="polite"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute top-[50%] left-[50%] -translate-[50%] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" /></svg> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute top-[50%] left-[50%] -translate-[50%] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M14.828 14.828a4 4 0 1 0 -5.656 -5.656a4 4 0 0 0 5.656 5.656z" /><path d="M6.343 17.657l-1.414 1.414" /><path d="M6.343 6.343l-1.414 -1.414" /><path d="M17.657 6.343l1.414 -1.414" /><path d="M17.657 17.657l1.414 1.414" /><path d="M4 12h-2" /><path d="M12 4v-2" /><path d="M20 12h2" /><path d="M12 20v2" /></svg> </button> </li> </ul> </nav> </div> </div> <div class="max-w-3xl mx-auto px-4"> <hr class="border-border" aria-hidden="true"> </div> </header> <script type="module">function e(){let e=document.querySelector(`#menu-btn`),t=document.querySelector(`#menu-items`),n=document.querySelector(`#menu-icon`),r=document.querySelector(`#close-icon`);!e||!t||!n||!r||e.addEventListener(`click`,()=>{let i=e.getAttribute(`aria-expanded`)===`true`;e.setAttribute(`aria-expanded`,i?`false`:`true`),e.setAttribute(`aria-label`,i?`Open Menu`:`Close Menu`),t.classList.toggle(`hidden`),n.classList.toggle(`hidden`),r.classList.toggle(`hidden`)})}e(),document.addEventListener(`astro:after-swap`,e);</script> <div class="mx-auto flex w-full max-w-3xl items-center justify-start px-2"><a id="back-button" href="/" class="group inline-block hover:text-accent focus-outline mt-8 mb-2 flex hover:text-foreground/75"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 6l-6 6l6 6" /></svg><span>返回</span></a></div><script type="module">function e(){let e=document.querySelector(`#back-button`),t=sessionStorage.getItem(`backUrl`);t&&e&&(e.href=t)}document.addEventListener(`astro:page-load`,e),e();</script> <main id="main-content" class="mx-auto w-full max-w-3xl px-4 pb-12" data-pagefind-body> <h1 class="inline-block text-2xl font-bold text-accent sm:text-3xl" data-astro-transition-scope="astro-fam6wyqg-1"> 利用 nftables 搭建 Linux 网关 </h1> <div class="flex items-center gap-4"> <div class="flex items-end space-x-2 opacity-80 my-2"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 min-w-[1.375rem]"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" /><path d="M16 3v4" /><path d="M8 3v4" /><path d="M4 11h16" /><path d="M7 14h.013" /><path d="M10.01 14h.005" /><path d="M13.01 14h.005" /><path d="M16.015 14h.005" /><path d="M13.015 17h.005" /><path d="M7.01 17h.005" /><path d="M10.01 17h.005" /></svg> <span class="text-sm italic sm:text-base">
+更新于
+</span> <span class="text-sm italic sm:text-base"> <time datetime="2024-10-04T00:00:00.000Z">2024年10月4日</time> </span> </div> <div class="opacity-80 max-sm:hidden"><span aria-hidden="true" class="max-sm:hidden">
+|
+</span><a class="space-x-1.5 hover:opacity-75" href="https://github.com/zrr1999/sixbones.dev/edit/main/data/blog/linux-gateway.md" rel="noopener noreferrer" target="_blank"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg><span class="italic max-sm:text-sm sm:inline">建议修改</span></a></div> </div> <article id="article" class="mx-auto prose mt-8 max-w-3xl"> <p>目前，适合个人使用的软路由系统主要包括 iKuai、OpenWRT 和 RouterOS，其中 RouterOS 我没有用过在此不做介绍。
+iKuai 性能和稳定性都很不错，但是扩展性比较差，增加功能比较困难，而 OpenWRT 性能和稳定性略逊于 iKuai，
+但是扩展性很强，有丰富的插件可以使用，所以许多人都是 iKuai+OpenWRT 双路由方案。
+这种方案在初期的时候是可以满足我的需求的，但是目前这种方案对于我来讲已经变得逐渐不好用了，
+一方面是各种插件的配置文件散落在系统的各个位置，不利于维护和备份，
+另一方面是 OpenWRT 本身阉割了很多 Linux 的功能，比如我一直没有找到方法用 VSCode 连接 OpenWRT 的方法。
+综上所述，我决定自建一个 Linux 网关，最开始我其实是想顺便把 iKuai 也给去除掉的，
+但是后来发现 iKuai 的许多功能用纯 Linux 实现比较麻烦而且也没什么优势，所以最终方案是 iKuai+ArchLinux 双路由的方案。</p>
+<h2 id="目录"><a aria-hidden="true" tabindex="-1" href="#目录"><span class="icon icon-link"></span></a>目录</h2>
+<p></p><details><summary>查看目录</summary><p></p>
+<ul>
+<li><a href="#%E6%90%AD%E5%BB%BA%E6%80%9D%E8%B7%AF">搭建思路</a></li>
+<li><a href="#%E6%90%AD%E5%BB%BA%E6%96%B9%E6%A1%88">搭建方案</a></li>
+<li><a href="#nftables-%E9%85%8D%E7%BD%AE">nftables 配置</a>
+<ul>
+<li><a href="#%E8%BD%AC%E5%8F%91-dns">转发 DNS</a></li>
+<li><a href="#%E9%85%8D%E7%BD%AE%E9%80%8F%E6%98%8E%E4%BB%A3%E7%90%86">配置透明代理</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99">参考资料</a></li>
+</ul>
+<p></p></details><p></p>
+<h2 id="搭建思路"><a aria-hidden="true" tabindex="-1" href="#搭建思路"><span class="icon icon-link"></span></a>搭建思路</h2>
+<p>iKuai+ArchLinux 双路由的方案，即 iKuai 作为主路由，主要负责拨号和 DHCP，
+ArchLinux 作为旁路由，负责运行各种服务（目前包括 DNS 和代理）。</p>
+<p>ArchLinux 相比 OpenWRT 是更加完整的 Linux 系统，我们只需要像使用普通 Linux 一样使用它即可。
+实际上，你用其他任何 Linux 发行版都可以，比如 Debian、Ubuntu 等，但是 ArchLinux 的包管理器对我目前使用需求来讲更加方便。</p>
+<h2 id="搭建方案"><a aria-hidden="true" tabindex="-1" href="#搭建方案"><span class="icon icon-link"></span></a>搭建方案</h2>
+<p>我使用的是 ArchLinux，可以使用下面命令安装一些必要的包：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#C5E478;--shiki-dark-font-style:italic">echo</span><span style="color:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="color:#22863A;--shiki-dark:#ECC48D">Initializing pacman keyring</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">pacman-key</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> --init</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">pacman-key</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> --populate</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> archlinux</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">pacman-key</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> --refresh-keys</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#C5E478;--shiki-dark-font-style:italic">echo</span><span style="color:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="color:#22863A;--shiki-dark:#ECC48D">Setting up pacman mirrorlist</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">pacman</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> -S</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> --noconfirm</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> --needed</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> reflector</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">reflector</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> --save</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> /etc/pacman.d/mirrorlist</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> --country</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> China</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> --protocol</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> https</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> --latest</span><span style="color:#1976D2;--shiki-dark:#F78C6C"> 5</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#C5E478;--shiki-dark-font-style:italic">echo</span><span style="color:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="color:#22863A;--shiki-dark:#ECC48D">Installing basic tools</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">pacman</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> -S</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> --noconfirm</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> --needed</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> base-devel</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> vim</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> git</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> wget</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> unzip</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> cronie</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">pacman</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> -S</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> --noconfirm</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> --needed</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> iproute2</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> dnsutils</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> lsof</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> dhclient</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> termshark</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#C5E478;--shiki-dark-font-style:italic">echo</span><span style="color:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="color:#22863A;--shiki-dark:#ECC48D">Installing paru</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">git</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> clone</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> https://aur.archlinux.org/paru.git</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#C5E478;--shiki-dark-font-style:italic">cd</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> paru</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">makepkg</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> -si</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#C5E478;--shiki-dark-font-style:italic">cd</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> ..</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">rm</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> -rf</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> paru</span></span></code></pre>
+<p>由于 paru 需要使用非 root 用户，所以需要创建一个非 root 用户，然后使用这个用户安装其他所需要的包：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">paru</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> -S</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> --noconfirm</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> --needed</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> go-yq</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> smartdns</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> mosdns-bin</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> metacubexd</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> mihomo</span></span></code></pre>
+<p>详细的配置文件可以参考<a href="https://github.com/zrr1999/system-install-scripts">我的项目</a>，
+你可以通过下面的命令直接使用我的配置文件，也可以根据自己的需求进行修改</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#C5E478;--shiki-dark-font-style:italic">cd</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> /root</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">git</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> clone</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> https://github.com/zrr1999/system-install-scripts</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#C5E478;--shiki-dark-font-style:italic">cd</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> system-install-scripts</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">sudo</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> cp</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> -r</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> root-gateway/</span><span style="color:#2B5581;--shiki-dark:#7FDBCA">*</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> /</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">sudo</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> bash</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> /usr/share/mosdns/update.sh</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">sudo</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> bash</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> /usr/share/mihomo/update.sh</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">ip</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> rule</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> add</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> fwmark</span><span style="color:#1976D2;--shiki-dark:#F78C6C"> 0x161</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> lookup</span><span style="color:#1976D2;--shiki-dark:#F78C6C"> 100</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">ip</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> rule</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> add</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> fwmark</span><span style="color:#1976D2;--shiki-dark:#F78C6C"> 0x162</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> lookup</span><span style="color:#1976D2;--shiki-dark:#F78C6C"> 100</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">ip</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> route</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> add</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> local</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> 0.0.0.0/0</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> dev</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> lo</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> table</span><span style="color:#1976D2;--shiki-dark:#F78C6C"> 100</span></span></code></pre>
+<p>最后使用 systemctl 启动这些服务：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">systemctl</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> enable</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> mosdns</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">systemctl</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> start</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> mosdns</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">systemctl</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> enable</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> smartdns</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">systemctl</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> start</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> smartdns</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">systemctl</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> enable</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> mihomo</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">systemctl</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> start</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> mihomo</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">systemctl</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> enable</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> nftables</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">systemctl</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> start</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> nftables</span></span></code></pre>
+<p>如果不确定这些服务是否启动成功，可以使用以下命令检查：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">systemctl</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> status</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> mosdns</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">systemctl</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> status</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> smartdns</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">systemctl</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> status</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> mihomo</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">systemctl</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> status</span><span style="color:#2B5581;--shiki-dark:#ECC48D"> nftables</span></span></code></pre>
+<p>有些服务可能需要定期更新（例如国内 IP 库），你可以使用以下命令创建定时任务：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">crontab</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> -l</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA"> 2></span><span style="color:#2B5581;--shiki-dark:#ECC48D">/dev/null</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">; </span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#C5E478;--shiki-dark-font-style:italic">echo</span><span style="color:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="color:#22863A;--shiki-dark:#ECC48D">0 3 1 * * bash /usr/share/mosdns/update.sh</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">) </span><span style="color:#D32F2F;--shiki-dark:#7FDBCA">|</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic"> crontab</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">crontab</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> -l</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA"> 2></span><span style="color:#2B5581;--shiki-dark:#ECC48D">/dev/null</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">; </span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#C5E478;--shiki-dark-font-style:italic">echo</span><span style="color:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="color:#22863A;--shiki-dark:#ECC48D">3 3 1 * * systemctl restart mosdns</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">) </span><span style="color:#D32F2F;--shiki-dark:#7FDBCA">|</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic"> crontab</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">crontab</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> -l</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA"> 2></span><span style="color:#2B5581;--shiki-dark:#ECC48D">/dev/null</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">; </span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#C5E478;--shiki-dark-font-style:italic">echo</span><span style="color:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="color:#22863A;--shiki-dark:#ECC48D">6 3 1 * * bash /usr/share/mihomo/update.sh</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">) </span><span style="color:#D32F2F;--shiki-dark:#7FDBCA">|</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic"> crontab</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">crontab</span><span style="color:#2B5581;--shiki-dark:#82AAFF"> -l</span><span style="color:#D32F2F;--shiki-dark:#7FDBCA"> 2></span><span style="color:#2B5581;--shiki-dark:#ECC48D">/dev/null</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">; </span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#C5E478;--shiki-dark-font-style:italic">echo</span><span style="color:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="color:#22863A;--shiki-dark:#ECC48D">9 3 1 * * systemctl restart mihomo</span><span style="color:#22863A;--shiki-dark:#D9F5DD">"</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">) </span><span style="color:#D32F2F;--shiki-dark:#7FDBCA">|</span><span style="color:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic"> crontab</span></span></code></pre>
+<h2 id="nftables-配置"><a aria-hidden="true" tabindex="-1" href="#nftables-配置"><span class="icon icon-link"></span></a>nftables 配置</h2>
+<p>nftables 的配置文件位于 <a href="https://github.com/zrr1999/system-install-scripts/blob/main/root-gateway/etc/nftables.conf"><code>/etc/nftables.conf</code></a>，
+完整的内容如下：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>#!/usr/sbin/nft -f</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>flush ruleset</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>define proxy-ip = {</span></span>
+<span class="line"><span>    # fakeip</span></span>
+<span class="line"><span>    198.18.0.0/16,</span></span>
+<span class="line"><span>    # telegram</span></span>
+<span class="line"><span>    91.108.0.0/16,</span></span>
+<span class="line"><span>    109.239.140.0/24,</span></span>
+<span class="line"><span>    149.154.160.0/20</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>table inet filter {</span></span>
+<span class="line"><span>    chain input {</span></span>
+<span class="line"><span>        type filter hook input priority 0; policy accept;</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    chain forward {</span></span>
+<span class="line"><span>        type filter hook forward priority 0; policy accept;</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    chain output {</span></span>
+<span class="line"><span>        type filter hook output priority 0; policy accept;</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>table inet nat {</span></span>
+<span class="line"><span>    chain prerouting {</span></span>
+<span class="line"><span>        type nat hook prerouting priority 0; policy accept;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>        tcp dport 53 redirect to :5335</span></span>
+<span class="line"><span>        udp dport 53 redirect to :5335</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    chain output {</span></span>
+<span class="line"><span>        type nat hook output priority 0; policy accept;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>        ip daddr 127.0.0.0/24 tcp dport 53 redirect to :5335</span></span>
+<span class="line"><span>        ip daddr 127.0.0.0/24 udp dport 53 redirect to :5335</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    chain postrouting {</span></span>
+<span class="line"><span>        type nat hook postrouting priority 0; policy accept;</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>table ip mangle{</span></span>
+<span class="line"><span>    chain proxy {</span></span>
+<span class="line"><span>        meta mark 0x162 return</span></span>
+<span class="line"><span>        ip daddr $proxy-ip ip protocol {udp, tcp} mark set 0x162 tproxy to 127.0.0.1:7894</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    chain proxy_output {</span></span>
+<span class="line"><span>        ip daddr $proxy-ip ip protocol {udp, tcp} mark set 0x161</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    chain prerouting {</span></span>
+<span class="line"><span>        type filter hook prerouting priority mangle; policy accept;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>        jump proxy</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    chain output {</span></span>
+<span class="line"><span>        type route hook output priority mangle;policy accept;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>        jump proxy_output</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span>}</span></span></code></pre>
+<p>这里主要做了两件事，转发 DNS 和配置透明代理。</p>
+<h3 id="转发-dns"><a aria-hidden="true" tabindex="-1" href="#转发-dns"><span class="icon icon-link"></span></a>转发 DNS</h3>
+<p>对于本地流量，我们通过 <code>ip daddr 127.0.0.0/24 tcp dport 53 redirect to :5335</code> 和 <code>ip daddr 127.0.0.0/24 udp dport 53 redirect to :5335</code> 将流量转发到 MosDNS，
+对于路由流量，我们通过 <code>tcp dport 53 redirect to :5335</code> 和 <code>udp dport 53 redirect to :5335</code> 将流量转发到 MosDNS。</p>
+<h3 id="配置透明代理"><a aria-hidden="true" tabindex="-1" href="#配置透明代理"><span class="icon icon-link"></span></a>配置透明代理</h3>
+<p>对于本地出站流量，我们通过 <code>ip daddr $proxy-ip ip protocol {udp, tcp} mark set 0x161</code> 对流量进行标记，<code>0x161</code> 表示需要代理的本地出站流量，
+因为我们添加了 <code>ip rule add fwmark 0x161 lookup 100</code>，这些流量会被重新路由到环回地址进行后续处理。
+对于其他流量，我们通过 <code>ip daddr $proxy-ip ip protocol {udp, tcp} mark set 0x162 tproxy to 127.0.0.1:7894</code> 直接将流量的透明代理设置成 mihomo，
+同样因为我们添加了 <code>ip rule add fwmark 0x162 lookup 100</code>，这些流量会被重新路由到环回地址进行后续处理，这样 mihomo 才可以接收到这些流量并进行代理。</p>
+<blockquote>
+<p><strong>说明</strong>: 流量标记 <code>0x162</code> 用于区分需要透明代理的流量，通过路由表 100 将其重定向到本地环回地址，实现透明代理功能。</p>
+</blockquote>
+<h2 id="参考资料"><a aria-hidden="true" tabindex="-1" href="#参考资料"><span class="icon icon-link"></span></a>参考资料</h2>
+<p><a href="https://koswu.github.io/2019/08/19/tproxy-config-with-nftables/">包的路由转圈圈——谈谈使用nftables配置透明代理碰到的那些坑</a></p> </article> <hr class="my-8 border-dashed"> <div class="opacity-80 sm:hidden"><span aria-hidden="true" class="max-sm:hidden">
+|
+</span><a class="space-x-1.5 hover:opacity-75" href="https://github.com/zrr1999/sixbones.dev/edit/main/data/blog/linux-gateway.md" rel="noopener noreferrer" target="_blank"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg><span class="italic max-sm:text-sm sm:inline">建议修改</span></a></div> <ul class="mt-4 mb-8 sm:my-8"> <li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/网络/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-2"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>网络</span> </a> </li><li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/路由/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-3"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>路由</span> </a> </li> </ul> <div class="flex flex-col items-center justify-between gap-6 sm:flex-row sm:items-end sm:gap-4"> <div class="flex flex-col flex-wrap items-center justify-center gap-1 sm:items-start"> <span class="italic">分享这篇文章：</span> <div class="text-center"> <a href="https://wa.me/?text=https://blog.sixbones.dev/posts/linux-gateway/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post via WhatsApp"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 21l1.65 -3.8a9 9 0 1 1 3.4 2.9l-5.05 .9" /><path d="M9 10a.5 .5 0 0 0 1 0v-1a.5 .5 0 0 0 -1 0v1a5 5 0 0 0 5 5h1a.5 .5 0 0 0 0 -1h-1a.5 .5 0 0 0 0 1" /></svg> <span class="sr-only">Share this post via WhatsApp</span> </a><a href="https://www.facebook.com/sharer.php?u=https://blog.sixbones.dev/posts/linux-gateway/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post on Facebook"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 10v4h3v7h4v-7h3l1 -4h-4v-2a1 1 0 0 1 1 -1h3v-4h-3a5 5 0 0 0 -5 5v2h-3" /></svg> <span class="sr-only">Share this post on Facebook</span> </a><a href="https://x.com/intent/post?url=https://blog.sixbones.dev/posts/linux-gateway/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post on X"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 4l11.733 16h4.267l-11.733 -16z" /><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" /></svg> <span class="sr-only">Share this post on X</span> </a><a href="https://t.me/share/url?url=https://blog.sixbones.dev/posts/linux-gateway/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post via Telegram"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 10l-4 4l6 6l4 -16l-18 7l4 2l2 6l3 -4" /></svg> <span class="sr-only">Share this post via Telegram</span> </a><a href="https://pinterest.com/pin/create/button/?url=https://blog.sixbones.dev/posts/linux-gateway/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post on Pinterest"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M8 20l4 -9" /><path d="M10.7 14c.437 1.263 1.43 2 2.55 2c2.071 0 3.75 -1.554 3.75 -4a5 5 0 1 0 -9.7 1.7" /><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /></svg> <span class="sr-only">Share this post on Pinterest</span> </a><a href="mailto:?subject=See%20this%20post&#38;body=https://blog.sixbones.dev/posts/linux-gateway/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post via email"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" /><path d="M3 7l9 6l9 -6" /></svg> <span class="sr-only">Share this post via email</span> </a> </div> </div> <button id="back-to-top" class="focus-outline py-1 whitespace-nowrap hover:opacity-75"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block rotate-90"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 6l-6 6l6 6" /></svg> <span>返回顶部</span> </button> </div> <hr class="my-6 border-dashed"> <!-- Previous/Next Post Buttons --> <div data-pagefind-ignore class="grid grid-cols-1 gap-6 sm:grid-cols-2"> <a href="/posts/all-in-one" class="flex w-full gap-1 hover:opacity-75"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block flex-none"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 6l-6 6l6 6" /></svg> <div> <span>上一篇</span> <div class="text-sm text-accent/85">使用 ArchLinux + Incus 搭建 all in one 的小主机</div> </div> </a> <a href="/posts/sparse-tensor" class="flex w-full justify-end gap-1 text-right hover:opacity-75 sm:col-start-2"> <div> <span>下一篇</span> <div class="text-sm text-accent/85">稀疏张量计算的简单实现</div> </div> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block flex-none"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M9 6l6 6l-6 6" /></svg> </a> </div> <div class="giscus"></div> <script data-astro-rerun src="https://giscus.app/client.js" data-repo="zrr1999/sixbones.dev" data-repo-id="MDEwOlJlcG9zaXRvcnkzMTY0NTU2NDg=" data-category="General" data-category-id="DIC_kwDOEty64M4Chlof" data-mapping="pathname" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="preferred_color_scheme" data-lang="zh-CN" data-loading="lazy" crossorigin="anonymous" async></script> </main> <footer class="w-full mt-auto"> <div class="max-w-3xl mx-auto px-0"> <hr class="border-border" aria-hidden="true"> </div> <div class="flex flex-col items-center justify-between py-6 sm:flex-row-reverse sm:py-4"> <div class="flex-wrap justify-center gap-1 flex"> <a href="https://github.com/zrr1999" class="group inline-block hover:text-accent p-2 hover:rotate-6 sm:p-1" title=" 六个骨头的博客 on Github"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" /></svg> <span class="sr-only"> 六个骨头的博客 on Github</span> </a><a href="mailto:zrr1999@qq.com" class="group inline-block hover:text-accent p-2 hover:rotate-6 sm:p-1" title="Send an email to 六个骨头的博客"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" /><path d="M3 7l9 6l9 -6" /></svg> <span class="sr-only">Send an email to 六个骨头的博客</span> </a> </div> <div class="my-2 flex flex-col items-center whitespace-nowrap sm:flex-row"> <span>&#169; 2024-2026 <a href="https://github.com/zrr1999">Zhan Rongrui</a></span> </div> </div> </footer>  </body></html> <script data-astro-rerun>
+  /** Create a progress indicator
+   *  at the top */
+  function createProgressBar() {
+    // Create the main container div
+    const progressContainer = document.createElement("div");
+    progressContainer.className =
+      "progress-container fixed top-0 z-10 h-1 w-full bg-background";
+
+    // Create the progress bar div
+    const progressBar = document.createElement("div");
+    progressBar.className = "progress-bar h-1 w-0 bg-accent";
+    progressBar.id = "myBar";
+
+    // Append the progress bar to the progress container
+    progressContainer.appendChild(progressBar);
+
+    // Append the progress container to the document body or any other desired parent element
+    document.body.appendChild(progressContainer);
+  }
+  createProgressBar();
+
+  /** Update the progress bar
+   *  when user scrolls */
+  function updateScrollProgress() {
+    document.addEventListener("scroll", () => {
+      const winScroll =
+        document.body.scrollTop || document.documentElement.scrollTop;
+      const height =
+        document.documentElement.scrollHeight -
+        document.documentElement.clientHeight;
+      const scrolled = (winScroll / height) * 100;
+      if (document) {
+        const myBar = document.getElementById("myBar");
+        if (myBar) {
+          myBar.style.width = scrolled + "%";
+        }
+      }
+    });
+  }
+  updateScrollProgress();
+
+  /** Attaches links to headings in the document,
+   *  allowing sharing of sections easily */
+  function addHeadingLinks() {
+    const headings = Array.from(
+      document.querySelectorAll("h2, h3, h4, h5, h6")
+    );
+    for (const heading of headings) {
+      heading.classList.add("group");
+      const link = document.createElement("a");
+      link.className =
+        "heading-link ml-2 opacity-0 group-hover:opacity-100 focus:opacity-100";
+      link.href = "#" + heading.id;
+
+      const span = document.createElement("span");
+      span.ariaHidden = "true";
+      span.innerText = "#";
+      link.appendChild(span);
+      heading.appendChild(link);
+    }
+  }
+  addHeadingLinks();
+
+  /** Attaches copy buttons to code blocks in the document,
+   * allowing users to copy code easily. */
+  function attachCopyButtons() {
+    const copyButtonLabel = "Copy";
+    const codeBlocks = Array.from(
+      document.querySelectorAll("pre:not(.mermaid)")
+    );
+
+    for (const codeBlock of codeBlocks) {
+      const wrapper = document.createElement("div");
+      wrapper.style.position = "relative";
+
+      const copyButton = document.createElement("button");
+      copyButton.className =
+        "copy-code absolute right-3 -top-3 rounded bg-muted px-2 py-1 text-xs leading-4 text-foreground font-medium";
+      copyButton.innerHTML = copyButtonLabel;
+      codeBlock.setAttribute("tabindex", "0");
+      codeBlock.appendChild(copyButton);
+
+      // wrap codebock with relative parent element
+      codeBlock?.parentNode?.insertBefore(wrapper, codeBlock);
+      wrapper.appendChild(codeBlock);
+
+      copyButton.addEventListener("click", async () => {
+        await copyCode(codeBlock, copyButton);
+      });
+    }
+
+    async function copyCode(block, button) {
+      const code = block.querySelector("code");
+      const text = code?.innerText;
+
+      await navigator.clipboard.writeText(text ?? "");
+
+      // visual feedback that task is completed
+      button.innerText = "Copied";
+
+      setTimeout(() => {
+        button.innerText = copyButtonLabel;
+      }, 700);
+    }
+  }
+  attachCopyButtons();
+
+  /** Scrolls the document to the top when
+   * the "Back to Top" button is clicked. */
+  function backToTop() {
+    document.querySelector("#back-to-top")?.addEventListener("click", () => {
+      document.body.scrollTop = 0; // For Safari
+      document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+    });
+  }
+  backToTop();
+
+  /* Go to page start after page swap */
+  document.addEventListener("astro:after-swap", () =>
+    window.scrollTo({ left: 0, top: 0, behavior: "instant" })
+  );
+</script>

@@ -1,0 +1,567 @@
+<!DOCTYPE html><html lang="cn" class="scroll-smooth"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="canonical" href="https://blog.sixbones.dev/posts/egglog-quickstart-03/"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/katex@0.15.1/dist/katex.css" integrity="sha384-WsHMgfkABRyG494OmuiNmkAOk8nhO1qE+Y6wns6v+EoNoTNxrWxYpl5ZYWFOLPCM" crossorigin="anonymous"><meta name="generator" content="Astro v6.1.9"><!-- General Meta Tags --><title>Egglog 快速入门（三）：复数定义与内置类型 | 六个骨头的博客</title><meta name="title" content="Egglog 快速入门（三）：复数定义与内置类型 | 六个骨头的博客"><meta name="description" content="承接第二篇的实数定义，先纯构造定义复数，再介绍 egglog 内置的 i64、Rational、f64、Vec、Set、MultiSet 等类型，以及 function、extract、cost 等特性，并展示如何用它们实现高效复数运算。"><meta name="author" content="六个骨头"><link rel="sitemap" href="/sitemap-index.xml"><!-- Article Published/Modified time --><meta property="article:published_time" content="2026-02-17T00:00:00.000Z"><meta property="article:modified_time" content="2026-02-17T00:00:00.000Z"><!-- Twitter --><meta property="twitter:card" content="summary_large_image"><meta property="twitter:url" content="https://blog.sixbones.dev/posts/egglog-quickstart-03/"><meta property="twitter:title" content="Egglog 快速入门（三）：复数定义与内置类型 | 六个骨头的博客"><meta property="twitter:description" content="承接第二篇的实数定义，先纯构造定义复数，再介绍 egglog 内置的 i64、Rational、f64、Vec、Set、MultiSet 等类型，以及 function、extract、cost 等特性，并展示如何用它们实现高效复数运算。"><meta property="twitter:image" content="https://blog.sixbones.dev/posts/egglog-quickstart-03/index.png"><!-- Google JSON-LD Structured data --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Egglog 快速入门（三）：复数定义与内置类型 | 六个骨头的博客","image":"https://blog.sixbones.dev/posts/egglog-quickstart-03/index.png","datePublished":"2026-02-17T00:00:00.000Z","dateModified":"2026-02-17T00:00:00.000Z","author":[{"@type":"Person","name":"六个骨头","url":"https://blog.sixbones.dev/"}]}</script><!-- Google Font --><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet"><meta name="theme-color" content=""><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.XKloMPd3.js"></script><script src="/toggle-theme.js"></script><link rel="stylesheet" href="/_astro/Footer-DPUJBJz0.css">
+<style>@keyframes astroFadeInOut{0%{opacity:1}to{opacity:0}}@keyframes astroFadeIn{0%{opacity:0;mix-blend-mode:plus-lighter}to{opacity:1;mix-blend-mode:plus-lighter}}@keyframes astroFadeOut{0%{opacity:1;mix-blend-mode:plus-lighter}to{opacity:0;mix-blend-mode:plus-lighter}}@keyframes astroSlideFromRight{0%{transform:translate(100%)}}@keyframes astroSlideFromLeft{0%{transform:translate(-100%)}}@keyframes astroSlideToRight{to{transform:translate(100%)}}@keyframes astroSlideToLeft{to{transform:translate(-100%)}}@media (prefers-reduced-motion){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*),[data-astro-transition-scope]{animation:none!important}}
+</style><script type="module" src="/_astro/page.CGluN7T_.js"></script><style>[data-astro-transition-scope="astro-fam6wyqg-1"] { view-transition-name: egglog-\5FEB\901F\5165\95E8\FF08\4E09\FF09\FF1A\590D\6570\5B9A\4E49\4E0E\5185\7F6E\7C7B\578B; }@layer astro { ::view-transition-old(egglog-\5FEB\901F\5165\95E8\FF08\4E09\FF09\FF1A\590D\6570\5B9A\4E49\4E0E\5185\7F6E\7C7B\578B) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(egglog-\5FEB\901F\5165\95E8\FF08\4E09\FF09\FF1A\590D\6570\5B9A\4E49\4E0E\5185\7F6E\7C7B\578B) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(egglog-\5FEB\901F\5165\95E8\FF08\4E09\FF09\FF1A\590D\6570\5B9A\4E49\4E0E\5185\7F6E\7C7B\578B) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(egglog-\5FEB\901F\5165\95E8\FF08\4E09\FF09\FF1A\590D\6570\5B9A\4E49\4E0E\5185\7F6E\7C7B\578B) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-fam6wyqg-1"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-fam6wyqg-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-fam6wyqg-1"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-fam6wyqg-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-fam6wyqg-1"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-fam6wyqg-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-fam6wyqg-1"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-fam6wyqg-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-2"] { view-transition-name: \7F16\8BD1-ir; }@layer astro { ::view-transition-old(\7F16\8BD1-ir) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(\7F16\8BD1-ir) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(\7F16\8BD1-ir) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(\7F16\8BD1-ir) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-3"] { view-transition-name: e-graph; }@layer astro { ::view-transition-old(e-graph) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(e-graph) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(e-graph) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(e-graph) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-4"] { view-transition-name: egg; }@layer astro { ::view-transition-old(egg) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(egg) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(egg) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(egg) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-4"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-4"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-4"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-4"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-4"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-4"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-4"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-4"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-5"] { view-transition-name: egglog; }@layer astro { ::view-transition-old(egglog) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(egglog) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(egglog) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(egglog) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-5"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-5"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-5"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-5"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-5"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-5"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-5"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-5"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-6"] { view-transition-name: \7B49\4EF7\9971\548C; }@layer astro { ::view-transition-old(\7B49\4EF7\9971\548C) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(\7B49\4EF7\9971\548C) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(\7B49\4EF7\9971\548C) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(\7B49\4EF7\9971\548C) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-6"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-6"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-6"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-6"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-6"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-6"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-6"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-6"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-7"] { view-transition-name: term-rewriting; }@layer astro { ::view-transition-old(term-rewriting) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(term-rewriting) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(term-rewriting) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(term-rewriting) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-7"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-7"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-7"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-7"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-7"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-7"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-7"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-7"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style></head> <body>  <header> <a id="skip-to-content" href="#main-content" class="absolute -top-full left-16 z-50 bg-background px-3 py-2 text-accent backdrop-blur-lg transition-all focus:top-4">
+Skip to content
+</a> <div id="nav-container" class="mx-auto flex max-w-3xl flex-col items-center justify-between sm:flex-row"> <div id="top-nav-wrap" class="relative flex w-full items-baseline justify-between bg-background p-4 sm:items-center sm:py-6"> <a href="/" class="absolute py-1 text-2xl leading-7 font-semibold whitespace-nowrap sm:static"> 首页 </a> <nav id="nav-menu" class="flex w-full flex-col items-center sm:ml-2 sm:flex-row sm:justify-end sm:space-x-4 sm:py-0"> <button id="menu-btn" class="focus-outline self-end p-2 sm:hidden" aria-label="Open Menu" aria-expanded="false" aria-controls="menu-items"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden" id="close-icon"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-menu-deep" id="menu-icon"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 6h16" /><path d="M7 12h13" /><path d="M10 18h10" /></svg> </button> <ul id="menu-items" class="mt-4 grid w-44 grid-cols-2 place-content-center gap-2 [&#38;>li>a]:block [&#38;>li>a]:px-4 [&#38;>li>a]:py-3 [&#38;>li>a]:text-center [&#38;>li>a]:font-medium [&#38;>li>a]:hover:text-accent sm:[&#38;>li>a]:px-2 sm:[&#38;>li>a]:py-1 hidden sm:mt-0 sm:ml-0 sm:flex sm:w-auto sm:gap-x-5 sm:gap-y-0"> <li class="col-span-2"> <a href="/posts" class="active-nav">
+文章
+</a> </li> <li class="col-span-2"> <a href="/tags">
+标签
+</a> </li> <li class="col-span-2"> <a href="/archives" class="group inline-block hover:text-accent focus-outline flex justify-center p-3 sm:p-1" aria-label="archives" title="Archives"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden sm:inline-block"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 4m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z" /><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" /><path d="M10 12l4 0" /></svg> <span class="sm:sr-only">Archives</span> </a> </li> <li class="col-span-1 flex items-center justify-center"> <a href="/search" class="group inline-block hover:text-accent focus-outline flex p-3 sm:p-1" aria-label="search" title="Search"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-search"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" /><path d="M21 21l-6 -6" /></svg> <span class="sr-only">Search</span> </a> </li> <li class="col-span-1 flex items-center justify-center"> <button id="theme-btn" class="focus-outline relative size-12 p-4 sm:size-8 hover:[&>svg]:stroke-accent" title="Toggles light & dark" aria-label="auto" aria-live="polite"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute top-[50%] left-[50%] -translate-[50%] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" /></svg> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute top-[50%] left-[50%] -translate-[50%] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M14.828 14.828a4 4 0 1 0 -5.656 -5.656a4 4 0 0 0 5.656 5.656z" /><path d="M6.343 17.657l-1.414 1.414" /><path d="M6.343 6.343l-1.414 -1.414" /><path d="M17.657 6.343l1.414 -1.414" /><path d="M17.657 17.657l1.414 1.414" /><path d="M4 12h-2" /><path d="M12 4v-2" /><path d="M20 12h2" /><path d="M12 20v2" /></svg> </button> </li> </ul> </nav> </div> </div> <div class="max-w-3xl mx-auto px-4"> <hr class="border-border" aria-hidden="true"> </div> </header> <script type="module">function e(){let e=document.querySelector(`#menu-btn`),t=document.querySelector(`#menu-items`),n=document.querySelector(`#menu-icon`),r=document.querySelector(`#close-icon`);!e||!t||!n||!r||e.addEventListener(`click`,()=>{let i=e.getAttribute(`aria-expanded`)===`true`;e.setAttribute(`aria-expanded`,i?`false`:`true`),e.setAttribute(`aria-label`,i?`Open Menu`:`Close Menu`),t.classList.toggle(`hidden`),n.classList.toggle(`hidden`),r.classList.toggle(`hidden`)})}e(),document.addEventListener(`astro:after-swap`,e);</script> <div class="mx-auto flex w-full max-w-3xl items-center justify-start px-2"><a id="back-button" href="/" class="group inline-block hover:text-accent focus-outline mt-8 mb-2 flex hover:text-foreground/75"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 6l-6 6l6 6" /></svg><span>返回</span></a></div><script type="module">function e(){let e=document.querySelector(`#back-button`),t=sessionStorage.getItem(`backUrl`);t&&e&&(e.href=t)}document.addEventListener(`astro:page-load`,e),e();</script> <main id="main-content" class="mx-auto w-full max-w-3xl px-4 pb-12" data-pagefind-body> <h1 class="inline-block text-2xl font-bold text-accent sm:text-3xl" data-astro-transition-scope="astro-fam6wyqg-1"> Egglog 快速入门（三）：复数定义与内置类型 </h1> <div class="flex items-center gap-4"> <div class="flex items-end space-x-2 opacity-80 my-2"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 min-w-[1.375rem]"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" /><path d="M16 3v4" /><path d="M8 3v4" /><path d="M4 11h16" /><path d="M7 14h.013" /><path d="M10.01 14h.005" /><path d="M13.01 14h.005" /><path d="M16.015 14h.005" /><path d="M13.015 17h.005" /><path d="M7.01 17h.005" /><path d="M10.01 17h.005" /></svg> <span class="sr-only">发布于</span> <span class="text-sm italic sm:text-base"> <time datetime="2026-02-17T00:00:00.000Z">2026年2月17日</time> </span> </div> <div class="opacity-80 max-sm:hidden"><span aria-hidden="true" class="max-sm:hidden">
+|
+</span><a class="space-x-1.5 hover:opacity-75" href="https://github.com/zrr1999/sixbones.dev/edit/main/data/blog/egglog-quickstart-03.md" rel="noopener noreferrer" target="_blank"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg><span class="italic max-sm:text-sm sm:inline">建议修改</span></a></div> </div> <article id="article" class="mx-auto prose mt-8 max-w-3xl"> <p><a href="egglog-quickstart-02">第二篇</a> 用纯构造从自然数扩展到整数、有理数与实数。本文<strong>承接第二篇</strong>：先用已有类型定义复数及其运算，再介绍 egglog 的<strong>内置类型</strong>，并展示如何用它们实现高效运算。</p>
+<h2 id="复数的纯构造定义"><a aria-hidden="true" tabindex="-1" href="#复数的纯构造定义"><span class="icon icon-link"></span></a>复数的纯构造定义</h2>
+<p>复数 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>a</mi><mo>+</mo><mi>b</mi><mi>i</mi></mrow><annotation encoding="application/x-tex">a + bi</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6667em;vertical-align:-0.0833em;"></span><span class="mord mathnormal">a</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal">bi</span></span></span></span> 可表示为实部、虚部的有序对 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mi>a</mi><mo separator="true">,</mo><mi>b</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(a, b)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal">a</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">b</span><span class="mclose">)</span></span></span></span>，其中 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>a</mi><mo separator="true">,</mo><mi>b</mi><mo>∈</mo><mi mathvariant="double-struck">R</mi></mrow><annotation encoding="application/x-tex">a, b \in \mathbb{R}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">a</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">b</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∈</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6889em;"></span><span class="mord mathbb">R</span></span></span></span>。第二篇已定义实数 <code>R</code>（含 <code>FromRat</code>、<code>Sqrt</code> 等），可直接用 <code>Rect(R, R)</code> 表示：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="racket"><code><span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">; 复数：Rect(re, im) 表示 re + im·i</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span><span style="color:#6F42C1;--shiki-dark:#C5E478">sort</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> C)</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(constructor Rect (R R) C)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">; 加法：(a+bi) + (c+di) = (a+c) + (b+d)i</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(constructor CAdd (C C) C)</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(rewrite (CAdd (Rect re1 im1) (Rect re2 im2))</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">  (Rect (RAdd re1 re2) (RAdd im1 im2)))</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">; 乘法：(a+bi)(c+di) = (ac-bd) + (ad+bc)i</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(constructor CMul (C C) C)</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(rewrite (CMul (Rect a b) (Rect c d))</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">  (Rect (RSub (RMul a c) (RMul b d))</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">        (RAdd (RMul a d) (RMul b c))))</span></span></code></pre>
+<p>其中 <code>RAdd</code>、<code>RSub</code>、<code>RMul</code> 为第二篇定义的实数运算。这样复数的加法和乘法完全由重写规则给出，不依赖内置类型。</p>
+<h2 id="egglog-内置类型概览"><a aria-hidden="true" tabindex="-1" href="#egglog-内置类型概览"><span class="icon icon-link"></span></a>egglog 内置类型概览</h2>
+<p>egglog 提供若干 primitive 类型，可直接用于构造器参数和 rewrite 规则，无需逐层构造：</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>类型</th><th>说明</th><th>典型运算</th></tr></thead><tbody><tr><td><code>i64</code></td><td>64 位有符号整数，含负数</td><td><code>+</code> <code>-</code> <code>*</code> <code>/</code> <code>%</code> <code>&#x3C;&#x3C;</code> <code>>></code></td></tr><tr><td><code>Rational</code></td><td>有理数（分数）</td><td><code>+</code> <code>-</code> <code>*</code> <code>/</code></td></tr><tr><td><code>f64</code></td><td>64 位浮点数</td><td><code>+</code> <code>-</code> <code>*</code> <code>/</code> <code>min</code> <code>max</code></td></tr><tr><td><code>String</code></td><td>字符串</td><td>拼接、比较</td></tr><tr><td><code>Unit</code></td><td>单值类型</td><td>-</td></tr><tr><td><code>Map[K,V]</code></td><td>键值映射</td><td><code>get</code> <code>set</code></td></tr><tr><td><code>Vec[T]</code></td><td>有序序列</td><td><code>push</code> <code>pop</code> <code>get</code> <code>set</code> <code>length</code> <code>concat</code></td></tr><tr><td><code>Set[T]</code></td><td>无序集合，无重复</td><td><code>insert</code> <code>remove</code> <code>contains</code> <code>length</code></td></tr><tr><td><code>MultiSet[T]</code></td><td>无序多重集合，允重复</td><td><code>insert</code> <code>remove</code> <code>contains</code> <code>length</code> <code>pick</code> <code>map</code> <code>+</code></td></tr></tbody></table>
+<p>在 <code>rewrite</code> 中可直接用 <code>(+ a b)</code>、<code>(* a b)</code> 等对 primitive 做运算，例如 <code>(rewrite (Add (Num a) (Num b)) (Num (+ a b)))</code> 表示 constant folding。</p>
+<h2 id="用内置类型实现复数"><a aria-hidden="true" tabindex="-1" href="#用内置类型实现复数"><span class="icon icon-link"></span></a>用内置类型实现复数</h2>
+<p>实际计算中，用 <code>f64</code> 包装实部、虚部更高效。定义 <code>F64Rect</code> 并做 constant folding：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="racket"><code><span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(datatype Complex</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">  (F64Rect f64 f64)</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">  (Var String)</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">  (CAdd Complex Complex)</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">  (CMul Complex Complex))</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">; constant folding：加法</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(rewrite (CAdd (F64Rect a b) (F64Rect c d))</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">  (F64Rect (</span><span style="color:#6F42C1;--shiki-dark:#C5E478">+</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> a c) (</span><span style="color:#6F42C1;--shiki-dark:#C5E478">+</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> b d)))</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">; 乘法：(a+bi)(c+di) = (ac-bd) + (ad+bc)i</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(rewrite (CMul (F64Rect a b) (F64Rect c d))</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">  (F64Rect (</span><span style="color:#6F42C1;--shiki-dark:#C5E478">-</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> (</span><span style="color:#6F42C1;--shiki-dark:#C5E478">*</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> a c) (</span><span style="color:#6F42C1;--shiki-dark:#C5E478">*</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> b d))</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">           (</span><span style="color:#6F42C1;--shiki-dark:#C5E478">+</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> (</span><span style="color:#6F42C1;--shiki-dark:#C5E478">*</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> a d) (</span><span style="color:#6F42C1;--shiki-dark:#C5E478">*</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> b c))))</span></span></code></pre>
+<p>验证 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mn>1</mn><mo>+</mo><mn>2</mn><mi>i</mi><mo stretchy="false">)</mo><mo>+</mo><mo stretchy="false">(</mo><mn>3</mn><mo>+</mo><mn>4</mn><mi>i</mi><mo stretchy="false">)</mo><mo>=</mo><mn>4</mn><mo>+</mo><mn>6</mn><mi>i</mi></mrow><annotation encoding="application/x-tex">(1+2i) + (3+4i) = 4+6i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">2</span><span class="mord mathnormal">i</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord">3</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">4</span><span class="mord mathnormal">i</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">4</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6595em;"></span><span class="mord">6</span><span class="mord mathnormal">i</span></span></span></span>：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="racket"><code><span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span><span style="color:#6F42C1;--shiki-dark:#C5E478">let</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> c1 (F64Rect </span><span style="color:#1976D2;--shiki-dark:#F78C6C">1.0</span><span style="color:#1976D2;--shiki-dark:#F78C6C"> 2.0</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">))</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span><span style="color:#6F42C1;--shiki-dark:#C5E478">let</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> c2 (F64Rect </span><span style="color:#1976D2;--shiki-dark:#F78C6C">3.0</span><span style="color:#1976D2;--shiki-dark:#F78C6C"> 4.0</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">))</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span><span style="color:#6F42C1;--shiki-dark:#C5E478">let</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> sum (CAdd c1 c2))</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span><span style="color:#6F42C1;--shiki-dark:#C5E478">let</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> four-six (F64Rect </span><span style="color:#1976D2;--shiki-dark:#F78C6C">4.0</span><span style="color:#1976D2;--shiki-dark:#F78C6C"> 6.0</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">))</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(run </span><span style="color:#1976D2;--shiki-dark:#F78C6C">5</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">)</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(check (</span><span style="color:#6F42C1;--shiki-dark:#C5E478">=</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> sum four-six))</span></span></code></pre>
+<p>若用 <code>Rational</code> 替代 <code>f64</code>，可得精确有理复数；用 <code>i64</code> 则只能表示高斯整数（实部、虚部均为整数）。</p>
+<h2 id="multiset无序多重集合"><a aria-hidden="true" tabindex="-1" href="#multiset无序多重集合"><span class="icon icon-link"></span></a>MultiSet：无序多重集合</h2>
+<p><code>MultiSet</code> 是有序无关的集合，<strong>允许重复元素</strong>，与 <code>Set</code> 不同。构造方式为 <code>(MultiSet e1 e2 ...)</code>，元素顺序不影响相等性：<code>(MultiSet 1 2 3)</code> 与 <code>(MultiSet 1 3 2)</code> 等价，但 <code>(MultiSet 1 1 2)</code> 与 <code>(MultiSet 1 2)</code> 不等价。</p>
+<p>常用操作示例：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="racket"><code><span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(datatype Math (Num i64) (Add Math Math) (Mul Math Math))</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">; 创建多重集合</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span><span style="color:#6F42C1;--shiki-dark:#C5E478">let</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> xs (MultiSet (Num </span><span style="color:#1976D2;--shiki-dark:#F78C6C">1</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">) (Num </span><span style="color:#1976D2;--shiki-dark:#F78C6C">2</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">) (Num </span><span style="color:#1976D2;--shiki-dark:#F78C6C">3</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">)))</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">; 相等性：顺序无关， multiplicity 有关</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(check (</span><span style="color:#6F42C1;--shiki-dark:#C5E478">=</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> xs (MultiSet (Num </span><span style="color:#1976D2;--shiki-dark:#F78C6C">1</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">) (Num </span><span style="color:#1976D2;--shiki-dark:#F78C6C">3</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">) (Num </span><span style="color:#1976D2;--shiki-dark:#F78C6C">2</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">))))</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(fail (check (</span><span style="color:#6F42C1;--shiki-dark:#C5E478">=</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> xs (MultiSet (Num </span><span style="color:#1976D2;--shiki-dark:#F78C6C">1</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">) (Num </span><span style="color:#1976D2;--shiki-dark:#F78C6C">1</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">) (Num </span><span style="color:#1976D2;--shiki-dark:#F78C6C">2</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">) (Num </span><span style="color:#1976D2;--shiki-dark:#F78C6C">3</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">)))))</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">; insert 返回新多重集合；contains / not-contains 检查成员</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(</span><span style="color:#6F42C1;--shiki-dark:#C5E478">let</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> ys (insert xs (Num </span><span style="color:#1976D2;--shiki-dark:#F78C6C">4</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">)))</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(check (contains ys (Num </span><span style="color:#1976D2;--shiki-dark:#F78C6C">4</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">)))</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(check (not-contains xs (Num </span><span style="color:#1976D2;--shiki-dark:#F78C6C">4</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">)))</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">; + 为两多重集合的并（保留所有重复）</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(check (</span><span style="color:#6F42C1;--shiki-dark:#C5E478">=</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> (</span><span style="color:#6F42C1;--shiki-dark:#C5E478">+</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> xs xs) (MultiSet (Num </span><span style="color:#1976D2;--shiki-dark:#F78C6C">1</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">) (Num </span><span style="color:#1976D2;--shiki-dark:#F78C6C">2</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">) (Num </span><span style="color:#1976D2;--shiki-dark:#F78C6C">3</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">) (Num </span><span style="color:#1976D2;--shiki-dark:#F78C6C">1</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">) (Num </span><span style="color:#1976D2;--shiki-dark:#F78C6C">2</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">) (Num </span><span style="color:#1976D2;--shiki-dark:#F78C6C">3</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">))))</span></span></code></pre>
+<p><code>map</code> 可对 MultiSet 中每个元素应用函数，结果仍为 MultiSet，重写规则可作用于映射后的元素，用于等价饱和中的批量变换。</p>
+<h2 id="vec-与-set"><a aria-hidden="true" tabindex="-1" href="#vec-与-set"><span class="icon icon-link"></span></a>Vec 与 Set</h2>
+<p><code>Vec</code> 表示<strong>有序序列</strong>，可用 <code>(sort T (Vec E))</code> 定义元素类型为 <code>E</code> 的向量类型 <code>T</code>。典型操作有 <code>push</code>、<code>pop</code>、<code>get</code>、<code>set</code>、<code>length</code>、<code>concat</code>。</p>
+<p><code>Set</code> 表示<strong>无序集合</strong>，不含重复元素，操作类似 MultiSet 的 <code>insert</code>、<code>remove</code>、<code>contains</code>、<code>length</code>，但不支持 <code>pick</code>（集合中元素无「任取一个」的确定语义）和多重性概念。</p>
+<h2 id="function自定义函数与合并语义"><a aria-hidden="true" tabindex="-1" href="#function自定义函数与合并语义"><span class="icon icon-link"></span></a>function：自定义函数与合并语义</h2>
+<p>除 <code>relation</code>（关系表）和 <code>constructor</code>（代数数据类型）外，egglog 还提供 <code>function</code>，表示<strong>输入到输出的函数依赖</strong>。当同一输入产生多个输出时，可用 <code>:merge</code> 指定合并方式，合并表达式需满足<strong>单调性</strong>（形成格），以保证不同合并顺序得到一致结果：</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="racket"><code><span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">(function LowerBound (Math) i64 :merge (</span><span style="color:#6F42C1;--shiki-dark:#C5E478">max</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> old </span><span style="color:#6F42C1;--shiki-dark:#C5E478">new</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">))</span></span></code></pre>
+<p><code>function</code> 可配合 <code>:cost</code> 参与 extract 时的代价计算；可用 <code>set</code> action 更新函数值。</p>
+<h2 id="extract-与-cost"><a aria-hidden="true" tabindex="-1" href="#extract-与-cost"><span class="icon icon-link"></span></a>extract 与 cost</h2>
+<p><code>(extract expr)</code> 从 e-graph 中提取表达式的最优表示。默认每个 constructor 代价为 1；可通过 constructor 的 <code>:cost</code> 或 function 的 <code>:cost</code> 自定义。extract 会选择<strong>代价最小</strong>的等价形式，常用于程序优化场景。</p>
+<h2 id="其他命令速览"><a aria-hidden="true" tabindex="-1" href="#其他命令速览"><span class="icon icon-link"></span></a>其他命令速览</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>命令</th><th>说明</th></tr></thead><tbody><tr><td><code>ruleset</code> / <code>combined-ruleset</code></td><td>规则分组，控制 <code>run</code> 或 <code>run-schedule</code> 的执行</td></tr><tr><td><code>prove</code> / <code>prove-exists</code></td><td>证明给定事实成立</td></tr><tr><td><code>push</code> / <code>pop</code></td><td>保存/恢复 e-graph 状态</td></tr><tr><td><code>input</code> / <code>output</code></td><td>从 CSV 读写函数数据</td></tr><tr><td><code>print-function</code> / <code>print-size</code></td><td>打印函数表内容或大小</td></tr><tr><td><code>include</code></td><td>包含其他 <code>.egg</code> 文件</td></tr></tbody></table>
+<p>第二篇已介绍 <code>ruleset</code> 与 <code>run-schedule</code> 的用法；<code>prove</code>、<code>push</code>/<code>pop</code> 等适用于更复杂的交互与调试场景。</p>
+<h2 id="小结"><a aria-hidden="true" tabindex="-1" href="#小结"><span class="icon icon-link"></span></a>小结</h2>
+<p>承接第二篇的实数定义，复数可用 <code>Rect(R,R)</code> 纯构造；egglog 内置 <code>i64</code>、<code>Rational</code>、<code>f64</code>、<code>String</code>、<code>Map</code>、<code>Vec</code>、<code>Set</code>、<code>MultiSet</code> 等类型，可用 <code>F64Rect(f64,f64)</code> 配合 constant folding 实现高效复数运算。<code>MultiSet</code> 允许重复、顺序无关；<code>Vec</code> 为有序序列；<code>function</code> 支持自定义合并语义；<code>extract</code> 按 cost 选取最优表示。内置类型适合优化与数值计算，纯构造适合形式化与等价性证明。</p>
+<h2 id="参考文献"><a aria-hidden="true" tabindex="-1" href="#参考文献"><span class="icon icon-link"></span></a>参考文献</h2>
+<ul>
+<li><a href="https://egraphs-good.github.io/egglog-tutorial/01-basics.html">egglog tutorial: Equality Saturation</a></li>
+<li><a href="https://egraphs-good.github.io/egglog/docs/egglog/">egglog 文档</a></li>
+<li><a href="https://egraphs-good.github.io/egglog/docs/egglog/ast/type.Command.html">egglog Command 类型说明</a></li>
+<li><a href="https://egglog-python.readthedocs.io/stable/auto_examples/multiset.html">egglog Python Multiset 示例</a></li>
+</ul> </article> <hr class="my-8 border-dashed"> <div class="opacity-80 sm:hidden"><span aria-hidden="true" class="max-sm:hidden">
+|
+</span><a class="space-x-1.5 hover:opacity-75" href="https://github.com/zrr1999/sixbones.dev/edit/main/data/blog/egglog-quickstart-03.md" rel="noopener noreferrer" target="_blank"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg><span class="italic max-sm:text-sm sm:inline">建议修改</span></a></div> <ul class="mt-4 mb-8 sm:my-8"> <li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/编译-ir/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-2"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>编译/IR</span> </a> </li><li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/e-graph/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-3"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>E-graph</span> </a> </li><li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/egg/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-4"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>egg</span> </a> </li><li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/egglog/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-5"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>egglog</span> </a> </li><li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/等价饱和/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-6"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>等价饱和</span> </a> </li><li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/term-rewriting/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-7"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>Term Rewriting</span> </a> </li> </ul> <div class="flex flex-col items-center justify-between gap-6 sm:flex-row sm:items-end sm:gap-4"> <div class="flex flex-col flex-wrap items-center justify-center gap-1 sm:items-start"> <span class="italic">分享这篇文章：</span> <div class="text-center"> <a href="https://wa.me/?text=https://blog.sixbones.dev/posts/egglog-quickstart-03/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post via WhatsApp"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 21l1.65 -3.8a9 9 0 1 1 3.4 2.9l-5.05 .9" /><path d="M9 10a.5 .5 0 0 0 1 0v-1a.5 .5 0 0 0 -1 0v1a5 5 0 0 0 5 5h1a.5 .5 0 0 0 0 -1h-1a.5 .5 0 0 0 0 1" /></svg> <span class="sr-only">Share this post via WhatsApp</span> </a><a href="https://www.facebook.com/sharer.php?u=https://blog.sixbones.dev/posts/egglog-quickstart-03/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post on Facebook"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 10v4h3v7h4v-7h3l1 -4h-4v-2a1 1 0 0 1 1 -1h3v-4h-3a5 5 0 0 0 -5 5v2h-3" /></svg> <span class="sr-only">Share this post on Facebook</span> </a><a href="https://x.com/intent/post?url=https://blog.sixbones.dev/posts/egglog-quickstart-03/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post on X"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 4l11.733 16h4.267l-11.733 -16z" /><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" /></svg> <span class="sr-only">Share this post on X</span> </a><a href="https://t.me/share/url?url=https://blog.sixbones.dev/posts/egglog-quickstart-03/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post via Telegram"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 10l-4 4l6 6l4 -16l-18 7l4 2l2 6l3 -4" /></svg> <span class="sr-only">Share this post via Telegram</span> </a><a href="https://pinterest.com/pin/create/button/?url=https://blog.sixbones.dev/posts/egglog-quickstart-03/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post on Pinterest"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M8 20l4 -9" /><path d="M10.7 14c.437 1.263 1.43 2 2.55 2c2.071 0 3.75 -1.554 3.75 -4a5 5 0 1 0 -9.7 1.7" /><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /></svg> <span class="sr-only">Share this post on Pinterest</span> </a><a href="mailto:?subject=See%20this%20post&#38;body=https://blog.sixbones.dev/posts/egglog-quickstart-03/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post via email"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" /><path d="M3 7l9 6l9 -6" /></svg> <span class="sr-only">Share this post via email</span> </a> </div> </div> <button id="back-to-top" class="focus-outline py-1 whitespace-nowrap hover:opacity-75"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block rotate-90"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 6l-6 6l6 6" /></svg> <span>返回顶部</span> </button> </div> <hr class="my-6 border-dashed"> <!-- Previous/Next Post Buttons --> <div data-pagefind-ignore class="grid grid-cols-1 gap-6 sm:grid-cols-2">  <a href="/posts/sympy-survey" class="flex w-full justify-end gap-1 text-right hover:opacity-75 sm:col-start-2"> <div> <span>下一篇</span> <div class="text-sm text-accent/85">SymPy 符号计算能力调研</div> </div> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block flex-none"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M9 6l6 6l-6 6" /></svg> </a> </div> <div class="giscus"></div> <script data-astro-rerun src="https://giscus.app/client.js" data-repo="zrr1999/sixbones.dev" data-repo-id="MDEwOlJlcG9zaXRvcnkzMTY0NTU2NDg=" data-category="General" data-category-id="DIC_kwDOEty64M4Chlof" data-mapping="pathname" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="preferred_color_scheme" data-lang="zh-CN" data-loading="lazy" crossorigin="anonymous" async></script> </main> <footer class="w-full mt-auto"> <div class="max-w-3xl mx-auto px-0"> <hr class="border-border" aria-hidden="true"> </div> <div class="flex flex-col items-center justify-between py-6 sm:flex-row-reverse sm:py-4"> <div class="flex-wrap justify-center gap-1 flex"> <a href="https://github.com/zrr1999" class="group inline-block hover:text-accent p-2 hover:rotate-6 sm:p-1" title=" 六个骨头的博客 on Github"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" /></svg> <span class="sr-only"> 六个骨头的博客 on Github</span> </a><a href="mailto:zrr1999@qq.com" class="group inline-block hover:text-accent p-2 hover:rotate-6 sm:p-1" title="Send an email to 六个骨头的博客"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" /><path d="M3 7l9 6l9 -6" /></svg> <span class="sr-only">Send an email to 六个骨头的博客</span> </a> </div> <div class="my-2 flex flex-col items-center whitespace-nowrap sm:flex-row"> <span>&#169; 2024-2026 <a href="https://github.com/zrr1999">Zhan Rongrui</a></span> </div> </div> </footer>  </body></html> <script data-astro-rerun>
+  /** Create a progress indicator
+   *  at the top */
+  function createProgressBar() {
+    // Create the main container div
+    const progressContainer = document.createElement("div");
+    progressContainer.className =
+      "progress-container fixed top-0 z-10 h-1 w-full bg-background";
+
+    // Create the progress bar div
+    const progressBar = document.createElement("div");
+    progressBar.className = "progress-bar h-1 w-0 bg-accent";
+    progressBar.id = "myBar";
+
+    // Append the progress bar to the progress container
+    progressContainer.appendChild(progressBar);
+
+    // Append the progress container to the document body or any other desired parent element
+    document.body.appendChild(progressContainer);
+  }
+  createProgressBar();
+
+  /** Update the progress bar
+   *  when user scrolls */
+  function updateScrollProgress() {
+    document.addEventListener("scroll", () => {
+      const winScroll =
+        document.body.scrollTop || document.documentElement.scrollTop;
+      const height =
+        document.documentElement.scrollHeight -
+        document.documentElement.clientHeight;
+      const scrolled = (winScroll / height) * 100;
+      if (document) {
+        const myBar = document.getElementById("myBar");
+        if (myBar) {
+          myBar.style.width = scrolled + "%";
+        }
+      }
+    });
+  }
+  updateScrollProgress();
+
+  /** Attaches links to headings in the document,
+   *  allowing sharing of sections easily */
+  function addHeadingLinks() {
+    const headings = Array.from(
+      document.querySelectorAll("h2, h3, h4, h5, h6")
+    );
+    for (const heading of headings) {
+      heading.classList.add("group");
+      const link = document.createElement("a");
+      link.className =
+        "heading-link ml-2 opacity-0 group-hover:opacity-100 focus:opacity-100";
+      link.href = "#" + heading.id;
+
+      const span = document.createElement("span");
+      span.ariaHidden = "true";
+      span.innerText = "#";
+      link.appendChild(span);
+      heading.appendChild(link);
+    }
+  }
+  addHeadingLinks();
+
+  /** Attaches copy buttons to code blocks in the document,
+   * allowing users to copy code easily. */
+  function attachCopyButtons() {
+    const copyButtonLabel = "Copy";
+    const codeBlocks = Array.from(
+      document.querySelectorAll("pre:not(.mermaid)")
+    );
+
+    for (const codeBlock of codeBlocks) {
+      const wrapper = document.createElement("div");
+      wrapper.style.position = "relative";
+
+      const copyButton = document.createElement("button");
+      copyButton.className =
+        "copy-code absolute right-3 -top-3 rounded bg-muted px-2 py-1 text-xs leading-4 text-foreground font-medium";
+      copyButton.innerHTML = copyButtonLabel;
+      codeBlock.setAttribute("tabindex", "0");
+      codeBlock.appendChild(copyButton);
+
+      // wrap codebock with relative parent element
+      codeBlock?.parentNode?.insertBefore(wrapper, codeBlock);
+      wrapper.appendChild(codeBlock);
+
+      copyButton.addEventListener("click", async () => {
+        await copyCode(codeBlock, copyButton);
+      });
+    }
+
+    async function copyCode(block, button) {
+      const code = block.querySelector("code");
+      const text = code?.innerText;
+
+      await navigator.clipboard.writeText(text ?? "");
+
+      // visual feedback that task is completed
+      button.innerText = "Copied";
+
+      setTimeout(() => {
+        button.innerText = copyButtonLabel;
+      }, 700);
+    }
+  }
+  attachCopyButtons();
+
+  /** Scrolls the document to the top when
+   * the "Back to Top" button is clicked. */
+  function backToTop() {
+    document.querySelector("#back-to-top")?.addEventListener("click", () => {
+      document.body.scrollTop = 0; // For Safari
+      document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+    });
+  }
+  backToTop();
+
+  /* Go to page start after page swap */
+  document.addEventListener("astro:after-swap", () =>
+    window.scrollTo({ left: 0, top: 0, behavior: "instant" })
+  );
+</script>

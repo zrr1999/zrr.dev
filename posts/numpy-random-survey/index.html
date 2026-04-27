@@ -1,0 +1,486 @@
+<!DOCTYPE html><html lang="cn" class="scroll-smooth"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="canonical" href="https://blog.sixbones.dev/posts/numpy-random-survey/"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/katex@0.15.1/dist/katex.css" integrity="sha384-WsHMgfkABRyG494OmuiNmkAOk8nhO1qE+Y6wns6v+EoNoTNxrWxYpl5ZYWFOLPCM" crossorigin="anonymous"><meta name="generator" content="Astro v6.1.9"><!-- General Meta Tags --><title>NumPy 随机数生成机制调研 | 六个骨头的博客</title><meta name="title" content="NumPy 随机数生成机制调研 | 六个骨头的博客"><meta name="description" content="梳理 NumPy 1.17 以来的随机数架构：BitGenerator + Generator、各 BitGenerator 算法简介、SeedSequence 与并行流、Legacy RandomState，以及性能与选型建议。"><meta name="author" content="zrr1999"><link rel="sitemap" href="/sitemap-index.xml"><!-- Article Published/Modified time --><meta property="article:published_time" content="2026-02-02T00:00:00.000Z"><meta property="article:modified_time" content="2026-02-02T00:00:00.000Z"><!-- Twitter --><meta property="twitter:card" content="summary_large_image"><meta property="twitter:url" content="https://blog.sixbones.dev/posts/numpy-random-survey/"><meta property="twitter:title" content="NumPy 随机数生成机制调研 | 六个骨头的博客"><meta property="twitter:description" content="梳理 NumPy 1.17 以来的随机数架构：BitGenerator + Generator、各 BitGenerator 算法简介、SeedSequence 与并行流、Legacy RandomState，以及性能与选型建议。"><meta property="twitter:image" content="https://blog.sixbones.dev/posts/numpy-random-survey/index.png"><!-- Google JSON-LD Structured data --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"NumPy 随机数生成机制调研 | 六个骨头的博客","image":"https://blog.sixbones.dev/posts/numpy-random-survey/index.png","datePublished":"2026-02-02T00:00:00.000Z","dateModified":"2026-02-02T00:00:00.000Z","author":[{"@type":"Person","name":"zrr1999","url":"https://blog.sixbones.dev/"}]}</script><!-- Google Font --><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet"><meta name="theme-color" content=""><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.XKloMPd3.js"></script><script src="/toggle-theme.js"></script><link rel="stylesheet" href="/_astro/Footer-DPUJBJz0.css">
+<style>@keyframes astroFadeInOut{0%{opacity:1}to{opacity:0}}@keyframes astroFadeIn{0%{opacity:0;mix-blend-mode:plus-lighter}to{opacity:1;mix-blend-mode:plus-lighter}}@keyframes astroFadeOut{0%{opacity:1;mix-blend-mode:plus-lighter}to{opacity:0;mix-blend-mode:plus-lighter}}@keyframes astroSlideFromRight{0%{transform:translate(100%)}}@keyframes astroSlideFromLeft{0%{transform:translate(-100%)}}@keyframes astroSlideToRight{to{transform:translate(100%)}}@keyframes astroSlideToLeft{to{transform:translate(-100%)}}@media (prefers-reduced-motion){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*),[data-astro-transition-scope]{animation:none!important}}
+</style><script type="module" src="/_astro/page.CGluN7T_.js"></script><style>[data-astro-transition-scope="astro-fam6wyqg-1"] { view-transition-name: num-py-\968F\673A\6570\751F\6210\673A\5236\8C03\7814; }@layer astro { ::view-transition-old(num-py-\968F\673A\6570\751F\6210\673A\5236\8C03\7814) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(num-py-\968F\673A\6570\751F\6210\673A\5236\8C03\7814) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(num-py-\968F\673A\6570\751F\6210\673A\5236\8C03\7814) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(num-py-\968F\673A\6570\751F\6210\673A\5236\8C03\7814) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-fam6wyqg-1"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-fam6wyqg-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-fam6wyqg-1"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-fam6wyqg-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-fam6wyqg-1"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-fam6wyqg-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-fam6wyqg-1"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-fam6wyqg-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-2"] { view-transition-name: python; }@layer astro { ::view-transition-old(python) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(python) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(python) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(python) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-3"] { view-transition-name: num-py; }@layer astro { ::view-transition-old(num-py) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(num-py) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(num-py) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(num-py) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-4"] { view-transition-name: \968F\673A\6570; }@layer astro { ::view-transition-old(\968F\673A\6570) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(\968F\673A\6570) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(\968F\673A\6570) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(\968F\673A\6570) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-4"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-4"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-4"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-4"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-4"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-4"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-4"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-4"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-5"] { view-transition-name: prng; }@layer astro { ::view-transition-old(prng) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(prng) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(prng) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(prng) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-5"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-5"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-5"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-5"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-5"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-5"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-5"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-5"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style></head> <body>  <header> <a id="skip-to-content" href="#main-content" class="absolute -top-full left-16 z-50 bg-background px-3 py-2 text-accent backdrop-blur-lg transition-all focus:top-4">
+Skip to content
+</a> <div id="nav-container" class="mx-auto flex max-w-3xl flex-col items-center justify-between sm:flex-row"> <div id="top-nav-wrap" class="relative flex w-full items-baseline justify-between bg-background p-4 sm:items-center sm:py-6"> <a href="/" class="absolute py-1 text-2xl leading-7 font-semibold whitespace-nowrap sm:static"> 首页 </a> <nav id="nav-menu" class="flex w-full flex-col items-center sm:ml-2 sm:flex-row sm:justify-end sm:space-x-4 sm:py-0"> <button id="menu-btn" class="focus-outline self-end p-2 sm:hidden" aria-label="Open Menu" aria-expanded="false" aria-controls="menu-items"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden" id="close-icon"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-menu-deep" id="menu-icon"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 6h16" /><path d="M7 12h13" /><path d="M10 18h10" /></svg> </button> <ul id="menu-items" class="mt-4 grid w-44 grid-cols-2 place-content-center gap-2 [&#38;>li>a]:block [&#38;>li>a]:px-4 [&#38;>li>a]:py-3 [&#38;>li>a]:text-center [&#38;>li>a]:font-medium [&#38;>li>a]:hover:text-accent sm:[&#38;>li>a]:px-2 sm:[&#38;>li>a]:py-1 hidden sm:mt-0 sm:ml-0 sm:flex sm:w-auto sm:gap-x-5 sm:gap-y-0"> <li class="col-span-2"> <a href="/posts" class="active-nav">
+文章
+</a> </li> <li class="col-span-2"> <a href="/tags">
+标签
+</a> </li> <li class="col-span-2"> <a href="/archives" class="group inline-block hover:text-accent focus-outline flex justify-center p-3 sm:p-1" aria-label="archives" title="Archives"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden sm:inline-block"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 4m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z" /><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" /><path d="M10 12l4 0" /></svg> <span class="sm:sr-only">Archives</span> </a> </li> <li class="col-span-1 flex items-center justify-center"> <a href="/search" class="group inline-block hover:text-accent focus-outline flex p-3 sm:p-1" aria-label="search" title="Search"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-search"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" /><path d="M21 21l-6 -6" /></svg> <span class="sr-only">Search</span> </a> </li> <li class="col-span-1 flex items-center justify-center"> <button id="theme-btn" class="focus-outline relative size-12 p-4 sm:size-8 hover:[&>svg]:stroke-accent" title="Toggles light & dark" aria-label="auto" aria-live="polite"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute top-[50%] left-[50%] -translate-[50%] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" /></svg> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute top-[50%] left-[50%] -translate-[50%] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M14.828 14.828a4 4 0 1 0 -5.656 -5.656a4 4 0 0 0 5.656 5.656z" /><path d="M6.343 17.657l-1.414 1.414" /><path d="M6.343 6.343l-1.414 -1.414" /><path d="M17.657 6.343l1.414 -1.414" /><path d="M17.657 17.657l1.414 1.414" /><path d="M4 12h-2" /><path d="M12 4v-2" /><path d="M20 12h2" /><path d="M12 20v2" /></svg> </button> </li> </ul> </nav> </div> </div> <div class="max-w-3xl mx-auto px-4"> <hr class="border-border" aria-hidden="true"> </div> </header> <script type="module">function e(){let e=document.querySelector(`#menu-btn`),t=document.querySelector(`#menu-items`),n=document.querySelector(`#menu-icon`),r=document.querySelector(`#close-icon`);!e||!t||!n||!r||e.addEventListener(`click`,()=>{let i=e.getAttribute(`aria-expanded`)===`true`;e.setAttribute(`aria-expanded`,i?`false`:`true`),e.setAttribute(`aria-label`,i?`Open Menu`:`Close Menu`),t.classList.toggle(`hidden`),n.classList.toggle(`hidden`),r.classList.toggle(`hidden`)})}e(),document.addEventListener(`astro:after-swap`,e);</script> <div class="mx-auto flex w-full max-w-3xl items-center justify-start px-2"><a id="back-button" href="/" class="group inline-block hover:text-accent focus-outline mt-8 mb-2 flex hover:text-foreground/75"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 6l-6 6l6 6" /></svg><span>返回</span></a></div><script type="module">function e(){let e=document.querySelector(`#back-button`),t=sessionStorage.getItem(`backUrl`);t&&e&&(e.href=t)}document.addEventListener(`astro:page-load`,e),e();</script> <main id="main-content" class="mx-auto w-full max-w-3xl px-4 pb-12" data-pagefind-body> <h1 class="inline-block text-2xl font-bold text-accent sm:text-3xl" data-astro-transition-scope="astro-fam6wyqg-1"> NumPy 随机数生成机制调研 </h1> <div class="flex items-center gap-4"> <div class="flex items-end space-x-2 opacity-80 my-2"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 min-w-[1.375rem]"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" /><path d="M16 3v4" /><path d="M8 3v4" /><path d="M4 11h16" /><path d="M7 14h.013" /><path d="M10.01 14h.005" /><path d="M13.01 14h.005" /><path d="M16.015 14h.005" /><path d="M13.015 17h.005" /><path d="M7.01 17h.005" /><path d="M10.01 17h.005" /></svg> <span class="sr-only">发布于</span> <span class="text-sm italic sm:text-base"> <time datetime="2026-02-02T00:00:00.000Z">2026年2月2日</time> </span> </div> <div class="opacity-80 max-sm:hidden"><span aria-hidden="true" class="max-sm:hidden">
+|
+</span><a class="space-x-1.5 hover:opacity-75" href="https://github.com/zrr1999/sixbones.dev/edit/main/data/blog/numpy-random-survey.md" rel="noopener noreferrer" target="_blank"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg><span class="italic max-sm:text-sm sm:inline">建议修改</span></a></div> </div> <article id="article" class="mx-auto prose mt-8 max-w-3xl"> <p>NumPy 的 <code>numpy.random</code> 模块提供伪随机数生成（PRNG）及多种概率分布采样。自 1.17.0 起引入「BitGenerator + Generator」分层设计，默认使用 PCG64，并保留基于 Mersenne Twister 的 Legacy 接口。本文梳理整体架构、各 BitGenerator 算法要点、种子与并行流、新旧 API 及选型建议。</p>
+<p>注意：本模块面向统计与模拟，<strong>不适用于安全或密码学</strong>；该类需求应使用标准库 <code>secrets</code>。</p>
+<h2 id="整体架构bitgenerator-与-generator"><a aria-hidden="true" tabindex="-1" href="#整体架构bitgenerator-与-generator"><span class="icon icon-link"></span></a>整体架构：BitGenerator 与 Generator</h2>
+<p>用户主要与 <code>Generator</code> 实例交互。每个 <code>Generator</code> 持有一个 <code>BitGenerator</code>，负责核心算法：维护状态并输出随机比特（double、uint32、uint64）。<code>Generator</code> 则把这些比特转换成各种分布的样本（正态、指数、伽马等）。这种拆分便于更换底层算法而少改上层代码。</p>
+<p>推荐创建方式：<code>rng = np.random.default_rng()</code>。无参时从操作系统获取不可预测熵；传整数或整数序列可复现。同一种子保证同一整数流。</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="background-color:#ffffff;--shiki-dark-bg:#011627;color:#24292eff;--shiki-dark:#d6deeb; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="python"><code><span class="line"><span style="color:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#C792EA;--shiki-dark-font-style:italic">import</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> numpy </span><span style="color:#D32F2F;--shiki-light-font-style:inherit;--shiki-dark:#C792EA;--shiki-dark-font-style:italic">as</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> np</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">rng </span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB"> np</span><span style="color:#212121;--shiki-dark:#D6DEEB">.</span><span style="color:#24292EFF;--shiki-dark:#D6DEEB">random</span><span style="color:#212121;--shiki-dark:#D6DEEB">.</span><span style="color:#6F42C1;--shiki-dark:#B2CCD6">default_rng</span><span style="color:#212121;--shiki-dark:#D6DEEB">(</span><span style="color:#1976D2;--shiki-dark:#F78C6C">42</span><span style="color:#212121;--shiki-dark:#D6DEEB">)</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">rng</span><span style="color:#212121;--shiki-dark:#D6DEEB">.</span><span style="color:#6F42C1;--shiki-dark:#B2CCD6">random</span><span style="color:#212121;--shiki-dark:#D6DEEB">()</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">              # [0, 1) 均匀</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">rng</span><span style="color:#212121;--shiki-dark:#D6DEEB">.</span><span style="color:#6F42C1;--shiki-dark:#B2CCD6">standard_normal</span><span style="color:#212121;--shiki-dark:#D6DEEB">(</span><span style="color:#1976D2;--shiki-dark:#F78C6C">5</span><span style="color:#212121;--shiki-dark:#D6DEEB">)</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">   # 标准正态</span></span>
+<span class="line"><span style="color:#24292EFF;--shiki-dark:#D6DEEB">rng</span><span style="color:#212121;--shiki-dark:#D6DEEB">.</span><span style="color:#6F42C1;--shiki-dark:#B2CCD6">integers</span><span style="color:#212121;--shiki-dark:#D6DEEB">(</span><span style="color:#1976D2;--shiki-dark:#F78C6C">0</span><span style="color:#212121;--shiki-dark:#D9F5DD">,</span><span style="color:#1976D2;--shiki-dark:#F78C6C"> 10</span><span style="color:#212121;--shiki-dark:#D9F5DD">,</span><span style="color:#212121;--shiki-dark:#D7DBE0"> size</span><span style="color:#D32F2F;--shiki-dark:#C792EA">=</span><span style="color:#1976D2;--shiki-dark:#F78C6C">5</span><span style="color:#212121;--shiki-dark:#D6DEEB">)</span><span style="color:#C2C3C5;--shiki-light-font-style:inherit;--shiki-dark:#637777;--shiki-dark-font-style:italic">  # [0, 10) 整数</span></span></code></pre>
+<h2 id="随机数算法简介"><a aria-hidden="true" tabindex="-1" href="#随机数算法简介"><span class="icon icon-link"></span></a>随机数算法简介</h2>
+<p>NumPy 内置多种 BitGenerator，底层算法不同：有的为顺序型（状态递推），有的为计数器型（counter + key 直接算第 n 个数，适合并行）。下面简要介绍各算法。</p>
+<h3 id="pcg64默认"><a aria-hidden="true" tabindex="-1" href="#pcg64默认"><span class="icon icon-link"></span></a>PCG64（默认）</h3>
+<p><strong>PCG64</strong> 是 O’Neill 提出的置换同余生成器（Permuted Congruential Generator）的 128 位实现，NumPy 使用的具体变体为 <strong>PCG XSL RR 128/64</strong>。</p>
+<ul>
+<li><strong>状态</strong>：两个 128 位无符号整数。一个为当前状态，由线性同余递推（LCG）推进：<code>state = (state * mult + inc) mod 2^128</code>；另一个为固定奇数增量 <code>inc</code>，由种子经 SeedSequence 派生。</li>
+<li><strong>输出</strong>：对 128 位状态做「XSL-RR」输出变换得到 64 位输出，既掩盖 LCG 低位的弱相关性，又保持速度。</li>
+<li><strong>周期</strong>：<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>128</mn></msup></mrow><annotation encoding="application/x-tex">2^{128}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">128</span></span></span></span></span></span></span></span></span></span></span></span>。支持任意步进（<code>advance</code>）和约 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>127</mn></msup></mrow><annotation encoding="application/x-tex">2^{127}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">127</span></span></span></span></span></span></span></span></span></span></span></span> 个独立流（不同 <code>inc</code> 对应不同轨道）。</li>
+<li><strong>特点</strong>：统计质量与速度兼顾，单流或中等规模并行（spawn/jumped）推荐使用。递推式里的乘数 <code>mult</code> 为算法固定常数，用户不可设，只有 <code>inc</code> 由种子决定。<strong>XSL-RR</strong> 即对状态做 xorshift 式混合再按导出移位量做循环右移，把 128 位混成 64 位输出；LCG 模 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>128</mn></msup></mrow><annotation encoding="application/x-tex">2^{128}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">128</span></span></span></span></span></span></span></span></span></span></span></span> 时低位周期短、规律性强，XSL-RR 避免直接暴露低位。</li>
+</ul>
+<h3 id="pcg64dxsm"><a aria-hidden="true" tabindex="-1" href="#pcg64dxsm"><span class="icon icon-link"></span></a>PCG64DXSM</h3>
+<p><strong>PCG64DXSM</strong> 与 PCG64 使用同一套 LCG 递推，但输出函数改为更强的 <strong>DXSM</strong>（类似强哈希的 xorshift-multiply 结构），雪崩性质更好。</p>
+<ul>
+<li><strong>用途</strong>：在极大规模并行（百万级流、每流大量采样）时，PCG64 的 XSL-RR 在某些「低比特碰撞」下可能被 PractRand 等检出相关性；PCG64DXSM 可消除该问题且性能相当，拟作未来默认。</li>
+<li><strong>周期与能力</strong>：与 PCG64 相同，支持 <code>advance</code>、<code>jumped</code>。单流或仅用 jumped 做并行时与 PCG64 无差别。</li>
+</ul>
+<h3 id="mt19937mersenne-twister"><a aria-hidden="true" tabindex="-1" href="#mt19937mersenne-twister"><span class="icon icon-link"></span></a>MT19937（Mersenne Twister）</h3>
+<p><strong>MT19937</strong> 是松本真与西村拓士提出的梅森旋转算法，广泛用于 C++、Python 标准库等。</p>
+<ul>
+<li><strong>状态</strong>：624 个 32 位整数构成的内部状态数组；递推基于扭曲广义反馈移位寄存器（TGFSR），再经 tempering 变换输出。</li>
+<li><strong>周期</strong>：<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>19937</mn></msup><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">2^{19937}-1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8974em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">19937</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span>（梅森素数相关），极长。</li>
+<li><strong>特点</strong>：32 位输出，速度快，通过 TestU01 等部分检验时存在已知弱点（高维均匀性等）。NumPy 中主要用于 Legacy RandomState 兼容；若单独使用 BitGenerator，可通过 <code>SeedSequence</code> 播种，并支持 <code>jumped()</code> 得到跳过约 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>128</mn></msup></mrow><annotation encoding="application/x-tex">2^{128}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">128</span></span></span></span></span></span></span></span></span></span></span></span> 步的新实例。</li>
+</ul>
+<h3 id="philox"><a aria-hidden="true" tabindex="-1" href="#philox"><span class="icon icon-link"></span></a>Philox</h3>
+<p><strong>Philox</strong> 是 Salmon 等人提出的计数器型 RNG，来自 Random123 库，设计目标即为并行计算。</p>
+<ul>
+<li><strong>原理</strong>：输入为 <strong>计数器</strong>（counter）和 <strong>密钥</strong>（key，由种子派生）。输出由「counter + key」经多轮可逆变换（乘法、异或、置换等）得到，同一 (counter, key) 总是得到同一输出；不同 counter 或不同 key 对应不同、统计独立的流。</li>
+<li><strong>变体</strong>：NumPy 使用 64 位版（如 Philox-4x64），大周期（如 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>256</mn></msup></mrow><annotation encoding="application/x-tex">2^{256}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">256</span></span></span></span></span></span></span></span></span></span></span></span> 量级）；部分 GPU 框架（如 PyTorch CUDA）采用 32 位 Philox 做并行生成。</li>
+<li><strong>特点</strong>：无需顺序递推即可算「第 n 个」随机数，适合 GPU 或大量独立流；统计质量高，在 CPU 上速度略慢于 PCG64/SFC64。支持 <code>advance</code>、<code>jumped</code>；并行时也可直接为每个流分配不同 key（如 <code>key = seed + stream_id</code>）。</li>
+</ul>
+<h3 id="sfc64"><a aria-hidden="true" tabindex="-1" href="#sfc64"><span class="icon icon-link"></span></a>SFC64</h3>
+<p><strong>SFC64</strong>（Small Fast Chaotic）是 Chris Doty-Humphrey 提出的 64 位输出、基于可逆映射的快速 PRNG。</p>
+<ul>
+<li><strong>状态</strong>：4 个 64 位无符号整数，其中一个是递增计数器；核心为对 (a, b, c, counter) 做加法、移位、旋转、异或等可逆运算，多轮混合后输出 64 位。</li>
+<li><strong>周期</strong>：设计上期望周期约 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>255</mn></msup></mrow><annotation encoding="application/x-tex">2^{255}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">255</span></span></span></span></span></span></span></span></span></span></span></span>，实际保证至少 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>64</mn></msup></mrow><annotation encoding="application/x-tex">2^{64}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">64</span></span></span></span></span></span></span></span></span></span></span></span> 不重复。</li>
+<li><strong>特点</strong>：在 NumPy 各 BitGenerator 中通常最快，统计质量良好；<strong>不支持</strong> <code>jumped</code>，不适合依赖「跳块」的并行划分。需要大量独立流时宜用 spawn 或整数序列种子。</li>
+</ul>
+<h3 id="算法对比小结"><a aria-hidden="true" tabindex="-1" href="#算法对比小结"><span class="icon icon-link"></span></a>算法对比小结</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>算法</th><th>类型</th><th>周期</th><th>64 位输出</th><th>jump/advance</th><th>典型用途</th></tr></thead><tbody><tr><td>PCG64</td><td>递推（LCG+输出）</td><td><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>128</mn></msup></mrow><annotation encoding="application/x-tex">2^{128}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">128</span></span></span></span></span></span></span></span></span></span></span></span></td><td>是</td><td>是</td><td>默认，通用</td></tr><tr><td>PCG64DXSM</td><td>递推（LCG+强输出）</td><td><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>128</mn></msup></mrow><annotation encoding="application/x-tex">2^{128}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">128</span></span></span></span></span></span></span></span></span></span></span></span></td><td>是</td><td>是</td><td>大规模并行</td></tr><tr><td>MT19937</td><td>递推（TGFSR）</td><td><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>19937</mn></msup><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">2^{19937}-1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8974em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">19937</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span></td><td>否（32 位）</td><td>jumped</td><td>Legacy 兼容</td></tr><tr><td>Philox</td><td>计数器型</td><td>极大</td><td>是</td><td>是</td><td>并行、GPU 风格</td></tr><tr><td>SFC64</td><td>可逆映射+计数</td><td><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>≈</mo><msup><mn>2</mn><mn>255</mn></msup></mrow><annotation encoding="application/x-tex">\approx 2^{255}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4831em;"></span><span class="mrel">≈</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">255</span></span></span></span></span></span></span></span></span></span></span></span></td><td>是</td><td>否</td><td>追求速度</td></tr></tbody></table>
+<h2 id="种子与-seedsequence"><a aria-hidden="true" tabindex="-1" href="#种子与-seedsequence"><span class="icon icon-link"></span></a>种子与 SeedSequence</h2>
+<p>所有内置 BitGenerator 的种子都经 <strong>SeedSequence</strong> 转为高质量初始状态。SeedSequence 用带雪崩效应的哈希，把（可能低质量的）用户种子混合成足够比特，再交给各算法所需的状态。因此：</p>
+<ul>
+<li>支持任意非负整数或整数序列作为种子；</li>
+<li>相邻种子会产生差异很大的流；</li>
+<li>单次运行建议用 OS 熵或 <code>secrets.randbits(128)</code>，并打印/记录 <code>SeedSequence(seed).entropy</code> 以便复现。</li>
+</ul>
+<p>复现时用记录的 entropy 重建 SeedSequence 再构造 BitGenerator。若只是单元测试或调试，固定小种子（如 0）即可。</p>
+<h2 id="并行与多线程"><a aria-hidden="true" tabindex="-1" href="#并行与多线程"><span class="icon icon-link"></span></a>并行与多线程</h2>
+<p><strong>spawn</strong>：从一个种子派生多棵子树，每棵对应一个独立（极高概率不重叠）的 Generator。推荐用 <code>default_rng(seed).spawn(n)</code> 或 <code>SeedSequence(seed).spawn(n)</code> 得到 n 个子流；碰撞概率可粗估为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>n</mi><mn>2</mn></msup><mo>⋅</mo><msup><mn>2</mn><mrow><mo>−</mo><mn>128</mn></mrow></msup></mrow><annotation encoding="application/x-tex">n^2 \cdot 2^{-128}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal">n</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">128</span></span></span></span></span></span></span></span></span></span></span></span>，百万级流仍在可接受范围。</p>
+<p><strong>整数序列种子</strong>：每个 worker 用 <code>[worker_id, root_seed]</code> 作种子，保证不同 worker 不同流且可复现；不要把 <code>root_seed + worker_id</code> 当单一整数种子使用，多轮运行易造成流重叠。</p>
+<p><strong>Philox 独立流</strong>：Philox 为计数器型，种子即 key；不同 key 对应不同流，可直接用 <code>key=root_seed+stream_id</code> 生成多流（需保证 stream_id 不重复）。若需「可证明独立」或与 GPU 上的 Philox 流对齐，多线程里每线程一个 Philox 有理论优势，但在 CPU 上 Philox 比 PCG64 慢约一半，多数应用用 spawn 的 PCG64 即可。</p>
+<p><strong>advance 与 jumped</strong>：<code>advance(delta)</code> 把当前 BitGenerator 状态<strong>原地</strong>向前推进任意步；<code>jumped(n)</code> <strong>不修改</strong>当前实例，而是返回<strong>新实例</strong>，其状态等于按算法规定的大步长连续跳 n 次后的状态（如 PCG64 单次约 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>127</mn></msup></mrow><annotation encoding="application/x-tex">2^{127}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">127</span></span></span></span></span></span></span></span></span></span></span></span> 步）。需要任意步长时用 <code>advance</code>，需要固定大步长分块、给不同进程/线程时用 <code>jumped</code>；从同一发生器依次 <code>jumped(0)</code>、<code>jumped(1)</code>… 得到不重叠的块。PCG64/PCG64DXSM/Philox/MT19937 支持两者；SFC64 不支持 jumped。</p>
+<p><strong>多线程填充大数组</strong>：<code>random</code>、<code>standard_normal</code>、<code>standard_exponential</code>、<code>standard_gamma</code> 支持 <code>out=</code>。可预分配数组，用 <code>SeedSequence.spawn(n_threads)</code> 为每线程建一个 Generator，各填一段 <code>out[first:last]</code>，线程数固定时同一主种子可复现。</p>
+<h2 id="legacyrandomstate-与-api-对应"><a aria-hidden="true" tabindex="-1" href="#legacyrandomstate-与-api-对应"><span class="icon icon-link"></span></a>Legacy：RandomState 与 API 对应</h2>
+<p><strong>RandomState</strong> 是旧接口，固定使用 MT19937，内部还用 Box-Muller 正态、逆 CDF 指数/伽马等，保证与 NumPy 1.16 及以前输出一致。它被视为冻结，仅做兼容性维护。</p>
+<p><code>numpy.random</code> 下的顶层函数（如 <code>np.random.rand()</code>、<code>np.random.randn()</code>、<code>np.random.randint()</code>）都基于<strong>单一全局 RandomState</strong>，依赖全局状态，不推荐新代码使用。新代码应使用 <code>Generator</code> + <code>default_rng()</code>。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Generator（新）</th><th>RandomState / 顶层（旧）</th></tr></thead><tbody><tr><td><code>rng.random()</code></td><td><code>random_sample()</code>, <code>rand()</code></td></tr><tr><td><code>rng.integers(low, high, size)</code></td><td><code>randint()</code>, <code>random_integers()</code></td></tr><tr><td>无 <code>rand</code>/<code>randn</code></td><td><code>rand()</code>, <code>randn()</code></td></tr></tbody></table>
+<p>Generator 的正态、指数、伽马使用 256 步 Ziggurat，比 RandomState 的 Box-Muller/逆 CDF 快约 2–10 倍；算法不同，<strong>数值不会与 RandomState 一致</strong>。Generator 还支持 <code>random(..., dtype='f'|'d', out=...)</code>、<code>integers(..., dtype=...)</code>、部分分布的 <code>out=</code>、<code>choice</code>/<code>permutation</code>/<code>shuffle</code> 的 <code>axis=</code>，以及 <code>complex_normal</code> 等。</p>
+<h2 id="性能与选型"><a aria-hidden="true" tabindex="-1" href="#性能与选型"><span class="icon icon-link"></span></a>性能与选型</h2>
+<p>在 64 位 Linux（文档示例：AMD Ryzen 9）上，相对 Legacy RandomState：PCG64/PCG64DXSM 在整数、均匀、正态、指数、伽马等上约 1.5–2 倍以上加速；SFC64 通常最快；Philox 统计质量高但较慢，在 32 位或部分 Windows 上更慢。32 位平台下 64 位 BitGenerator 会慢不少，MT19937 为 32 位相对受影响小。</p>
+<p><strong>选型建议</strong>：默认用 PCG64（<code>default_rng()</code>）；单流或仅用 jumped、中等规模 spawn 继续用 PCG64 即可；百万级并行流 + 每流大量采样时显式用 PCG64DXSM 或 Philox/SFC64；要最高速度且不需要 jump 时选 SFC64；必须复现 1.16 及以前数值时才用 RandomState。</p>
+<p><strong>为何 CPU 默认不用 Philox？</strong> Philox 的优势是并行：每线程用不同 (counter, key) 独立生成，非常适合 GPU。在 CPU 单线程下只是顺序递增 counter，享受不到并行收益，却要承担每输出一次多轮乘法和异或的开销；NumPy 基准里 Philox 在 CPU 上比 PCG64 慢约一半。此外还有兼容性：若把默认改成 Philox，旧种子、旧代码的复现会全部改变。<strong>不考虑兼容性时 Philox 是否「最好」？</strong> 取决于场景：GPU 或极大规模并行（每线程独立 key）时 Philox 最自然；单线程 CPU 时 PCG64 或 SFC64 更合适；多线程 CPU 用 spawn 的 PCG64 通常足够且更快，仅当需要「可证明独立」或与 GPU Philox 流对齐时再在 CPU 上显式选 Philox。</p>
+<p>其他框架（如 PyTorch）采用类似 Generator 概念，CPU 用 MT19937、CUDA/MPS 用 Philox 做并行生成，跨设备复现不保证；详见各框架文档。</p>
+<h2 id="小结"><a aria-hidden="true" tabindex="-1" href="#小结"><span class="icon icon-link"></span></a>小结</h2>
+<ul>
+<li><strong>默认用法</strong>：<code>rng = np.random.default_rng(seed)</code>，用 <code>rng.random()</code>、<code>rng.integers()</code>、<code>rng.standard_normal()</code> 等；需要复现时记录 <code>SeedSequence(seed).entropy</code> 或固定种子。</li>
+<li><strong>并行</strong>：优先用 <code>SeedSequence.spawn(n)</code> 或 <code>default_rng(seed).spawn(n)</code>；或用 <code>[worker_id, root_seed]</code> 作种子；大规模并行可改用 PCG64DXSM 或 Philox。</li>
+<li><strong>兼容旧结果</strong>：仅需与 NumPy 1.16 及以前逐值一致时使用 RandomState。</li>
+<li><strong>安全相关</strong>：不用 <code>numpy.random</code>，改用 <code>secrets</code>。</li>
+</ul>
+<h2 id="参考文献"><a aria-hidden="true" tabindex="-1" href="#参考文献"><span class="icon icon-link"></span></a>参考文献</h2>
+<ul>
+<li><a href="https://numpy.org/doc/stable/reference/random/index.html">NumPy Random sampling (numpy.random)</a></li>
+<li><a href="https://numpy.org/doc/stable/reference/random/bit_generators/index.html">Bit generators</a></li>
+<li><a href="https://numpy.org/doc/stable/reference/random/parallel.html">Parallel random number generation</a></li>
+<li><a href="https://numpy.org/doc/stable/reference/random/legacy.html">Legacy random generation (RandomState)</a></li>
+<li><a href="https://numpy.org/doc/stable/reference/random/new-or-different.html">What’s new or different (Generator vs RandomState)</a></li>
+<li><a href="https://numpy.org/doc/stable/reference/random/upgrading-pcg64.html">Upgrading PCG64 with PCG64DXSM</a></li>
+<li><a href="https://numpy.org/neps/nep-0019-rng-policy.html">NEP 19 — RNG policy</a></li>
+<li><a href="https://www.pcg-random.org/">PCG, A Family of Simple Fast Space-Efficient Statistically Good Algorithms for Random Number Generation</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Mersenne_Twister">Mersenne Twister (Wikipedia)</a></li>
+<li><a href="https://www.thesalmons.org/john/random123/releases/latest/docs/index.html">Random123 (Philox)</a></li>
+<li><a href="https://pytorch.org/docs/stable/notes/randomness.html">PyTorch Reproducibility (randomness)</a></li>
+</ul> </article> <hr class="my-8 border-dashed"> <div class="opacity-80 sm:hidden"><span aria-hidden="true" class="max-sm:hidden">
+|
+</span><a class="space-x-1.5 hover:opacity-75" href="https://github.com/zrr1999/sixbones.dev/edit/main/data/blog/numpy-random-survey.md" rel="noopener noreferrer" target="_blank"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg><span class="italic max-sm:text-sm sm:inline">建议修改</span></a></div> <ul class="mt-4 mb-8 sm:my-8"> <li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/python/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-2"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>Python</span> </a> </li><li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/num-py/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-3"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>NumPy</span> </a> </li><li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/随机数/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-4"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>随机数</span> </a> </li><li class="group inline-block group-hover:cursor-pointer my-1 underline-offset-4"> <a href="/tags/prng/" class="relative pr-2 text-lg underline decoration-dashed group-hover:-top-0.5 group-hover:text-accent focus-visible:p-1 text-sm" data-astro-transition-scope="astro-36ssibgs-5"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block opacity-80 -mr-3.5 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg>
+&nbsp;<span>PRNG</span> </a> </li> </ul> <div class="flex flex-col items-center justify-between gap-6 sm:flex-row sm:items-end sm:gap-4"> <div class="flex flex-col flex-wrap items-center justify-center gap-1 sm:items-start"> <span class="italic">分享这篇文章：</span> <div class="text-center"> <a href="https://wa.me/?text=https://blog.sixbones.dev/posts/numpy-random-survey/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post via WhatsApp"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 21l1.65 -3.8a9 9 0 1 1 3.4 2.9l-5.05 .9" /><path d="M9 10a.5 .5 0 0 0 1 0v-1a.5 .5 0 0 0 -1 0v1a5 5 0 0 0 5 5h1a.5 .5 0 0 0 0 -1h-1a.5 .5 0 0 0 0 1" /></svg> <span class="sr-only">Share this post via WhatsApp</span> </a><a href="https://www.facebook.com/sharer.php?u=https://blog.sixbones.dev/posts/numpy-random-survey/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post on Facebook"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 10v4h3v7h4v-7h3l1 -4h-4v-2a1 1 0 0 1 1 -1h3v-4h-3a5 5 0 0 0 -5 5v2h-3" /></svg> <span class="sr-only">Share this post on Facebook</span> </a><a href="https://x.com/intent/post?url=https://blog.sixbones.dev/posts/numpy-random-survey/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post on X"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 4l11.733 16h4.267l-11.733 -16z" /><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" /></svg> <span class="sr-only">Share this post on X</span> </a><a href="https://t.me/share/url?url=https://blog.sixbones.dev/posts/numpy-random-survey/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post via Telegram"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 10l-4 4l6 6l4 -16l-18 7l4 2l2 6l3 -4" /></svg> <span class="sr-only">Share this post via Telegram</span> </a><a href="https://pinterest.com/pin/create/button/?url=https://blog.sixbones.dev/posts/numpy-random-survey/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post on Pinterest"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M8 20l4 -9" /><path d="M10.7 14c.437 1.263 1.43 2 2.55 2c2.071 0 3.75 -1.554 3.75 -4a5 5 0 1 0 -9.7 1.7" /><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /></svg> <span class="sr-only">Share this post on Pinterest</span> </a><a href="mailto:?subject=See%20this%20post&#38;body=https://blog.sixbones.dev/posts/numpy-random-survey/" class="group inline-block hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1" title="Share this post via email"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" /><path d="M3 7l9 6l9 -6" /></svg> <span class="sr-only">Share this post via email</span> </a> </div> </div> <button id="back-to-top" class="focus-outline py-1 whitespace-nowrap hover:opacity-75"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block rotate-90"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 6l-6 6l6 6" /></svg> <span>返回顶部</span> </button> </div> <hr class="my-6 border-dashed"> <!-- Previous/Next Post Buttons --> <div data-pagefind-ignore class="grid grid-cols-1 gap-6 sm:grid-cols-2"> <a href="/posts/egglog-quickstart-01" class="flex w-full gap-1 hover:opacity-75"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block flex-none"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 6l-6 6l6 6" /></svg> <div> <span>上一篇</span> <div class="text-sm text-accent/85">Egglog 快速入门（一）：用等价饱和定义自然数运算</div> </div> </a> <a href="/posts/multi-agent-design-paradigms" class="flex w-full justify-end gap-1 text-right hover:opacity-75 sm:col-start-2"> <div> <span>下一篇</span> <div class="text-sm text-accent/85">多 Agent 系统设计范式：从理论到实践的完整指南</div> </div> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block flex-none"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M9 6l6 6l-6 6" /></svg> </a> </div> <div class="giscus"></div> <script data-astro-rerun src="https://giscus.app/client.js" data-repo="zrr1999/sixbones.dev" data-repo-id="MDEwOlJlcG9zaXRvcnkzMTY0NTU2NDg=" data-category="General" data-category-id="DIC_kwDOEty64M4Chlof" data-mapping="pathname" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="preferred_color_scheme" data-lang="zh-CN" data-loading="lazy" crossorigin="anonymous" async></script> </main> <footer class="w-full mt-auto"> <div class="max-w-3xl mx-auto px-0"> <hr class="border-border" aria-hidden="true"> </div> <div class="flex flex-col items-center justify-between py-6 sm:flex-row-reverse sm:py-4"> <div class="flex-wrap justify-center gap-1 flex"> <a href="https://github.com/zrr1999" class="group inline-block hover:text-accent p-2 hover:rotate-6 sm:p-1" title=" 六个骨头的博客 on Github"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" /></svg> <span class="sr-only"> 六个骨头的博客 on Github</span> </a><a href="mailto:zrr1999@qq.com" class="group inline-block hover:text-accent p-2 hover:rotate-6 sm:p-1" title="Send an email to 六个骨头的博客"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" /><path d="M3 7l9 6l9 -6" /></svg> <span class="sr-only">Send an email to 六个骨头的博客</span> </a> </div> <div class="my-2 flex flex-col items-center whitespace-nowrap sm:flex-row"> <span>&#169; 2024-2026 <a href="https://github.com/zrr1999">Zhan Rongrui</a></span> </div> </div> </footer>  </body></html> <script data-astro-rerun>
+  /** Create a progress indicator
+   *  at the top */
+  function createProgressBar() {
+    // Create the main container div
+    const progressContainer = document.createElement("div");
+    progressContainer.className =
+      "progress-container fixed top-0 z-10 h-1 w-full bg-background";
+
+    // Create the progress bar div
+    const progressBar = document.createElement("div");
+    progressBar.className = "progress-bar h-1 w-0 bg-accent";
+    progressBar.id = "myBar";
+
+    // Append the progress bar to the progress container
+    progressContainer.appendChild(progressBar);
+
+    // Append the progress container to the document body or any other desired parent element
+    document.body.appendChild(progressContainer);
+  }
+  createProgressBar();
+
+  /** Update the progress bar
+   *  when user scrolls */
+  function updateScrollProgress() {
+    document.addEventListener("scroll", () => {
+      const winScroll =
+        document.body.scrollTop || document.documentElement.scrollTop;
+      const height =
+        document.documentElement.scrollHeight -
+        document.documentElement.clientHeight;
+      const scrolled = (winScroll / height) * 100;
+      if (document) {
+        const myBar = document.getElementById("myBar");
+        if (myBar) {
+          myBar.style.width = scrolled + "%";
+        }
+      }
+    });
+  }
+  updateScrollProgress();
+
+  /** Attaches links to headings in the document,
+   *  allowing sharing of sections easily */
+  function addHeadingLinks() {
+    const headings = Array.from(
+      document.querySelectorAll("h2, h3, h4, h5, h6")
+    );
+    for (const heading of headings) {
+      heading.classList.add("group");
+      const link = document.createElement("a");
+      link.className =
+        "heading-link ml-2 opacity-0 group-hover:opacity-100 focus:opacity-100";
+      link.href = "#" + heading.id;
+
+      const span = document.createElement("span");
+      span.ariaHidden = "true";
+      span.innerText = "#";
+      link.appendChild(span);
+      heading.appendChild(link);
+    }
+  }
+  addHeadingLinks();
+
+  /** Attaches copy buttons to code blocks in the document,
+   * allowing users to copy code easily. */
+  function attachCopyButtons() {
+    const copyButtonLabel = "Copy";
+    const codeBlocks = Array.from(
+      document.querySelectorAll("pre:not(.mermaid)")
+    );
+
+    for (const codeBlock of codeBlocks) {
+      const wrapper = document.createElement("div");
+      wrapper.style.position = "relative";
+
+      const copyButton = document.createElement("button");
+      copyButton.className =
+        "copy-code absolute right-3 -top-3 rounded bg-muted px-2 py-1 text-xs leading-4 text-foreground font-medium";
+      copyButton.innerHTML = copyButtonLabel;
+      codeBlock.setAttribute("tabindex", "0");
+      codeBlock.appendChild(copyButton);
+
+      // wrap codebock with relative parent element
+      codeBlock?.parentNode?.insertBefore(wrapper, codeBlock);
+      wrapper.appendChild(codeBlock);
+
+      copyButton.addEventListener("click", async () => {
+        await copyCode(codeBlock, copyButton);
+      });
+    }
+
+    async function copyCode(block, button) {
+      const code = block.querySelector("code");
+      const text = code?.innerText;
+
+      await navigator.clipboard.writeText(text ?? "");
+
+      // visual feedback that task is completed
+      button.innerText = "Copied";
+
+      setTimeout(() => {
+        button.innerText = copyButtonLabel;
+      }, 700);
+    }
+  }
+  attachCopyButtons();
+
+  /** Scrolls the document to the top when
+   * the "Back to Top" button is clicked. */
+  function backToTop() {
+    document.querySelector("#back-to-top")?.addEventListener("click", () => {
+      document.body.scrollTop = 0; // For Safari
+      document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+    });
+  }
+  backToTop();
+
+  /* Go to page start after page swap */
+  document.addEventListener("astro:after-swap", () =>
+    window.scrollTo({ left: 0, top: 0, behavior: "instant" })
+  );
+</script>
