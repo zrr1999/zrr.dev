@@ -34,6 +34,7 @@ jobs:
         with:
           args: >-
             --exclude-loopback
+            --exclude 'https://vite-plus.dev/.*'
             --no-progress
             'README.md'
             'AGENTS.md'
