@@ -4,9 +4,9 @@ AI 代理配置、工作流程与项目规范。项目概览见 [README](./READM
 
 ## 项目结构
 
-- `apps/root/` - 个人主页（sixbones.dev）
-- `apps/blog/` - 博客（blog.sixbones.dev）
-- `apps/slides/` - 幻灯片（slides.sixbones.dev）
+- `apps/root/` - 个人主页（`zrr.dev`，`sixbones.dev` 永久重定向到此）
+- `apps/blog/` - 博客（`blog.zrr.dev`，`blog.sixbones.dev` 永久重定向到此）
+- `apps/slides/` - 幻灯片（`slides.zrr.dev`，`slides.sixbones.dev` 永久重定向到此）
 
 ## 可用代理
 
@@ -46,7 +46,7 @@ AI 代理配置、工作流程与项目规范。项目概览见 [README](./READM
 ## 配置
 
 - `package.json` / `turbo.json` - 依赖与构建
-- `.github/workflows/` - CI/CD
+- `.github/workflows/` - CI / 校验（不负责生产部署）
 - `.github/agents/` - 代理配置（若存在）
 
 ## 常用命令
@@ -74,6 +74,13 @@ AI 代理配置、工作流程与项目规范。项目概览见 [README](./READM
 - 提交前运行 `vp check` 和 `vp test`
 - 遵循常规提交规范，单次提交保持最小化
 - 审查代理更改时验证测试通过、文档同步
+
+## 部署模型
+
+- 生产环境使用 Cloudflare Pages 原生 Git 集成，直接跟踪 `main` 分支。
+- 不要重新引入 GitHub Actions + orphan branch、Wrangler secrets 或其他仓库内发布步骤来做生产部署。
+- 预期存在 3 个 Cloudflare Pages 项目，分别对应 `apps/root`、`apps/blog`、`apps/slides`；构建命令与输出目录以 [README](./README.md#部署模型) 为准。
+- 旧域名 `sixbones.dev`、`blog.sixbones.dev`、`slides.sixbones.dev` 必须继续保留为 `308` 永久重定向入口，并将请求转发到新的公开域名。
 
 ## 博客编写规范
 
@@ -184,14 +191,26 @@ These commands map to their corresponding tools. For example, `vp dev --port 300
 
 - **Using the package manager directly:** Do not use pnpm, npm, or Yarn directly. Vite+ can handle all package manager operations.
 - **Always use Vite commands to run tools:** Don't attempt to run `vp vitest` or `vp oxlint`. They do not exist. Use `vp test` and `vp lint` instead.
-- **Running scripts:** Vite+ commands take precedence over `package.json` scripts. If there is a `test` script defined in `scripts` that conflicts with the built-in `vp test` command, run it using `vp run test`.
+- **Running scripts:** Vite+ built-in commands (`vp dev`, `vp build`, `vp test`, etc.) always run the Vite+ built-in tool, not any `package.json` script of the same name. To run a custom script that shares a name with a built-in command, use `vp run <script>`. For example, if you have a custom `dev` script that runs multiple services concurrently, run it with `vp run dev`, not `vp dev` (which always starts Vite's dev server).
 - **Do not install Vitest, Oxlint, Oxfmt, or tsdown directly:** Vite+ wraps these tools. They must not be installed directly. You cannot upgrade these tools by installing their latest versions. Always use Vite+ commands.
 - **Use Vite+ wrappers for one-off binaries:** Use `vp dlx` instead of package-manager-specific `dlx`/`npx` commands.
 - **Import JavaScript modules from `vite-plus`:** Instead of importing from `vite` or `vitest`, all modules should be imported from the project's `vite-plus` dependency. For example, `import { defineConfig } from 'vite-plus';` or `import { expect, test, vi } from 'vite-plus/test';`. You must not install `vitest` to import test utilities.
 - **Type-Aware Linting:** There is no need to install `oxlint-tsgolint`, `vp lint --type-aware` works out of the box.
 
+## CI Integration
+
+For GitHub Actions, consider using [`voidzero-dev/setup-vp`](https://github.com/voidzero-dev/setup-vp) to replace separate `actions/setup-node`, package-manager setup, cache, and install steps with a single action.
+
+```yaml
+- uses: voidzero-dev/setup-vp@v1
+  with:
+    cache: true
+- run: vp check
+- run: vp test
+```
+
 ## Review Checklist for Agents
 
 - [ ] Run `vp install` after pulling remote changes and before getting started.
 - [ ] Run `vp check` and `vp test` to validate changes.
- <!--VITE PLUS END-->
+<!--VITE PLUS END-->

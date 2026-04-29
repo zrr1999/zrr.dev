@@ -1,6 +1,8 @@
-# sixbones.dev
+# zrr.dev
 
 个人网站项目，包含主页、博客和幻灯片展示功能。
+
+当前生产域名为 `zrr.dev`、`blog.zrr.dev` 和 `slides.zrr.dev`；旧域名 `sixbones.dev`、`blog.sixbones.dev` 和 `slides.sixbones.dev` 保留为永久重定向入口。
 
 ## 项目简介
 
@@ -17,7 +19,7 @@
 - **框架**：[Astro](https://astro.build)
 - **样式**：[Tailwind CSS](https://tailwindcss.com)
 - **内容**：Markdown、Typst
-- **部署**：支持各类静态托管
+- **部署**：Cloudflare Pages 原生 Git 集成
 
 ## 开发命令
 
@@ -33,16 +35,42 @@
 | `vp lint`        | 代码检查               |
 | `vp check`       | 格式 + lint + 类型检查 |
 
+## 部署模型
+
+生产部署由 Cloudflare Pages 直接从 Git 仓库拉取 `main` 分支完成；仓库本身不再通过 GitHub Actions 发布 orphan branch，也不需要 Wrangler 或 Cloudflare API secrets。
+
+三套站点分别对应三个 Cloudflare Pages 项目，建议都以仓库根目录作为 `Root directory`：
+
+| 应用          | Cloudflare Pages 项目 | 生产域名         | Production branch | Build command                             | Build output directory |
+| :------------ | :-------------------- | :--------------- | :---------------- | :---------------------------------------- | :--------------------- |
+| `apps/root`   | root 站点项目         | `zrr.dev`        | `main`            | `pnpm --filter @zrr-website/root build`   | `apps/root/dist`       |
+| `apps/blog`   | blog 站点项目         | `blog.zrr.dev`   | `main`            | `pnpm --filter @zrr-website/blog build`   | `apps/blog/dist`       |
+| `apps/slides` | slides 站点项目       | `slides.zrr.dev` | `main`            | `pnpm --filter @zrr-website/slides build` | `apps/slides/dist`     |
+
+如果 Cloudflare 未自动识别工作区安装步骤，可显式设置安装命令为 `corepack enable && pnpm install --frozen-lockfile`。
+
+### 旧域名永久重定向
+
+旧域名应在 Cloudflare 仪表盘中通过 `Redirect Rules` 或 `Bulk Redirects` 配置为 `308` 永久重定向，并保留原始路径与查询参数：
+
+| 旧域名                  | 目标域名                    |
+| :---------------------- | :-------------------------- |
+| `sixbones.dev/*`        | `https://zrr.dev/$1`        |
+| `blog.sixbones.dev/*`   | `https://blog.zrr.dev/$1`   |
+| `slides.sixbones.dev/*` | `https://slides.zrr.dev/$1` |
+
+新域名应直接绑定到各自的 Cloudflare Pages 项目；旧域名仅作为跳转入口，不再由仓库生成单独的静态跳转分支。
+
 ## 项目结构
 
 ```
-sixbones.dev/
+zrr.dev/
 ├── apps/
-│   ├── root/            # 个人主页应用（根域名）
-│   ├── blog/            # 博客应用
+│   ├── root/            # 个人主页应用（zrr.dev）
+│   ├── blog/            # 博客应用（blog.zrr.dev）
 │   │   ├── src/         # 源代码
 │   │   └── data/blog/   # 博客文章
-│   └── slides/          # 幻灯片应用
+│   └── slides/          # 幻灯片应用（slides.zrr.dev）
 ├── hosting/             # 托管相关配置
 └── package.json         # 项目配置
 ```
@@ -58,7 +86,7 @@ sixbones.dev/
 - 简历链接
 - 关于页面
 
-主页部署在根域名 `sixbones.dev`。
+主页部署在 `zrr.dev`，`sixbones.dev` 保留为永久重定向入口。
 
 ## 博客
 
@@ -75,6 +103,7 @@ sixbones.dev/
 
 - `package.json` / `turbo.json` - 依赖与 Turborepo 构建
 - [AGENTS.md](./AGENTS.md) - AI 代理工作流与规范
+- Cloudflare Pages - 生产部署与域名绑定（在 Cloudflare 仪表盘中配置）
 
 ## 许可证
 

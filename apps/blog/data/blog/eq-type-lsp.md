@@ -1,6 +1,6 @@
 ---
 title: "__eq__ 的返回类型与里氏替换原则"
-author: "六个骨头"
+author: "zrr1999"
 description: "讨论 object.__eq__ 返回 bool 与里氏替换原则的冲突、返回非 bool 的特定情形（如 NumPy、array-api 规范下的数组），以及 typeshed 与各社区的实践取舍"
 pubDatetime: 2026-01-24
 modDatetime: 2026-01-24

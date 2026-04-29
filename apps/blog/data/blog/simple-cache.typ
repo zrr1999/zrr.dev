@@ -1,6 +1,6 @@
 #metadata((
   title: "一种针对主干网络的缓存机制的简单实现",
-  author: "六个骨头",
+  author: "zrr1999",
   description: "一种针对主干网络的缓存机制的简单实现",
   pubDatetime: "2025-06-04",
   tags: ("缓存", "深度学习"),

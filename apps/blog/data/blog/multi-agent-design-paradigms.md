@@ -1,6 +1,6 @@
 ---
 title: "多 Agent 系统设计范式：从理论到实践的完整指南"
-author: "六个骨头"
+author: "zrr1999"
 description: "从设计方案与设计范式的宏观角度，系统梳理主流多 Agent 系统构建思路"
 pubDatetime: 2026-01-25
 modDatetime: 2026-01-25

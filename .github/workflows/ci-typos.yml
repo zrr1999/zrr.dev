@@ -1,0 +1,40 @@
+name: "CI - Typos"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/**"
+      - "_typos.toml"
+      - "apps/blog/data/blog/**"
+      - "hosting/README.md"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/**"
+      - "_typos.toml"
+      - "apps/blog/data/blog/**"
+      - "hosting/README.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  typos:
+    name: typos
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Run typos
+        uses: crate-ci/typos-action@v1
+        with:
+          config: ./_typos.toml
+          files: ".github apps/blog/data/blog hosting/README.md"

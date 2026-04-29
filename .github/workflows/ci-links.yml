@@ -1,0 +1,43 @@
+name: "CI - Link Checks"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/blog/data/blog/**/*.md"
+      - "hosting/**/*.md"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "apps/blog/data/blog/**/*.md"
+      - "hosting/**/*.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  links:
+    name: links
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Check links with lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: >-
+            --accept 429
+            --exclude-loopback
+            --no-progress
+            'apps/blog/data/blog/**/*.md'
+            'hosting/**/*.md'
+          fail: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

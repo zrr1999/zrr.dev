@@ -1,6 +1,6 @@
 ---
 title: "Egglog 快速入门（一）：用等价饱和定义自然数运算"
-author: "六个骨头"
+author: "zrr1999"
 description: "以 Peano 自然数的加法与乘法为例，介绍 egglog 语言：datatype、constructor、rewrite、check、run-schedule 与 saturate，以及 egg 与 egglog 的关系。"
 pubDatetime: 2026-02-13
 modDatetime: 2026-02-13

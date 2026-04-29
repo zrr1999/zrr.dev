@@ -2,7 +2,8 @@ import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   staged: {
-    "*": "vp check --fix",
+    "*.{astro,cjs,css,cts,js,json,jsx,md,mjs,mts,tsx,ts,yaml,yml}":
+      "vp exec prettier --write",
   },
   lint: {
     plugins: [],

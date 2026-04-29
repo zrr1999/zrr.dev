@@ -1,6 +1,6 @@
 ---
 title: "有理分式分解的一种快捷方法"
-author: "六个骨头"
+author: "zrr1999"
 description: "在学习信号与系统等学科时，我们经常会遇到有理分式分解的问题，这里介绍一种有理分式分解的一种快捷方法"
 pubDatetime: 2021-12-30
 modDatetime: 2025-10-24

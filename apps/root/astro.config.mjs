@@ -3,7 +3,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   prefetch: true,
-  site: "https://sixbones.dev",
+  site: "https://zrr.dev",
   i18n: {
     locales: ["en", "zh-cn"],
     defaultLocale: "zh-cn",

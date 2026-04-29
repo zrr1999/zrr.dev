@@ -6,7 +6,7 @@ import preact from "@astrojs/preact";
 
 export default defineConfig({
   prefetch: true,
-  site: "https://slides.sixbones.dev",
+  site: "https://slides.zrr.dev",
   i18n: {
     locales: ["en", "zh-cn"],
     defaultLocale: "zh-cn",

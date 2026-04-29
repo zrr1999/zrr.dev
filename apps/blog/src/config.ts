@@ -1,9 +1,9 @@
 export const SITE = {
-  website: "https://blog.sixbones.dev/",
+  website: "https://blog.zrr.dev/",
   author: "zrr1999",
-  profile: "https://blog.sixbones.dev/",
+  profile: "https://blog.zrr.dev/",
   desc: "一个普通的个人博客",
-  title: "六个骨头的博客",
+  title: "zrr.dev 博客",
   ogImage: "og.png",
   lightAndDarkMode: true,
   postPerIndex: 4,
