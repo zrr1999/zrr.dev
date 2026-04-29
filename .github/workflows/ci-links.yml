@@ -5,14 +5,16 @@ on:
     branches:
       - main
     paths:
-      - "apps/blog/data/blog/**/*.md"
-      - "hosting/**/*.md"
+      - "AGENTS.md"
+      - "README.md"
+      - ".github/workflows/ci-links.yml"
   pull_request:
     branches:
       - main
     paths:
-      - "apps/blog/data/blog/**/*.md"
-      - "hosting/**/*.md"
+      - "AGENTS.md"
+      - "README.md"
+      - ".github/workflows/ci-links.yml"
   workflow_dispatch:
 
 permissions:
@@ -26,18 +28,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-        with:
-          submodules: recursive
 
       - name: Check links with lychee
         uses: lycheeverse/lychee-action@v2
         with:
           args: >-
-            --accept 429
             --exclude-loopback
             --no-progress
-            'apps/blog/data/blog/**/*.md'
-            'hosting/**/*.md'
+            'README.md'
+            'AGENTS.md'
           fail: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

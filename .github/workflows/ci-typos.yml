@@ -6,17 +6,21 @@ on:
       - main
     paths:
       - ".github/**"
+      - ".vale.ini"
       - "_typos.toml"
+      - "AGENTS.md"
+      - "README.md"
       - "apps/blog/data/blog/**"
-      - "hosting/README.md"
   pull_request:
     branches:
       - main
     paths:
       - ".github/**"
+      - ".vale.ini"
       - "_typos.toml"
+      - "AGENTS.md"
+      - "README.md"
       - "apps/blog/data/blog/**"
-      - "hosting/README.md"
   workflow_dispatch:
 
 permissions:
@@ -30,11 +34,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-        with:
-          submodules: recursive
 
       - name: Run typos
-        uses: crate-ci/typos-action@v1
+        uses: crate-ci/typos@master
         with:
           config: ./_typos.toml
-          files: ".github apps/blog/data/blog hosting/README.md"
+          files: ".github AGENTS.md README.md apps/blog/data/blog .vale.ini _typos.toml"
