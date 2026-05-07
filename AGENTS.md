@@ -45,7 +45,8 @@ AI 代理配置、工作流程与项目规范。项目概览见 [README](./READM
 
 ## 配置
 
-- `package.json` / `turbo.json` - 依赖与构建
+- `package.json`（根目录脚本通过 pnpm `--filter './apps/*'` 在各 app 上执行 dev/build 等）与 `pnpm-workspace.yaml`
+- **版本锁定（代理改依赖前必读）**：Astro 与各 app 保持一致且当前固定为 **`6.1.8`**；Vite+ 栈通过 workspace **catalog + overrides** 固定为 **`0.1.18`**。将 Astro 升到 **6.1.10+ / 6.2** 或将 vite-plus 升到 **0.1.19+** 前，须在本地跑通 **`pnpm run build`**，否则可能遇到 vite-plus-core 在 `generateBundle` 中的 **`Not implemented`**。`@astrojs/internal-helpers` 由 override 固定在 **`0.9.0`** 以匹配 markdown 集成。说明见 [README 工具链版本说明](./README.md#工具链版本说明)。
 - `.github/workflows/` - CI / 校验（不负责生产部署）
 - `.github/agents/` - 代理配置（若存在）
 
@@ -65,8 +66,8 @@ AI 代理配置、工作流程与项目规范。项目概览见 [README](./READM
 
 ## 工作流程
 
-- **代码优化**：分析 → 识别机会 → 格式化 → `vp check` / `vp test` → 提交
-- **文档更新**：审查 → 更新内容 → 验证格式 → 提交
+- **代码优化**：分析 → 识别机会 → 在仓库根运行 `vp fmt` / `vp check`（或各包 `vp fmt`）→ `vp test` → 提交
+- **文档更新**：审查 → 更新内容 → 在相关包目录运行 `vp fmt . --check` 或通过根目录 `vp check` → 提交
 - **测试维护**：分析覆盖率 → 补充用例 → `vp test` → 提交
 
 ## 最佳实践

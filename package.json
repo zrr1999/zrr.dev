@@ -1,27 +1,25 @@
 {
   "name": "zrr-website",
   "version": "0.1.0",
+  "license": "GPL-3.0",
+  "author": "Zhan Rongrui",
   "workspaces": [
-    "packages/*",
     "apps/*"
   ],
   "type": "module",
   "scripts": {
-    "dev": "turbo dev --filter=./apps/*",
-    "build": "turbo build --filter=./apps/*",
-    "preview": "turbo preview --filter=./apps/*",
-    "format": "turbo format",
-    "format:check": "turbo format:check",
-    "lint": "turbo lint",
-    "lint:check": "turbo lint:check",
+    "dev": "pnpm -r --parallel --filter './apps/*' run dev",
+    "build": "pnpm -r --filter './apps/*' run build",
+    "preview": "pnpm -r --parallel --filter './apps/*' run preview",
+    "format": "pnpm -r --filter './apps/*' run format",
+    "format:check": "pnpm -r --filter './apps/*' run format:check",
+    "lint": "pnpm -r --filter './apps/*' run lint",
+    "lint:check": "pnpm -r --filter './apps/*' run lint:check",
     "prepare": "vp config"
   },
   "devDependencies": {
-    "prettier": "^3.8.1",
-    "prettier-plugin-astro": "^0.14.1",
-    "prettier-plugin-tailwindcss": "^0.7.2",
-    "turbo": "^2.8.9",
+    "oxlint": "1.61.0",
     "vite-plus": "catalog:"
   },
-  "packageManager": "pnpm@10.33.0"
+  "packageManager": "pnpm@10.33.4"
 }

@@ -1,0 +1,4 @@
+
+[0m[2m[35m$[0m [2m[1moxlint . --fix[0m
+Found 0 warnings and 0 errors.
+Finished in 21ms on 24 files using 10 threads.

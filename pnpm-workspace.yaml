@@ -1,17 +1,24 @@
 packages:
-  - "packages/*"
   - "apps/*"
+allowBuilds:
+  esbuild: true
+  sharp: true
+
 catalog:
-  vite: npm:@voidzero-dev/vite-plus-core@latest
-  vitest: npm:@voidzero-dev/vite-plus-test@latest
-  vite-plus: latest
+  vite: "npm:@voidzero-dev/vite-plus-core@0.1.18"
+  vite-plus: "0.1.18"
+  vitest: "npm:@voidzero-dev/vite-plus-test@0.1.18"
+
 overrides:
+  "@astrojs/internal-helpers": "0.9.0"
   vite: "catalog:"
   vitest: "catalog:"
+
 peerDependencyRules:
   allowAny:
     - vite
     - vitest
   allowedVersions:
+    typescript: "*"
     vite: "*"
     vitest: "*"

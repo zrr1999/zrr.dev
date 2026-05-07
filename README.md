@@ -25,15 +25,43 @@
 
 项目使用 [Vite+](https://vite-plus.dev)（`vp`），在根目录执行：
 
-| 命令             | 说明                   |
-| :--------------- | :--------------------- |
-| `vp install`     | 安装依赖               |
-| `vp run dev`     | 启动开发服务器         |
-| `vp run build`   | 构建到 `./dist/`       |
-| `vp run preview` | 预览构建结果           |
-| `vp fmt`         | 格式化代码             |
-| `vp lint`        | 代码检查               |
-| `vp check`       | 格式 + lint + 类型检查 |
+| 命令             | 说明                                                        |
+| :--------------- | :---------------------------------------------------------- |
+| `vp install`     | 安装依赖                                                    |
+| `vp run dev`     | 启动开发服务器                                              |
+| `vp run build`   | 构建到 `./dist/`                                            |
+| `vp run preview` | 预览构建结果                                                |
+| `vp fmt`         | 在仓库根目录格式化（Oxfmt，读取 `vite.config.ts` 的 `fmt`） |
+| `vp lint`        | 代码检查                                                    |
+| `vp check`       | 格式 + lint + 类型检查                                      |
+
+各应用内的 `pnpm run format` / `format:check` 会调用 `vp fmt`（与根目录 `vp fmt` 共用同一份 `fmt` 配置）。
+
+## 部署模型
+
+生产部署由 Cloudflare Pages 直接从 Git 仓库拉取 `main` 分支完成；仓库本身不再通过 GitHub Actions 发布 orphan branch，也不需要 Wrangler 或 Cloudflare API secrets。
+
+三套站点分别对应三个 Cloudflare Pages 项目，建议都以仓库根目录作为 `Root directory`：
+
+| 应用          | Cloudflare Pages 项目 | 生产域名         | Production branch | Build command                             | Build output directory |
+| :------------ | :-------------------- | :--------------- | :---------------- | :---------------------------------------- | :--------------------- |
+| `apps/root`   | root 站点项目         | `zrr.dev`        | `main`            | `pnpm --filter @zrr-website/root build`   | `apps/root/dist`       |
+| `apps/blog`   | blog 站点项目         | `blog.zrr.dev`   | `main`            | `pnpm --filter @zrr-website/blog build`   | `apps/blog/dist`       |
+| `apps/slides` | slides 站点项目       | `slides.zrr.dev` | `main`            | `pnpm --filter @zrr-website/slides build` | `apps/slides/dist`     |
+
+如果 Cloudflare 未自动识别工作区安装步骤，可显式设置安装命令为 `corepack enable && pnpm install --frozen-lockfile`。
+
+### 旧域名永久重定向
+
+旧域名应在 Cloudflare 仪表盘中通过 `Redirect Rules` 或 `Bulk Redirects` 配置为 `308` 永久重定向，并保留原始路径与查询参数：
+
+| 旧域名                  | 目标域名                    |
+| :---------------------- | :-------------------------- |
+| `sixbones.dev/*`        | `https://zrr.dev/$1`        |
+| `blog.sixbones.dev/*`   | `https://blog.zrr.dev/$1`   |
+| `slides.sixbones.dev/*` | `https://slides.zrr.dev/$1` |
+
+新域名应直接绑定到各自的 Cloudflare Pages 项目；旧域名仅作为跳转入口，不再由仓库生成单独的静态跳转分支。
 
 ## 部署模型
 
@@ -97,14 +125,24 @@ zrr.dev/
 
 ## 幻灯片
 
-文件位于 `apps/slides/public/slides/`，每个幻灯片为独立目录。
+每套幻灯片为 `hosting/slides/` 下的独立目录；`apps/slides` 在开发与生产构建时从该路径提供 `/slides/*`，**不必**再在 `apps/slides/public/slides` 维护软链接。
+
+## 工具链版本说明
+
+本仓库用 **Vite+**（`vite-plus` / `@voidzero-dev/vite-plus-core`）统一驱动 Vite、格式化与测试。为与当前 Rolldown 集成兼容，**各应用将 Astro 固定为 `6.1.8`（精确版本）**，并将 **Vite+ 核心栈固定为 `0.1.18`**（见根目录 `pnpm-workspace.yaml` 的 `catalog` 与 `overrides`）。
+
+在 **Astro 6.1.10+ / 6.2.x** 与 **vite-plus `0.1.19`–`0.1.20`** 的组合下，生产构建可能在 `@voidzero-dev/vite-plus-core` 的 `generateBundle` 阶段触发 **`Not implemented`**：与 [vitejs/vite#22356](https://github.com/vitejs/vite/issues/22356)（Rolldown 兼容层里对 esbuild `BuildResult` 的占位代理、与 **`astro:dev-toolbar`** 在 `optimizeDeps` 的 `onEnd` 中读取 `result.metafile`）描述一致。在 **Vite / Vite+** 合入修复前，不要解开下述 Astro 与 Vite+ 的锁定；构建日志里 **`resolve.alias` / `optimizeDeps.esbuildOptions` 弃用** 也多来自 **Astro 自带插件与生态**，在锁定组合下只能等上游。
+
+`@astrojs/internal-helpers` 通过 pnpm **override** 对齐到 **`0.9.0`**，以满足 `@astrojs/markdown-remark` 等对子路径导出（如 `./object`）的要求，并避免与工作区提升版本不一致导致的运行时报错。
+
+内容集合的 Zod 请使用 **`import { z } from "astro/zod"`**（与 `defineCollection` **分两条 import**），见 `apps/blog/src/content.config.ts`，以避免 `astro check` 对 `astro:content` 再导出 `z` 的弃用提示。
 
 ## 配置
 
-- `package.json` / `turbo.json` - 依赖与 Turborepo 构建
+- `package.json` / `pnpm-workspace.yaml` - 依赖与多包脚本（根目录 `pnpm run dev` 等会筛 `apps/*`）；含上述 catalog / overrides
 - [AGENTS.md](./AGENTS.md) - AI 代理工作流与规范
 - Cloudflare Pages - 生产部署与域名绑定（在 Cloudflare 仪表盘中配置）
 
 ## 许可证
 
-MIT。
+版权所有 © 2026 Zhan Rongrui。以 GNU 通用公共许可证第 3 版（GPL-3.0）发布，完整条文见 [LICENSE](./LICENSE)。

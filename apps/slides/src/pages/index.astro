@@ -2,12 +2,14 @@
 import Layout from "../layouts/Layout.astro";
 import SlideList from "../components/SlideList.tsx";
 
-// 你原有的 slides 生成逻辑
-import { readdir } from "fs/promises";
-import { join } from "path";
+import { existsSync } from "node:fs";
+import { readdir } from "node:fs/promises";
+import { join } from "node:path";
 
 let slides: string[] = [];
-const slidesDir = join(process.cwd(), "public", "slides");
+const hostingSlides = join(process.cwd(), "..", "..", "hosting", "slides");
+const publicSlides = join(process.cwd(), "public", "slides");
+const slidesDir = existsSync(hostingSlides) ? hostingSlides : publicSlides;
 const items = await readdir(slidesDir, { withFileTypes: true });
 slides = items
   .filter(item => item.isDirectory())

@@ -7,17 +7,17 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format": "vp fmt . --write",
+    "format:check": "vp fmt . --check",
     "lint": "vp lint . --fix",
     "lint:check": "vp lint ."
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.4",
-    "@lucide/astro": "^1.0.0",
-    "@tailwindcss/vite": "^4.1.8",
+    "@astrojs/check": "^0.9.9",
+    "@lucide/astro": "^1.14.0",
+    "@tailwindcss/vite": "^4.2.4",
     "astro": "6.1.8",
-    "tailwindcss": "^4.1.8"
+    "tailwindcss": "^4.2.4"
   },
   "devDependencies": {
     "vite": "catalog:",
