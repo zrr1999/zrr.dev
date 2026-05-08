@@ -1,5 +1,0 @@
-hosting/
-# Vendored reveal.js and other static slide assets (minified third-party)
-apps/slides/public/
-# Astro env shim uses /// <reference> by convention
-apps/blog/src/env.d.ts

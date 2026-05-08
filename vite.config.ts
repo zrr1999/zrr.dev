@@ -1,9 +1,12 @@
 import { defineConfig } from "vite-plus";
+import { sharedLintIgnorePatterns } from "./oxlint.config.ts";
 
 export default defineConfig({
   staged: {
-    "*.{astro,cjs,css,cts,js,json,jsx,md,mjs,mts,tsx,ts,yaml,yml}":
-      "vp exec prettier --write",
+    "*": "vp check --fix",
+  },
+  lint: {
+    ignorePatterns: [...sharedLintIgnorePatterns],
   },
   fmt: {
     ignorePatterns: ["hosting/**"],

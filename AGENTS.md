@@ -78,9 +78,9 @@ AI 代理配置、工作流程与项目规范。项目概览见 [README](./READM
 
 ## 部署模型
 
-- 生产环境使用 Cloudflare Pages 原生 Git 集成，直接跟踪 `main` 分支。
-- 不要重新引入 GitHub Actions + orphan branch、Wrangler secrets 或其他仓库内发布步骤来做生产部署。
-- 预期存在 3 个 Cloudflare Pages 项目，分别对应 `apps/root`、`apps/blog`、`apps/slides`；构建命令与输出目录以 [README](./README.md#部署模型) 为准。
+- 生产环境统一使用 **Cloudflare Workers Static Assets**：各应用在 `apps/*/wrangler.jsonc` 中配置 `assets.directory`（构建产物 `dist`）与 `routes`（`custom_domain: true`）；构建后执行 `wrangler deploy`。仓库根提供 `vp run deploy:cf:root` / `deploy:cf:blog` / `deploy:cf:slides`（先 `pnpm --filter` build 再部署）。构建命令、输出目录与 Worker 名见 [README 部署模型](./README.md#部署模型)。
+- 预期 **3 个 Worker**，名称与 `wrangler.jsonc` 中 `name` 一致：`zrr-website-root`、`zrr-website-blog`、`zrr-website-slides`。不再使用 **Cloudflare Pages** 作为主发布与自定义域名入口。
+- CI 若执行 `wrangler deploy`，可使用 `CLOUDFLARE_API_TOKEN` 等凭据，但**不得将密钥提交进仓库**；不要恢复依赖 Pages orphan branch 的发布流水线。
 - 旧域名 `sixbones.dev`、`blog.sixbones.dev`、`slides.sixbones.dev` 必须继续保留为 `308` 永久重定向入口，并将请求转发到新的公开域名。
 
 ## 博客编写规范

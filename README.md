@@ -19,7 +19,7 @@
 - **框架**：[Astro](https://astro.build)
 - **样式**：[Tailwind CSS](https://tailwindcss.com)
 - **内容**：Markdown、Typst
-- **部署**：Cloudflare Pages 原生 Git 集成
+- **部署**：[Cloudflare Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/)（`wrangler deploy`，见各 `apps/*/wrangler.jsonc`）
 
 ## 开发命令
 
@@ -39,17 +39,15 @@
 
 ## 部署模型
 
-生产部署由 Cloudflare Pages 直接从 Git 仓库拉取 `main` 分支完成；仓库本身不再通过 GitHub Actions 发布 orphan branch，也不需要 Wrangler 或 Cloudflare API secrets。
+生产部署统一为 [Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/)：先对各应用执行 Astro 构建（输出到 `apps/*/dist`），再在同一应用目录用 [Wrangler](https://developers.cloudflare.com/workers/wrangler/) 发布。自定义域名在各自 `wrangler.jsonc` 的 `routes` 中声明（`custom_domain: true`），由 Cloudflare 按 Worker Custom Domain 流程接管，无需再使用 **Cloudflare Pages**。
 
-三套站点分别对应三个 Cloudflare Pages 项目，建议都以仓库根目录作为 `Root directory`：
+| 应用          | Worker 名（`wrangler.jsonc` 的 `name`） | 生产域名（`routes`）     | 本地构建命令                              | 根目录一键发布（build + deploy） |
+| :------------ | :-------------------------------------- | :----------------------- | :---------------------------------------- | :------------------------------- |
+| `apps/root`   | `zrr-website-root`                      | `zrr.dev`、`www.zrr.dev` | `pnpm --filter @zrr-website/root build`   | `vp run deploy:cf:root`          |
+| `apps/blog`   | `zrr-website-blog`                      | `blog.zrr.dev`           | `pnpm --filter @zrr-website/blog build`   | `vp run deploy:cf:blog`          |
+| `apps/slides` | `zrr-website-slides`                    | `slides.zrr.dev`         | `pnpm --filter @zrr-website/slides build` | `vp run deploy:cf:slides`        |
 
-| 应用          | Cloudflare Pages 项目 | 生产域名         | Production branch | Build command                             | Build output directory |
-| :------------ | :-------------------- | :--------------- | :---------------- | :---------------------------------------- | :--------------------- |
-| `apps/root`   | root 站点项目         | `zrr.dev`        | `main`            | `pnpm --filter @zrr-website/root build`   | `apps/root/dist`       |
-| `apps/blog`   | blog 站点项目         | `blog.zrr.dev`   | `main`            | `pnpm --filter @zrr-website/blog build`   | `apps/blog/dist`       |
-| `apps/slides` | slides 站点项目       | `slides.zrr.dev` | `main`            | `pnpm --filter @zrr-website/slides build` | `apps/slides/dist`     |
-
-如果 Cloudflare 未自动识别工作区安装步骤，可显式设置安装命令为 `corepack enable && pnpm install --frozen-lockfile`。
+发布前需已登录 Cloudflare CLI（`wrangler login`）或同时设置 **`CLOUDFLARE_API_TOKEN`** 与 **`CLOUDFLARE_ACCOUNT_ID`**。API Token 建议使用 Cloudflare 的 `Edit Cloudflare Workers` 模板（或至少包含 Workers Scripts 编辑权限）；如果不提供账号 ID，Wrangler 会先调用 `/memberships` 自动发现账号，此时 token 还需要 Memberships 读取权限。在干净环境（例如 CI）中需先安装依赖：`corepack enable && pnpm install --frozen-lockfile`。
 
 ### 旧域名永久重定向
 
@@ -61,33 +59,7 @@
 | `blog.sixbones.dev/*`   | `https://blog.zrr.dev/$1`   |
 | `slides.sixbones.dev/*` | `https://slides.zrr.dev/$1` |
 
-新域名应直接绑定到各自的 Cloudflare Pages 项目；旧域名仅作为跳转入口，不再由仓库生成单独的静态跳转分支。
-
-## 部署模型
-
-生产部署由 Cloudflare Pages 直接从 Git 仓库拉取 `main` 分支完成；仓库本身不再通过 GitHub Actions 发布 orphan branch，也不需要 Wrangler 或 Cloudflare API secrets。
-
-三套站点分别对应三个 Cloudflare Pages 项目，建议都以仓库根目录作为 `Root directory`：
-
-| 应用          | Cloudflare Pages 项目 | 生产域名         | Production branch | Build command                             | Build output directory |
-| :------------ | :-------------------- | :--------------- | :---------------- | :---------------------------------------- | :--------------------- |
-| `apps/root`   | root 站点项目         | `zrr.dev`        | `main`            | `pnpm --filter @zrr-website/root build`   | `apps/root/dist`       |
-| `apps/blog`   | blog 站点项目         | `blog.zrr.dev`   | `main`            | `pnpm --filter @zrr-website/blog build`   | `apps/blog/dist`       |
-| `apps/slides` | slides 站点项目       | `slides.zrr.dev` | `main`            | `pnpm --filter @zrr-website/slides build` | `apps/slides/dist`     |
-
-如果 Cloudflare 未自动识别工作区安装步骤，可显式设置安装命令为 `corepack enable && pnpm install --frozen-lockfile`。
-
-### 旧域名永久重定向
-
-旧域名应在 Cloudflare 仪表盘中通过 `Redirect Rules` 或 `Bulk Redirects` 配置为 `308` 永久重定向，并保留原始路径与查询参数：
-
-| 旧域名                  | 目标域名                    |
-| :---------------------- | :-------------------------- |
-| `sixbones.dev/*`        | `https://zrr.dev/$1`        |
-| `blog.sixbones.dev/*`   | `https://blog.zrr.dev/$1`   |
-| `slides.sixbones.dev/*` | `https://slides.zrr.dev/$1` |
-
-新域名应直接绑定到各自的 Cloudflare Pages 项目；旧域名仅作为跳转入口，不再由仓库生成单独的静态跳转分支。
+生产主机名由上述 Worker 的 **`routes` + `custom_domain`** 管理；旧域名仅作为跳转入口，不再由仓库生成单独的静态跳转分支。
 
 ## 项目结构
 
@@ -141,7 +113,7 @@ zrr.dev/
 
 - `package.json` / `pnpm-workspace.yaml` - 依赖与多包脚本（根目录 `pnpm run dev` 等会筛 `apps/*`）；含上述 catalog / overrides
 - [AGENTS.md](./AGENTS.md) - AI 代理工作流与规范
-- Cloudflare Pages - 生产部署与域名绑定（在 Cloudflare 仪表盘中配置）
+- Cloudflare Workers — `wrangler.jsonc`（静态资源与自定义域名路由），`vp run deploy:cf:*` 发布
 
 ## 许可证
 

@@ -15,11 +15,15 @@
     "format:check": "pnpm -r --filter './apps/*' run format:check",
     "lint": "pnpm -r --filter './apps/*' run lint",
     "lint:check": "pnpm -r --filter './apps/*' run lint:check",
+    "deploy:cf:root": "pnpm --filter @zrr-website/root run build && pnpm exec wrangler deploy --cwd apps/root",
+    "deploy:cf:blog": "pnpm --filter @zrr-website/blog run build && pnpm exec wrangler deploy --cwd apps/blog",
+    "deploy:cf:slides": "pnpm --filter @zrr-website/slides run build && pnpm exec wrangler deploy --cwd apps/slides",
     "prepare": "vp config"
   },
   "devDependencies": {
     "oxlint": "1.61.0",
-    "vite-plus": "catalog:"
+    "vite-plus": "catalog:",
+    "wrangler": "4.84.1"
   },
   "packageManager": "pnpm@10.33.4"
 }

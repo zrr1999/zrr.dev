@@ -1,5 +1,16 @@
 import { defineConfig } from "oxlint";
 
+export const sharedLintIgnorePatterns = [
+  "**/.astro/**",
+  "**/*.astro",
+  "**/dist/**",
+  "**/build/**",
+  "**/public/**",
+  "hosting/**",
+  // Astro-generated env shim; triple-slash refs are intentional
+  "apps/blog/src/env.d.ts",
+] as const;
+
 export default defineConfig({
   plugins: [],
   categories: {
@@ -8,16 +19,7 @@ export default defineConfig({
   env: {
     builtin: true,
   },
-  ignorePatterns: [
-    "**/.astro/**",
-    "**/*.astro",
-    "**/dist/**",
-    "**/build/**",
-    "**/public/**",
-    "hosting/**",
-    // Astro-generated env shim; triple-slash refs are intentional
-    "apps/blog/src/env.d.ts",
-  ],
+  ignorePatterns: [...sharedLintIgnorePatterns],
   rules: {
     "for-direction": "error",
     "no-async-promise-executor": "error",
