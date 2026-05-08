@@ -37,6 +37,8 @@
 
 各应用内的 `pnpm run format` / `format:check` 会调用 `vp fmt`（与根目录 `vp fmt` 共用同一份 `fmt` 配置）。
 
+提交前检查由根目录 [prek](https://github.com/j178/prek)（`prek.toml`）注册：`pre-commit-hooks`（YAML/JSON、合并冲突、换行与空白等）、[tombi](https://github.com/tombi-toml/tombi-pre-commit)（`*.toml`）、[actionlint](https://github.com/rhysd/actionlint)、[typos](https://github.com/crate-ci/typos)、[zendev](https://github.com/zrr1999/zendev) 的 `commit-msg`，以及本地 `vp check --fix`。需本机已安装 `prek`，在仓库根执行一次 `pnpm install` 会运行 `prek install` 写入 `.git/hooks`。首次克隆建议再执行 `prek install-hooks` 拉取远端钩子环境。手动校验：`prek run --all-files`。`prek.toml` 由 tombi 格式化，已写入根目录 `vite.config.ts` 的 `fmt.ignorePatterns`，避免与 `vp fmt` 争抢。
+
 ## 部署模型
 
 生产部署统一为 [Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/)：先对各应用执行 Astro 构建（输出到 `apps/*/dist`），再在同一应用目录用 [Wrangler](https://developers.cloudflare.com/workers/wrangler/) 发布。自定义域名在各自 `wrangler.jsonc` 的 `routes` 中声明（`custom_domain: true`），由 Cloudflare 按 Worker Custom Domain 流程接管，无需再使用 **Cloudflare Pages**。

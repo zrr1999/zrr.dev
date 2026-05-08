@@ -2,14 +2,11 @@ import { defineConfig } from "vite-plus";
 import { sharedLintIgnorePatterns } from "./oxlint.config.ts";
 
 export default defineConfig({
-  staged: {
-    "*": "vp check --fix",
-  },
   lint: {
     ignorePatterns: [...sharedLintIgnorePatterns],
   },
   fmt: {
-    ignorePatterns: ["hosting/**"],
+    ignorePatterns: ["hosting/**", "prek.toml"],
     semi: true,
     singleQuote: false,
     trailingComma: "es5",

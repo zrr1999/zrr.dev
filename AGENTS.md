@@ -46,8 +46,9 @@ AI 代理配置、工作流程与项目规范。项目概览见 [README](./READM
 ## 配置
 
 - `package.json`（根目录脚本通过 pnpm `--filter './apps/*'` 在各 app 上执行 dev/build 等）与 `pnpm-workspace.yaml`
+- Git **pre-commit** 由 **[prek](https://github.com/j178/prek)** 管理：`prek.toml`（与 spore 仓库对齐的 `pre-commit-hooks`、tombi、actionlint、typos、zendev、`vp check --fix`）。克隆后 `pnpm install` 会执行 `prepare` → `prek install`；首次建议再运行 `prek install-hooks`。需本机已安装 `prek`（例如 `uv tool install prek` 或 `uvx prek` 相关用法）。
 - **版本锁定（代理改依赖前必读）**：Astro 与各 app 保持一致且当前固定为 **`6.1.8`**；Vite+ 栈通过 workspace **catalog + overrides** 固定为 **`0.1.18`**。将 Astro 升到 **6.1.10+ / 6.2** 或将 vite-plus 升到 **0.1.19+** 前，须在本地跑通 **`pnpm run build`**，否则可能遇到 vite-plus-core 在 `generateBundle` 中的 **`Not implemented`**。`@astrojs/internal-helpers` 由 override 固定在 **`0.9.0`** 以匹配 markdown 集成。说明见 [README 工具链版本说明](./README.md#工具链版本说明)。
-- `.github/workflows/` - CI / 校验（不负责生产部署）
+- `.github/workflows/` - CI / 校验（不负责生产部署）；含与 spore 类似的 **`ci-static-checks.yml`**（`setup-vp` + `prek-action`）、**`ci-pr-checks.yml`**（zendev PR 标题）及按路径触发的 typos、vale、外链、workflow 校验等
 - `.github/agents/` - 代理配置（若存在）
 
 ## 常用命令

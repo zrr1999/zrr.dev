@@ -5,9 +5,6 @@ extend-ignore-re = [
   "(?s)(#|//)\\s*typos:\\s*off.*?\\n\\s*(#|//)\\s*typos:\\s*on",
 ]
 
-[files]
-extend-exclude = ["hosting/slides/**"]
-
 [default.extend-words]
 agentic = "agentic"
 dlpack = "dlpack"
@@ -22,3 +19,6 @@ qcow2 = "qcow2"
 sixbones = "sixbones"
 typst = "typst"
 welford = "welford"
+
+[files]
+extend-exclude = ["hosting/slides/**"]
