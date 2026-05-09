@@ -15,9 +15,12 @@
     "format:check": "pnpm -r --filter './apps/*' run format:check",
     "lint": "pnpm -r --filter './apps/*' run lint",
     "lint:check": "pnpm -r --filter './apps/*' run lint:check",
-    "deploy:cf:root": "pnpm --filter @zrr-website/root run build && pnpm exec wrangler deploy --cwd apps/root",
-    "deploy:cf:blog": "pnpm --filter @zrr-website/blog run build && pnpm exec wrangler deploy --cwd apps/blog",
-    "deploy:cf:slides": "pnpm --filter @zrr-website/slides run build && pnpm exec wrangler deploy --cwd apps/slides",
+    "build:cf:root": "pnpm --filter @zrr-website/root run build",
+    "build:cf:blog": "pnpm --filter @zrr-website/blog run build",
+    "build:cf:slides": "pnpm --filter @zrr-website/slides run build",
+    "deploy:cf:root": "pnpx wrangler deploy --cwd apps/root",
+    "deploy:cf:blog": "pnpx wrangler deploy --cwd apps/blog",
+    "deploy:cf:slides": "pnpx wrangler deploy --cwd apps/slides",
     "prepare": "prek install"
   },
   "devDependencies": {
