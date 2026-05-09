@@ -21,7 +21,7 @@
     "deploy:cf:root": "pnpx wrangler deploy --cwd apps/root",
     "deploy:cf:blog": "pnpx wrangler deploy --cwd apps/blog",
     "deploy:cf:slides": "pnpx wrangler deploy --cwd apps/slides",
-    "prepare": "pnpx prek install"
+    "prepare": "pnpx @j178/prek install"
   },
   "devDependencies": {
     "oxlint": "1.61.0",
