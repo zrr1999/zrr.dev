@@ -1,6 +1,6 @@
 ---
 title: "高考数学中可用的公式定理与使用建议"
-author: "六个骨头"
+author: "zrr1999"
 description: "按在解答题中的使用风险分类，整理常用的公式定理，供备考时取舍参考"
 pubDatetime: 2018-02-23
 modDatetime: 2018-04-08

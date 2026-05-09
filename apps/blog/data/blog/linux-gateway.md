@@ -1,6 +1,6 @@
 ---
 title: "利用 nftables 搭建 Linux 网关"
-author: "六个骨头"
+author: "zrr1999"
 description: "与 OpenWRT 相比，自建 Linux 网关更加灵活，而且可以使用自己熟悉的任何发行版（以 ArchLinux 为例）"
 pubDatetime: 2024-08-21
 modDatetime: 2024-10-04

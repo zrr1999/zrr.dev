@@ -1,0 +1,46 @@
+name: "CI - Vale"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".vale.ini"
+      - ".github/styles/**"
+      - "apps/blog/data/blog/**/*.md"
+      - "hosting"
+      - "hosting/**/*.md"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".vale.ini"
+      - ".github/styles/**"
+      - "apps/blog/data/blog/**/*.md"
+      - "hosting"
+      - "hosting/**/*.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  vale:
+    name: vale
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Run Vale
+        uses: vale-cli/vale-action@v2.1.1
+        with:
+          files: '["apps/blog/data/blog", "hosting"]'
+          reporter: github-check
+          fail_on_error: true
+          filter_mode: nofilter
+          vale_flags: "--glob=*.md"

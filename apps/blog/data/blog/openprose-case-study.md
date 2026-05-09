@@ -1,6 +1,6 @@
 ---
 title: "OpenProse 案例研究：当 DSL 的执行器是大模型"
-author: "六个骨头"
+author: "zrr1999"
 description: "以 OpenProse 为例，分析当领域专用语言的执行器由大模型充当时，为何会出现「形式确定、执行却不确定」的脱节，以及对多 Agent 与智能体式编程的设计启示。"
 pubDatetime: 2026-01-25
 modDatetime: 2026-01-25

@@ -18,11 +18,10 @@ pnpm-debug.log*
 # environment variables
 .env
 .env.production
-.turbo
-
 # macOS-specific files
 .DS_Store
 
 .vscode/
 .cursor/
 .vite-hooks/
+.learnings/

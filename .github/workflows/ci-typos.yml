@@ -1,0 +1,42 @@
+name: "CI - Typos"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/**"
+      - ".vale.ini"
+      - "_typos.toml"
+      - "AGENTS.md"
+      - "README.md"
+      - "apps/blog/data/blog/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/**"
+      - ".vale.ini"
+      - "_typos.toml"
+      - "AGENTS.md"
+      - "README.md"
+      - "apps/blog/data/blog/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  typos:
+    name: typos
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Run typos
+        uses: crate-ci/typos@master
+        with:
+          config: ./_typos.toml
+          files: ".github AGENTS.md README.md apps/blog/data/blog .vale.ini _typos.toml"

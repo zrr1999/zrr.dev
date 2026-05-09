@@ -1,0 +1,32 @@
+
+
+> @zrr-website/root@0.0.1 build /Users/zhanrongrui/workspace/zrr1999/sixbones.dev/apps/root
+> astro build
+
+[33m[1m15:26:51[22m [WARN] [vite][39m [33m`resolve.alias` contains an alias with `customResolver` option. This is deprecated and will be removed in Vite 9. Please use a custom plugin with a resolveId hook and `enforce: 'pre'` instead.[39m
+[2m15:26:51[22m [34m[types][39m Generated [2m26ms[22m
+[2m15:26:51[22m [34m[build][39m output: [34m"static"[39m
+[2m15:26:51[22m [34m[build][39m mode: [34m"static"[39m
+[2m15:26:51[22m [34m[build][39m directory: [34m/Users/zhanrongrui/workspace/zrr1999/sixbones.dev/apps/root/dist/[39m
+[2m15:26:51[22m [34m[build][39m Collecting build info...
+[2m15:26:51[22m [34m[build][39m [32m✓ Completed in 32ms.[39m
+[2m15:26:51[22m [34m[build][39m Building static entrypoints...
+[33m[1m15:26:51[22m [WARN] [vite][39m [33m`resolve.alias` contains an alias with `customResolver` option. This is deprecated and will be removed in Vite 9. Please use a custom plugin with a resolveId hook and `enforce: 'pre'` instead.[39m
+[33m[1m15:26:51[22m [WARN] [vite][39m [33m`resolve.alias` contains an alias with `customResolver` option. This is deprecated and will be removed in Vite 9. Please use a custom plugin with a resolveId hook and `enforce: 'pre'` instead.[39m
+[33m[1m15:26:51[22m [WARN] [vite][39m [33m`resolve.alias` contains an alias with `customResolver` option. This is deprecated and will be removed in Vite 9. Please use a custom plugin with a resolveId hook and `enforce: 'pre'` instead.[39m
+[33m[1m15:26:51[22m [WARN] [vite][39m [33m`resolve.alias` contains an alias with `customResolver` option. This is deprecated and will be removed in Vite 9. Please use a custom plugin with a resolveId hook and `enforce: 'pre'` instead.[39m
+[33m[1m15:26:51[22m [WARN] [vite][39m [33m`resolve.alias` contains an alias with `customResolver` option. This is deprecated and will be removed in Vite 9. Please use a custom plugin with a resolveId hook and `enforce: 'pre'` instead.[39m
+[33m`transformWithEsbuild` is deprecated and will be removed in the future. Please migrate to `transformWithOxc`.[39m
+[2m15:26:52[22m [34m[vite][39m [32m✓ built in 525ms[39m
+[2m15:26:52[22m [34m[vite][39m [32m✓ built in 17ms[39m
+[2m15:26:52[22m [34m[build][39m Rearranging server assets...
+The requested module '@astrojs/internal-helpers/path' does not provide an export named 'collapseDuplicateLeadingSlashes'
+  [1mLocation:[22m
+    [4m/Users/zhanrongrui/workspace/zrr1999/sixbones.dev/node_modules/.pnpm/astro@6.1.8_@types+node@24.12.0_jiti@2.6.1_rollup@4.59.0_terser@5.46.1_typescript@6.0.3_yaml@2.8.2/node_modules/astro/dist/core/build/default-prerenderer.js:17:30[24m
+  [1mStack trace:[22m
+[2m    at #asyncInstantiate (node:internal/modules/esm/module_job:326:21)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:639:26)
+    at async generatePages (file:///Users/zhanrongrui/workspace/zrr1999/sixbones.dev/node_modules/.pnpm/astro@6.1.8_@types+node@24.12.0_jiti@2.6.1_rollup@4.59.0_terser@5.46.1_typescript@6.0.3_yaml@2.8.2/node_modules/astro/dist/core/build/generate.js:61:3)
+    at async Object.buildApp (file:///Users/zhanrongrui/workspace/zrr1999/sixbones.dev/node_modules/.pnpm/@voidzero-dev+vite-plus-core@0.1.18_@types+node@24.12.0_esbuild@0.27.4_jiti@2.6.1_terse_ad1f713fc7735bb47bc3dce18b4e7c05/node_modules/@voidzero-dev/vite-plus-core/dist/vite/node/chunks/node.js:38931:5)
+    at async viteBuild (file:///Users/zhanrongrui/workspace/zrr1999/sixbones.dev/node_modules/.pnpm/astro@6.1.8_@types+node@24.12.0_jiti@2.6.1_rollup@4.59.0_terser@5.46.1_typescript@6.0.3_yaml@2.8.2/node_modules/astro/dist/core/build/static-build.js:76:3)[22m
+[41m[30m ELIFECYCLE [39m[49m [31mCommand failed with exit code 1.[39m

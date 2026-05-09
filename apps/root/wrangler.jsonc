@@ -1,0 +1,20 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "zrr-website-root",
+  "compatibility_date": "2026-05-08",
+  "assets": {
+    "directory": "./dist",
+  },
+  "routes": [
+    {
+      "pattern": "zrr.dev",
+      "custom_domain": true,
+    },
+    {
+      "pattern": "www.zrr.dev",
+      "custom_domain": true,
+    },
+  ],
+  "workers_dev": true,
+  "preview_urls": true,
+}

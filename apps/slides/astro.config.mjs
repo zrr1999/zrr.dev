@@ -4,15 +4,20 @@ import AstroPWA from "@vite-pwa/astro";
 
 import preact from "@astrojs/preact";
 
+import {
+  hostingSlidesCopyIntegration,
+  hostingSlidesPublicPlugin,
+} from "./hosting-slides-plugin.mjs";
+
 export default defineConfig({
   prefetch: true,
-  site: "https://slides.sixbones.dev",
+  site: "https://slides.zrr.dev",
   i18n: {
     locales: ["en", "zh-cn"],
     defaultLocale: "zh-cn",
   },
-  integrations: [AstroPWA(), preact()],
+  integrations: [hostingSlidesCopyIntegration(), AstroPWA(), preact()],
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [hostingSlidesPublicPlugin(), tailwindcss()],
   },
 });

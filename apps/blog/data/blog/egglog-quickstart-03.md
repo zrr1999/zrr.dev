@@ -1,6 +1,6 @@
 ---
 title: "Egglog 快速入门（三）：复数定义与内置类型"
-author: "六个骨头"
+author: "zrr1999"
 description: "承接第二篇的实数定义，先纯构造定义复数，再介绍 egglog 内置的 i64、Rational、f64、Vec、Set、MultiSet 等类型，以及 function、extract、cost 等特性，并展示如何用它们实现高效复数运算。"
 pubDatetime: 2026-02-17
 modDatetime: 2026-02-17

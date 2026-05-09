@@ -1,6 +1,17 @@
 import { useState, useEffect } from "preact/hooks";
 
-export function SlideList({ slides }: { slides: string[] }) {
+/** `client:*` is for Astro's tag typing only; the runtime strips these before hydration. */
+export type SlideListProps = {
+  slides: string[];
+  "client:load"?: boolean;
+  "client:idle"?: boolean;
+  "client:visible"?: boolean;
+  "client:media"?: string;
+  "client:only"?: string | boolean;
+};
+
+/** Return widened where tooling expects React-like `ReactNode` instead of Preact `VNode`. */
+export function SlideList({ slides }: SlideListProps): any {
   const [showWarning, setShowWarning] = useState(false);
   const [scale, setScale] = useState(1);
   const [fullscreenSlide, setFullscreenSlide] = useState<string | null>(null);

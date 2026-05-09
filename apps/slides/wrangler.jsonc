@@ -1,0 +1,17 @@
+{
+  // Workers Static Assets：先 pnpm --filter @zrr-website/slides build，再在本目录执行 wrangler deploy
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "zrr-website-slides",
+  "compatibility_date": "2026-05-08",
+  "assets": {
+    "directory": "./dist",
+  },
+  "routes": [
+    {
+      "pattern": "slides.zrr.dev",
+      "custom_domain": true,
+    },
+  ],
+  "workers_dev": true,
+  "preview_urls": true,
+}

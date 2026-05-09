@@ -1,27 +1,29 @@
 {
   "name": "zrr-website",
   "version": "0.1.0",
+  "license": "GPL-3.0",
+  "author": "Zhan Rongrui",
   "workspaces": [
-    "packages/*",
     "apps/*"
   ],
   "type": "module",
   "scripts": {
-    "dev": "turbo dev --filter=./apps/*",
-    "build": "turbo build --filter=./apps/*",
-    "preview": "turbo preview --filter=./apps/*",
-    "format": "turbo format",
-    "format:check": "turbo format:check",
-    "lint": "turbo lint",
-    "lint:check": "turbo lint:check",
-    "prepare": "vp config"
+    "dev": "pnpm -r --parallel --filter './apps/*' run dev",
+    "build": "pnpm -r --filter './apps/*' run build",
+    "preview": "pnpm -r --parallel --filter './apps/*' run preview",
+    "format": "pnpm -r --filter './apps/*' run format",
+    "format:check": "pnpm -r --filter './apps/*' run format:check",
+    "lint": "pnpm -r --filter './apps/*' run lint",
+    "lint:check": "pnpm -r --filter './apps/*' run lint:check",
+    "deploy:cf:root": "pnpm --filter @zrr-website/root run build && pnpm exec wrangler deploy --cwd apps/root",
+    "deploy:cf:blog": "pnpm --filter @zrr-website/blog run build && pnpm exec wrangler deploy --cwd apps/blog",
+    "deploy:cf:slides": "pnpm --filter @zrr-website/slides run build && pnpm exec wrangler deploy --cwd apps/slides",
+    "prepare": "prek install"
   },
   "devDependencies": {
-    "prettier": "^3.8.1",
-    "prettier-plugin-astro": "^0.14.1",
-    "prettier-plugin-tailwindcss": "^0.7.2",
-    "turbo": "^2.8.9",
-    "vite-plus": "catalog:"
+    "oxlint": "1.61.0",
+    "vite-plus": "catalog:",
+    "wrangler": "4.84.1"
   },
-  "packageManager": "pnpm@10.33.2"
+  "packageManager": "pnpm@10.33.4"
 }

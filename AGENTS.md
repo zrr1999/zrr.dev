@@ -4,9 +4,9 @@ AI 代理配置、工作流程与项目规范。项目概览见 [README](./READM
 
 ## 项目结构
 
-- `apps/root/` - 个人主页（sixbones.dev）
-- `apps/blog/` - 博客（blog.sixbones.dev）
-- `apps/slides/` - 幻灯片（slides.sixbones.dev）
+- `apps/root/` - 个人主页（`zrr.dev`，`sixbones.dev` 永久重定向到此）
+- `apps/blog/` - 博客（`blog.zrr.dev`，`blog.sixbones.dev` 永久重定向到此）
+- `apps/slides/` - 幻灯片（`slides.zrr.dev`，`slides.sixbones.dev` 永久重定向到此）
 
 ## 可用代理
 
@@ -45,8 +45,10 @@ AI 代理配置、工作流程与项目规范。项目概览见 [README](./READM
 
 ## 配置
 
-- `package.json` / `turbo.json` - 依赖与构建
-- `.github/workflows/` - CI/CD
+- `package.json`（根目录脚本通过 pnpm `--filter './apps/*'` 在各 app 上执行 dev/build 等）与 `pnpm-workspace.yaml`
+- Git **pre-commit** 由 **[prek](https://github.com/j178/prek)** 管理：`prek.toml`（与 spore 仓库对齐的 `pre-commit-hooks`、tombi、actionlint、typos、zendev、`vp check --fix`）。克隆后 `pnpm install` 会执行 `prepare` → `prek install`；首次建议再运行 `prek install-hooks`。需本机已安装 `prek`（例如 `uv tool install prek` 或 `uvx prek` 相关用法）。
+- **版本锁定（代理改依赖前必读）**：Astro 与各 app 保持一致且当前固定为 **`6.1.8`**；Vite+ 栈通过 workspace **catalog + overrides** 固定为 **`0.1.18`**。将 Astro 升到 **6.1.10+ / 6.2** 或将 vite-plus 升到 **0.1.19+** 前，须在本地跑通 **`pnpm run build`**，否则可能遇到 vite-plus-core 在 `generateBundle` 中的 **`Not implemented`**。`@astrojs/internal-helpers` 由 override 固定在 **`0.9.0`** 以匹配 markdown 集成。说明见 [README 工具链版本说明](./README.md#工具链版本说明)。
+- `.github/workflows/` - CI / 校验（不负责生产部署）；含与 spore 类似的 **`ci-static-checks.yml`**（`setup-vp` + `prek-action`）、**`ci-pr-checks.yml`**（zendev PR 标题）及按路径触发的 typos、vale、外链、workflow 校验等
 - `.github/agents/` - 代理配置（若存在）
 
 ## 常用命令
@@ -65,8 +67,8 @@ AI 代理配置、工作流程与项目规范。项目概览见 [README](./READM
 
 ## 工作流程
 
-- **代码优化**：分析 → 识别机会 → 格式化 → `vp check` / `vp test` → 提交
-- **文档更新**：审查 → 更新内容 → 验证格式 → 提交
+- **代码优化**：分析 → 识别机会 → 在仓库根运行 `vp fmt` / `vp check`（或各包 `vp fmt`）→ `vp test` → 提交
+- **文档更新**：审查 → 更新内容 → 在相关包目录运行 `vp fmt . --check` 或通过根目录 `vp check` → 提交
 - **测试维护**：分析覆盖率 → 补充用例 → `vp test` → 提交
 
 ## 最佳实践
@@ -74,6 +76,13 @@ AI 代理配置、工作流程与项目规范。项目概览见 [README](./READM
 - 提交前运行 `vp check` 和 `vp test`
 - 遵循常规提交规范，单次提交保持最小化
 - 审查代理更改时验证测试通过、文档同步
+
+## 部署模型
+
+- 生产环境统一使用 **Cloudflare Workers Static Assets**：各应用在 `apps/*/wrangler.jsonc` 中配置 `assets.directory`（构建产物 `dist`）与 `routes`（`custom_domain: true`）；构建后执行 `wrangler deploy`。仓库根提供 `vp run deploy:cf:root` / `deploy:cf:blog` / `deploy:cf:slides`（先 `pnpm --filter` build 再部署）。构建命令、输出目录与 Worker 名见 [README 部署模型](./README.md#部署模型)。
+- 预期 **3 个 Worker**，名称与 `wrangler.jsonc` 中 `name` 一致：`zrr-website-root`、`zrr-website-blog`、`zrr-website-slides`。不再使用 **Cloudflare Pages** 作为主发布与自定义域名入口。
+- CI 若执行 `wrangler deploy`，可使用 `CLOUDFLARE_API_TOKEN` 等凭据，但**不得将密钥提交进仓库**；不要恢复依赖 Pages orphan branch 的发布流水线。
+- 旧域名 `sixbones.dev`、`blog.sixbones.dev`、`slides.sixbones.dev` 必须继续保留为 `308` 永久重定向入口，并将请求转发到新的公开域名。
 
 ## 博客编写规范
 
@@ -184,14 +193,26 @@ These commands map to their corresponding tools. For example, `vp dev --port 300
 
 - **Using the package manager directly:** Do not use pnpm, npm, or Yarn directly. Vite+ can handle all package manager operations.
 - **Always use Vite commands to run tools:** Don't attempt to run `vp vitest` or `vp oxlint`. They do not exist. Use `vp test` and `vp lint` instead.
-- **Running scripts:** Vite+ commands take precedence over `package.json` scripts. If there is a `test` script defined in `scripts` that conflicts with the built-in `vp test` command, run it using `vp run test`.
+- **Running scripts:** Vite+ built-in commands (`vp dev`, `vp build`, `vp test`, etc.) always run the Vite+ built-in tool, not any `package.json` script of the same name. To run a custom script that shares a name with a built-in command, use `vp run <script>`. For example, if you have a custom `dev` script that runs multiple services concurrently, run it with `vp run dev`, not `vp dev` (which always starts Vite's dev server).
 - **Do not install Vitest, Oxlint, Oxfmt, or tsdown directly:** Vite+ wraps these tools. They must not be installed directly. You cannot upgrade these tools by installing their latest versions. Always use Vite+ commands.
 - **Use Vite+ wrappers for one-off binaries:** Use `vp dlx` instead of package-manager-specific `dlx`/`npx` commands.
 - **Import JavaScript modules from `vite-plus`:** Instead of importing from `vite` or `vitest`, all modules should be imported from the project's `vite-plus` dependency. For example, `import { defineConfig } from 'vite-plus';` or `import { expect, test, vi } from 'vite-plus/test';`. You must not install `vitest` to import test utilities.
 - **Type-Aware Linting:** There is no need to install `oxlint-tsgolint`, `vp lint --type-aware` works out of the box.
 
+## CI Integration
+
+For GitHub Actions, consider using [`voidzero-dev/setup-vp`](https://github.com/voidzero-dev/setup-vp) to replace separate `actions/setup-node`, package-manager setup, cache, and install steps with a single action.
+
+```yaml
+- uses: voidzero-dev/setup-vp@v1
+  with:
+    cache: true
+- run: vp check
+- run: vp test
+```
+
 ## Review Checklist for Agents
 
 - [ ] Run `vp install` after pulling remote changes and before getting started.
 - [ ] Run `vp check` and `vp test` to validate changes.
- <!--VITE PLUS END-->
+<!--VITE PLUS END-->

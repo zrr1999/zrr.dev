@@ -1,6 +1,6 @@
 ---
 title: "Egglog 快速入门（二）：从自然数到整数、有理数与实数"
-author: "六个骨头"
+author: "zrr1999"
 description: "承接第一篇的 Peano 自然数，逐步扩展：先引入 Neg 构造器得到整数，再定义有理数为整数对，并展示 rule、:when、relation、birewrite 等 egglog 特性。"
 pubDatetime: 2026-02-15
 modDatetime: 2026-02-15

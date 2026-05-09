@@ -1,0 +1,24 @@
+[default]
+extend-ignore-words-re = ["^[a-zA-Z]{1,3}$"]
+extend-ignore-re = [
+  "(?Rm)^.*(#|//)\\s*typos:\\s*disable-line$",
+  "(?s)(#|//)\\s*typos:\\s*off.*?\\n\\s*(#|//)\\s*typos:\\s*on",
+]
+
+[default.extend-words]
+agentic = "agentic"
+dlpack = "dlpack"
+egglog = "egglog"
+eq = "eq"
+giscus = "giscus"
+incus = "incus"
+mihomo = "mihomo"
+openprose = "openprose"
+pycapsule = "pycapsule"
+qcow2 = "qcow2"
+sixbones = "sixbones"
+typst = "typst"
+welford = "welford"
+
+[files]
+extend-exclude = ["hosting/slides/**"]
