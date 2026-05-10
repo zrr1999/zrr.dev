@@ -11,7 +11,11 @@ catalog:
 
 overrides:
   "@astrojs/internal-helpers": "0.9.0"
+  # Align with AGENTS.md: newer Astro / vite-plus stacks hit vite-plus-core
+  # "Not implemented" in generateBundle until upstream fixes land.
+  astro: "6.1.8"
   vite: "catalog:"
+  vite-plus: "catalog:"
   vitest: "catalog:"
 
 peerDependencyRules:
