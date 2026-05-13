@@ -1,6 +1,6 @@
 ---
 title: "将 qcow2 镜像导入 incus"
-author: "zrr1999"
+author: "Zhan Rongrui"
 description: "许多系统官方只给了 qcow2 镜像的格式，我们需要一些处理才能导入 incus"
 pubDatetime: 2024-11-07
 modDatetime: 2024-11-07

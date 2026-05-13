@@ -1,6 +1,6 @@
 export const SITE = {
   website: "https://blog.zrr.dev/",
-  author: "zrr1999",
+  author: "Zhan Rongrui",
   profile: "https://blog.zrr.dev/",
   desc: "写一点对自己有用的笔记。",
   title: "六个骨头的博客",

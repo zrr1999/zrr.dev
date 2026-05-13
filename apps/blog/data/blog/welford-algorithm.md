@@ -1,6 +1,6 @@
 ---
 title: "Welford算法：在线计算均值和方差的优雅解决方案"
-author: "zrr1999"
+author: "Zhan Rongrui"
 description: "Welford算法是一种在线计算均值和方差的数值稳定算法，本文从改进点、公式推导、具体实现三个方面详细介绍这一经典算法"
 pubDatetime: 2025-10-24
 tags: ["算法", "数值计算", "统计学"]

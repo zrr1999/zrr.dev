@@ -1,6 +1,6 @@
 ---
 title: "Pytest：Python 测试框架入门指南"
-author: "zrr1999"
+author: "Zhan Rongrui"
 description: "在开发深度学习框架 Boning 的过程中，我调研并引入了 pytest 及其插件生态。本文介绍 pytest 的核心特性以及我在项目中使用的插件"
 pubDatetime: 2025-12-27
 modDatetime: 2025-12-27
