@@ -1,6 +1,6 @@
 ---
 title: "使用 ArchLinux + Incus 搭建 all in one 的小主机"
-author: "zrr1999"
+author: "Zhan Rongrui"
 description: "目前最流行的 AIO 方案是 EXSI 和 PVE，但是其实还有一个更加轻量级的方案，只需要一个普通 Linux 的主机即可"
 pubDatetime: 2024-10-13
 modDatetime: 2024-11-05

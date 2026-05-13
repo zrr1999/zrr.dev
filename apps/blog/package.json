@@ -20,7 +20,7 @@
     "@resvg/resvg-js": "^2.6.2",
     "@tailwindcss/vite": "^4.2.4",
     "@vite-pwa/astro": "^1.2.0",
-    "astro": "6.1.8",
+    "astro": "6.3.1",
     "astro-mermaid": "^2.0.0",
     "astro-pagefind": "^1.8.5",
     "astro-typst": "^0.12.3",
