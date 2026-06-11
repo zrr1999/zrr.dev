@@ -6,6 +6,7 @@ import tailwindcss from "@tailwindcss/vite";
 import AstroPWA from "@vite-pwa/astro";
 import pagefind from "astro-pagefind";
 import mdx from "@astrojs/mdx";
+import { unified } from "@astrojs/markdown-remark";
 import mermaid from "astro-mermaid";
 import { typst } from "astro-typst";
 import remarkMath from "remark-math";
@@ -19,6 +20,26 @@ import rehypeKatex from "rehype-katex";
 
 import { SITE } from "./src/config";
 
+const markdownRemarkPlugins = [
+  [remarkToc, { heading: "目录" }],
+  [
+    remarkCollapse,
+    {
+      test: "目录",
+      summary: "查看目录",
+    },
+  ],
+  remarkCodeTitles,
+  remarkMath,
+];
+
+const markdownRehypePlugins = [rehypeSlug, rehypeAutolinkHeadings, rehypeKatex];
+
+const markdownProcessor = unified({
+  remarkPlugins: markdownRemarkPlugins,
+  rehypePlugins: markdownRehypePlugins,
+});
+
 export default defineConfig({
   prefetch: true,
   site: SITE.website,
@@ -28,7 +49,7 @@ export default defineConfig({
   },
   integrations: [
     mermaid({ autoTheme: true }),
-    mdx(),
+    mdx({ processor: markdownProcessor }),
     typst({
       options: {
         remPx: 14,
@@ -47,19 +68,8 @@ export default defineConfig({
   ],
   markdown: {
     syntaxHighlight: "shiki",
-    remarkPlugins: [
-      [remarkToc, { heading: "目录" }],
-      [
-        remarkCollapse,
-        {
-          test: "目录",
-          summary: "查看目录",
-        },
-      ],
-      remarkCodeTitles,
-      remarkMath,
-    ],
-    rehypePlugins: [rehypeSlug, rehypeAutolinkHeadings, rehypeKatex],
+    remarkPlugins: markdownRemarkPlugins,
+    rehypePlugins: markdownRehypePlugins,
     shikiConfig: {
       themes: { light: "min-light", dark: "night-owl" },
       wrap: true,
