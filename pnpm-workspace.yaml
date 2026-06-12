@@ -6,14 +6,14 @@ allowBuilds:
   workerd: true
 
 catalog:
-  vite: "npm:@voidzero-dev/vite-plus-core@0.1.21"
-  vite-plus: "0.1.21"
-  vitest: "npm:@voidzero-dev/vite-plus-test@0.1.21"
+  vite: "npm:@voidzero-dev/vite-plus-core@0.1.24"
+  vite-plus: "0.1.24"
+  vitest: "npm:@voidzero-dev/vite-plus-test@0.1.24"
 
 overrides:
   "@astrojs/internal-helpers": "0.10.0"
-  # Align with AGENTS.md: newer Astro / vite-plus stacks hit vite-plus-core
-  # "Not implemented" in generateBundle until upstream fixes land.
+  # Align with AGENTS.md: keep Astro and Vite+ moving together; older
+  # combinations can hit vite-plus-core "Not implemented" in generateBundle.
   astro: "6.3.1"
   vite: "catalog:"
   vite-plus: "catalog:"
