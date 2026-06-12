@@ -3,6 +3,7 @@ packages:
 allowBuilds:
   esbuild: true
   sharp: true
+  workerd: true
 
 catalog:
   vite: "npm:@voidzero-dev/vite-plus-core@0.1.18"
