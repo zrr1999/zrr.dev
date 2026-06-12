@@ -6,7 +6,7 @@ settings:
 
 overrides:
   '@astrojs/internal-helpers': 0.10.0
-  astro: 6.3.1
+  astro: ^6.3.1
   vite: npm:@voidzero-dev/vite-plus-core@0.1.24
   vite-plus: 0.1.24
   vitest: npm:@voidzero-dev/vite-plus-test@0.1.24
@@ -52,7 +52,7 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0(astro@6.3.1(@types/node@24.12.0)(jiti@2.6.1)(rollup@4.59.0)(terser@5.46.2)(typescript@6.0.3)(yaml@2.8.2))(vite-plugin-pwa@1.2.0(@voidzero-dev/vite-plus-core@0.1.24(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.2)(typescript@6.0.3)(yaml@2.8.2))(workbox-build@7.4.0(@types/babel__core@7.20.5))(workbox-window@7.4.0))
       astro:
-        specifier: 6.3.1
+        specifier: ^6.3.1
         version: 6.3.1(@types/node@24.12.0)(jiti@2.6.1)(rollup@4.59.0)(terser@5.46.2)(typescript@6.0.3)(yaml@2.8.2)
       astro-mermaid:
         specifier: ^2.0.0
@@ -155,7 +155,7 @@ importers:
         specifier: ^4.2.4
         version: 4.2.4(@voidzero-dev/vite-plus-core@0.1.24(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.2)(typescript@6.0.3)(yaml@2.8.2))
       astro:
-        specifier: 6.3.1
+        specifier: ^6.3.1
         version: 6.3.1(@types/node@24.12.0)(jiti@2.6.1)(rollup@4.59.0)(terser@5.46.2)(typescript@6.0.3)(yaml@2.8.2)
       tailwindcss:
         specifier: ^4.2.4
@@ -183,7 +183,7 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0(astro@6.3.1(@types/node@24.12.0)(jiti@2.6.1)(rollup@2.80.0)(terser@5.46.2)(typescript@6.0.3)(yaml@2.8.2))(vite-plugin-pwa@1.2.0(@voidzero-dev/vite-plus-core@0.1.24(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.2)(typescript@6.0.3)(yaml@2.8.2))(workbox-build@7.4.0(@types/babel__core@7.20.5))(workbox-window@7.4.0))
       astro:
-        specifier: 6.3.1
+        specifier: ^6.3.1
         version: 6.3.1(@types/node@24.12.0)(jiti@2.6.1)(rollup@2.80.0)(terser@5.46.2)(typescript@6.0.3)(yaml@2.8.2)
       preact:
         specifier: ^10.29.1
@@ -257,7 +257,7 @@ packages:
     engines: {node: '>=22.12.0'}
     peerDependencies:
       '@astrojs/markdown-satteri': 0.3.0
-      astro: 6.3.1
+      astro: ^6.3.1
     peerDependenciesMeta:
       '@astrojs/markdown-satteri':
         optional: true
@@ -294,7 +294,7 @@ packages:
   '@astrojs/tailwind@6.0.2':
     resolution: {integrity: sha512-j3mhLNeugZq6A8dMNXVarUa8K6X9AW+QHU9u3lKNrPLMHhOQ0S7VeWhHwEeJFpEK1BTKEUY1U78VQv2gN6hNGg==}
     peerDependencies:
-      astro: 6.3.1
+      astro: ^6.3.1
       tailwindcss: ^3.0.24
 
   '@astrojs/telemetry@3.3.2':
@@ -305,7 +305,7 @@ packages:
     resolution: {integrity: sha512-YeVDmcGkzjhc/LToHXPwxsrH5OaHqOaMDColLvKbGvzn/Y/vsQnNh8pyZZGe76SCKrbMDH6cq8kaVn8upITg7A==}
     engines: {node: 18.20.8 || ^20.3.0 || >=22.0.0}
     peerDependencies:
-      astro: 6.3.1
+      astro: ^6.3.1
       vue: ^3.5.24
 
   '@astrojs/yaml2ts@0.2.3':
@@ -1562,7 +1562,7 @@ packages:
   '@lucide/astro@1.14.0':
     resolution: {integrity: sha512-RaCwEeeTQT0TOvoCu6cS0XMrjK56qrSzPVIUv1ycwqCUbfu9TjDmh7svJ/677kGhLje1IT2vxXg5nD53ta1jcg==}
     peerDependencies:
-      astro: 6.3.1
+      astro: ^6.3.1
 
   '@mdx-js/mdx@3.1.1':
     resolution: {integrity: sha512-f6ZO2ifpwAQIpzGWaBQT2TXxPv6z3RBzQKpVftEWN78Vl/YweF1uwussDx8ECAXVtr3Rs89fKyG9YlzUs9DyGQ==}
@@ -2902,7 +2902,7 @@ packages:
     resolution: {integrity: sha512-ZJYkc87j/nuuBJjZEYe0C4MeXH3UHcYPWuSH0qq3dRIhlm8ej4ygPZm9YyB6rWNuPZ7ixRX+hVWHU3NaXfkzyA==}
     peerDependencies:
       '@vite-pwa/assets-generator': ^1.0.0
-      astro: 6.3.1
+      astro: ^6.3.1
       vite-plugin-pwa: ^1.2.0
     peerDependenciesMeta:
       '@vite-pwa/assets-generator':
@@ -3261,13 +3261,13 @@ packages:
     resolution: {integrity: sha512-0MORMlwJXM3d2RlYoFMKpdBTEOqFEZ7rY5TnQssLsUTfaZgF4XkNJW0mNsDiOdM9LgDn9Px2dZtz8NbuUW75nw==}
     deprecated: 'Check the migration guide: https://astro-integration-kit.netlify.app/migration-guide/'
     peerDependencies:
-      astro: 6.3.1
+      astro: ^6.3.1
 
   astro-mermaid@2.0.1:
     resolution: {integrity: sha512-JTyB62FMFJpwS/1yUplmrugL0yr0flBVYZw6mf3s7pVlh+CHCeZTXyj3KCCWtFhnPLAdM+PYld0D+gxN/SysLQ==}
     peerDependencies:
       '@mermaid-js/layout-elk': ^0.2.0
-      astro: 6.3.1
+      astro: ^6.3.1
       mermaid: ^10.0.0 || ^11.0.0
     peerDependenciesMeta:
       '@mermaid-js/layout-elk':
@@ -3276,7 +3276,7 @@ packages:
   astro-pagefind@2.0.0:
     resolution: {integrity: sha512-i270YlJ/8aX/eRkvtuAPANSk+WK1uyp9DEj/TuuWem4pA0xBUGQk7agNFdu71nRxtH0j7TZxee2qwQRlrfZa1g==}
     peerDependencies:
-      astro: 6.3.1
+      astro: ^6.3.1
 
   astro-typst@0.12.3:
     resolution: {integrity: sha512-vp7DYs1dBO1CdBVqBeu1cwwnkGn5flXwj28uKtDuPrrmvfR/kkeLH6LAYuXEIaPgYvS+bKCFxASiXsBs/R0OfQ==}
@@ -3284,7 +3284,7 @@ packages:
       '@myriaddreamin/typst-ts-node-compiler': '>=0.6.1-rc2'
       '@myriaddreamin/typst-ts-renderer': '>=0.6.1-rc2'
       '@myriaddreamin/typst.ts': '>=0.6.1-rc2'
-      astro: 6.3.1
+      astro: ^6.3.1
       cheerio: '>=1.0.0 <2.0.0'
 
   astro@6.3.1:
@@ -4389,10 +4389,6 @@ packages:
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
-
-  js-yaml@4.1.1:
-    resolution: {integrity: sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA==}
-    hasBin: true
 
   js-yaml@4.2.0:
     resolution: {integrity: sha512-ePWsvanv0DWuDRsW8dnt+R4jQ31SCRCQ7hhNcPXZPsoBZiemuZNYGf7adZdqX2D86j6rvKp3RpCxVTSb8WQlOw==}
@@ -6226,7 +6222,7 @@ snapshots:
     dependencies:
       '@types/hast': 3.0.4
       '@types/mdast': 4.0.4
-      js-yaml: 4.1.1
+      js-yaml: 4.2.0
       picomatch: 4.0.4
       retext-smartypants: 6.2.0
       shiki: 4.0.2
@@ -6515,8 +6511,8 @@ snapshots:
 
   '@babel/generator@7.29.1':
     dependencies:
-      '@babel/parser': 7.29.3
-      '@babel/types': 7.29.0
+      '@babel/parser': 7.29.7
+      '@babel/types': 7.29.7
       '@jridgewell/gen-mapping': 0.3.13
       '@jridgewell/trace-mapping': 0.3.31
       jsesc: 3.1.0
@@ -6531,7 +6527,7 @@ snapshots:
 
   '@babel/helper-annotate-as-pure@7.27.3':
     dependencies:
-      '@babel/types': 7.29.0
+      '@babel/types': 7.29.7
 
   '@babel/helper-annotate-as-pure@7.29.7':
     dependencies:
@@ -6591,7 +6587,7 @@ snapshots:
   '@babel/helper-member-expression-to-functions@7.28.5':
     dependencies:
       '@babel/traverse': 7.29.0
-      '@babel/types': 7.29.0
+      '@babel/types': 7.29.7
     transitivePeerDependencies:
       - supports-color
 
@@ -6605,7 +6601,7 @@ snapshots:
   '@babel/helper-module-imports@7.28.6':
     dependencies:
       '@babel/traverse': 7.29.0
-      '@babel/types': 7.29.0
+      '@babel/types': 7.29.7
     transitivePeerDependencies:
       - supports-color
 
@@ -6636,7 +6632,7 @@ snapshots:
 
   '@babel/helper-optimise-call-expression@7.27.1':
     dependencies:
-      '@babel/types': 7.29.0
+      '@babel/types': 7.29.7
 
   '@babel/helper-optimise-call-expression@7.29.7':
     dependencies:
@@ -6676,7 +6672,7 @@ snapshots:
   '@babel/helper-skip-transparent-expression-wrappers@7.27.1':
     dependencies:
       '@babel/traverse': 7.29.0
-      '@babel/types': 7.29.0
+      '@babel/types': 7.29.7
     transitivePeerDependencies:
       - supports-color
 
@@ -6708,7 +6704,7 @@ snapshots:
   '@babel/helpers@7.28.6':
     dependencies:
       '@babel/template': 7.28.6
-      '@babel/types': 7.29.0
+      '@babel/types': 7.29.7
 
   '@babel/parser@7.29.2':
     dependencies:
@@ -7104,7 +7100,7 @@ snapshots:
       '@babel/helper-module-imports': 7.28.6
       '@babel/helper-plugin-utils': 7.28.6
       '@babel/plugin-syntax-jsx': 7.28.6(@babel/core@7.29.0)
-      '@babel/types': 7.29.0
+      '@babel/types': 7.29.7
     transitivePeerDependencies:
       - supports-color
 
@@ -7275,8 +7271,8 @@ snapshots:
   '@babel/template@7.28.6':
     dependencies:
       '@babel/code-frame': 7.29.0
-      '@babel/parser': 7.29.3
-      '@babel/types': 7.29.0
+      '@babel/parser': 7.29.7
+      '@babel/types': 7.29.7
 
   '@babel/template@7.29.7':
     dependencies:
@@ -7289,9 +7285,9 @@ snapshots:
       '@babel/code-frame': 7.29.0
       '@babel/generator': 7.29.1
       '@babel/helper-globals': 7.28.0
-      '@babel/parser': 7.29.3
+      '@babel/parser': 7.29.7
       '@babel/template': 7.28.6
-      '@babel/types': 7.29.0
+      '@babel/types': 7.29.7
       debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
@@ -8505,16 +8501,16 @@ snapshots:
 
   '@types/babel__generator@7.27.0':
     dependencies:
-      '@babel/types': 7.29.0
+      '@babel/types': 7.29.7
 
   '@types/babel__template@7.4.4':
     dependencies:
-      '@babel/parser': 7.29.3
-      '@babel/types': 7.29.0
+      '@babel/parser': 7.29.7
+      '@babel/types': 7.29.7
 
   '@types/babel__traverse@7.28.0':
     dependencies:
-      '@babel/types': 7.29.0
+      '@babel/types': 7.29.7
 
   '@types/chai@5.2.3':
     dependencies:
@@ -8893,7 +8889,7 @@ snapshots:
       '@babel/plugin-syntax-jsx': 7.28.6(@babel/core@7.29.0)
       '@babel/template': 7.28.6
       '@babel/traverse': 7.29.0
-      '@babel/types': 7.29.0
+      '@babel/types': 7.29.7
       '@vue/babel-helper-vue-transform-on': 1.5.0
       '@vue/babel-plugin-resolve-type': 1.5.0(@babel/core@7.29.0)
       '@vue/shared': 3.5.32
@@ -8924,7 +8920,7 @@ snapshots:
       '@babel/core': 7.29.0
       '@babel/helper-module-imports': 7.28.6
       '@babel/helper-plugin-utils': 7.28.6
-      '@babel/parser': 7.29.3
+      '@babel/parser': 7.29.7
       '@vue/compiler-sfc': 3.5.32
     transitivePeerDependencies:
       - supports-color
@@ -8935,7 +8931,7 @@ snapshots:
       '@babel/core': 7.29.0
       '@babel/helper-module-imports': 7.28.6
       '@babel/helper-plugin-utils': 7.28.6
-      '@babel/parser': 7.29.3
+      '@babel/parser': 7.29.7
       '@vue/compiler-sfc': 3.5.32
     transitivePeerDependencies:
       - supports-color
@@ -10649,10 +10645,6 @@ snapshots:
 
   js-tokens@4.0.0: {}
 
-  js-yaml@4.1.1:
-    dependencies:
-      argparse: 2.0.1
-
   js-yaml@4.2.0:
     dependencies:
       argparse: 2.0.1
@@ -10789,8 +10781,8 @@ snapshots:
 
   magicast@0.5.2:
     dependencies:
-      '@babel/parser': 7.29.3
-      '@babel/types': 7.29.0
+      '@babel/parser': 7.29.7
+      '@babel/types': 7.29.7
       source-map-js: 1.2.1
 
   markdown-extensions@2.0.0: {}
