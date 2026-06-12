@@ -6,15 +6,15 @@ allowBuilds:
   workerd: true
 
 catalog:
-  vite: "npm:@voidzero-dev/vite-plus-core@0.1.18"
-  vite-plus: "0.1.18"
-  vitest: "npm:@voidzero-dev/vite-plus-test@0.1.18"
+  astro: "^6.3.1"
+  vite: "npm:@voidzero-dev/vite-plus-core@0.1.24"
+  vite-plus: "0.1.24"
+  vitest: "npm:@voidzero-dev/vite-plus-test@0.1.24"
 
 overrides:
   "@astrojs/internal-helpers": "0.10.0"
-  # Align with AGENTS.md: newer Astro / vite-plus stacks hit vite-plus-core
-  # "Not implemented" in generateBundle until upstream fixes land.
-  astro: "6.1.8"
+  # Keep direct and transitive Astro resolutions on the workspace catalog entry.
+  astro: "catalog:"
   vite: "catalog:"
   vite-plus: "catalog:"
   vitest: "catalog:"

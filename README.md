@@ -2,7 +2,7 @@
 
 [Astro](https://astro.build) 个人站：主页、博客（Markdown / Typst）、幻灯片。**生产**：`zrr.dev`、`blog.zrr.dev`、`slides.zrr.dev`。旧域名 `sixbones.dev` 等仍为 `308` 入口，须在 Cloudflare 侧配置跳转（参见下表）。
 
-**栈**：Tailwind、[Cloudflare Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/) + Wrangler。**工具**：Vite+（[vite-plus.dev](https://vite-plus.dev)，全局 `vp`）；日常开发与安装依赖请以 `vp` 为准（勿用裸 `pnpm` / `npm` / `yarn` 替代 toolchain），详见 [AGENTS.md](./AGENTS.md)。workspace 详见 `pnpm-workspace.yaml`。pre-commit、[版本锁定](AGENTS.md#配置)（Astro **`6.1.8`**、Vite+ **`0.1.18`** 等）亦在 AGENTS。
+**栈**：Tailwind、[Cloudflare Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/) + Wrangler。**工具**：Vite+（[vite-plus.dev](https://vite-plus.dev)，全局 `vp`）；日常开发与安装依赖请以 `vp` 为准（勿用裸 `pnpm` / `npm` / `yarn` 替代 toolchain），详见 [AGENTS.md](./AGENTS.md)。workspace 版本约束详见 `pnpm-workspace.yaml`；pre-commit 与依赖调整注意事项见 AGENTS。
 
 ## 开发与检查
 
