@@ -2,8 +2,11 @@
   "$schema": "../../node_modules/wrangler/config-schema.json",
   "name": "zrr-website-root",
   "compatibility_date": "2026-05-08",
+  "main": "./src/worker.ts",
   "assets": {
     "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": true,
   },
   "routes": [
     {

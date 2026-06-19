@@ -24,4 +24,5 @@ pnpm-debug.log*
 .vscode/
 .cursor/
 .vite-hooks/
+.wrangler/
 .learnings/
