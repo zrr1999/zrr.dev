@@ -1,0 +1,4 @@
+Contact: mailto:zrr1999@qq.com
+Expires: 2027-06-18T00:00:00Z
+Preferred-Languages: zh, en
+Canonical: https://zrr.dev/.well-known/security.txt
