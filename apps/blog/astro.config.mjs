@@ -67,9 +67,8 @@ export default defineConfig({
     AstroPWA(),
   ],
   markdown: {
+    processor: markdownProcessor,
     syntaxHighlight: "shiki",
-    remarkPlugins: markdownRemarkPlugins,
-    rehypePlugins: markdownRehypePlugins,
     shikiConfig: {
       themes: { light: "min-light", dark: "night-owl" },
       wrap: true,
