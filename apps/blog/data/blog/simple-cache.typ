@@ -32,7 +32,7 @@
 == 缓存系统工作的基本流程
 #figure(
   caption: [缓存系统工作的基本流程],
-  image("../../public/images/blog/simple-cache/cache.svg"),
+  image("../../public/images/simple-cache/cache.svg"),
 )<makd.cache>
 @makd.cache 展示了缓存系统工作的基本流程。
 缓存系统的核心思想是避免在相同输入数据上重复执行计算成本高昂的特征提取操作，特别是当编码器被冻结时，对相同输入的特征输出应保持不变。
@@ -53,7 +53,7 @@
 == 缓存管理器
 #figure(
   caption: [缓存管理器运行机制],
-  image("../../public/images/blog/simple-cache/cache.manager.svg"),
+  image("../../public/images/simple-cache/cache.manager.svg"),
 )<makd.cache.manager>
 本章的缓存系统是通过拦截前向传播过程并调用缓存管理器实现的，
 @makd.cache.manager 展示了缓存管理器的运行机制和实现原理，
