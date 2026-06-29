@@ -15,7 +15,7 @@ overrides:
   # Keep direct and transitive Astro resolutions on the workspace catalog entry.
   astro: "catalog:"
   # Patch transitive audit findings while waiting for upstream packages to refresh locks/ranges.
-  glob: "11.1.0"
+  glob: "13.0.6"
   # hast-util-to-estree expects a callable default export that style-to-js 1.0.0 lacks.
   style-to-js: "1.1.21"
   yaml: "2.9.0"
