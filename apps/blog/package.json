@@ -22,13 +22,13 @@
     "@tailwindcss/vite": "^4.2.4",
     "@vite-pwa/astro": "^1.2.0",
     "astro": "catalog:",
-    "astro-mermaid": "2.0.4",
+    "astro-mermaid": "2.1.0",
     "astro-pagefind": "^2.0.0",
     "astro-typst": "^0.12.3",
     "caniuse-lite": "^1.0.30001792",
     "dayjs": "^1.11.13",
     "lodash.kebabcase": "^4.1.1",
-    "mermaid": "11.15.0",
+    "mermaid": "11.16.0",
     "rehype-autolink-headings": "^7.1.0",
     "rehype-katex": "^7.0.1",
     "rehype-slug": "^6.0.0",
@@ -51,6 +51,6 @@
     "react-dom": "^19.2.0",
     "vite": "catalog:",
     "vite-plus": "catalog:",
-    "vue": "3.5.38"
+    "vue": "3.5.39"
   }
 }
