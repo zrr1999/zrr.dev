@@ -14,10 +14,10 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.9",
-    "@lucide/astro": "^1.14.0",
-    "@tailwindcss/vite": "^4.2.4",
+    "@lucide/astro": "^1.25.0",
+    "@tailwindcss/vite": "catalog:",
     "astro": "catalog:",
-    "tailwindcss": "^4.2.4"
+    "tailwindcss": "catalog:"
   },
   "devDependencies": {
     "vite": "catalog:",

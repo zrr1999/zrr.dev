@@ -6,22 +6,31 @@ allowBuilds:
   workerd: true
 
 catalog:
-  astro: "^7.0.2"
-  vite: "npm:@voidzero-dev/vite-plus-core@0.2.4"
-  vite-plus: "0.2.4"
+  astro: "^7.1.1"
+  # astro check 仍依赖 TS 6 的 sys API；TS 7 原生编译器尚不兼容（withastro/astro#17268）
+  typescript: "6.0.3"
+  vite: "npm:@voidzero-dev/vite-plus-core@0.2.5"
+  vite-plus: "0.2.5"
   vitest: "npm:@voidzero-dev/vite-plus-test@0.1.24"
+  tailwindcss: "^4.3.3"
+  "@tailwindcss/vite": "^4.3.3"
+
+minimumReleaseAgeExclude:
+  - astro@7.1.1
+  - "@lucide/astro@1.25.0"
+  - miniflare@4.20260714.0
+  - wrangler@4.112.0
 
 overrides:
-  # Keep direct and transitive Astro resolutions on the workspace catalog entry.
   astro: "catalog:"
-  # Patch transitive audit findings while waiting for upstream packages to refresh locks/ranges.
-  glob: "13.0.6"
-  # hast-util-to-estree expects a callable default export that style-to-js 1.0.0 lacks.
-  style-to-js: "1.1.21"
-  yaml: "2.9.0"
+  typescript: "catalog:"
   vite: "catalog:"
   vite-plus: "catalog:"
   vitest: "catalog:"
+  # 审计与兼容性钉死（勿随意升到未验证的 major）
+  glob: "13.0.6"
+  style-to-js: "1.1.21"
+  yaml: "2.9.0"
 
 peerDependencyRules:
   allowAny:

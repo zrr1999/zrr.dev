@@ -3,6 +3,7 @@ dist/
 # generated types
 .astro/
 .svelte-kit/
+.pnpm-store/
 
 # dependencies
 node_modules/

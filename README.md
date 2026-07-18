@@ -16,7 +16,7 @@
 | `vp run preview` | 预览构建结果                     |
 | `vp check`       | 格式 + lint + 类型               |
 
-另有 `vp fmt`、`vp lint`、`vp test`（见 AGENTS）。Pre-commit、[prek](https://github.com/j178/prek)：根目录 `pnpm install` 会跑 `prepare`，写入钩子；首次克隆可再执行 `prek install-hooks`。
+另有 `vp fmt`、`vp lint`、`vp test`（见 AGENTS）。Pre-commit、[prek](https://github.com/j178/prek)：`vp install` 会跑 `prepare` 写入钩子；首次克隆可再执行 `prek install-hooks`。
 
 ## 项目结构
 
@@ -24,11 +24,18 @@
 apps/root/      → 主页
 apps/blog/
   data/blog/    → 文章
-apps/slides/    → 幻灯前端；幻灯源在 hosting/slides/（不经 public 软链）
-hosting/
+  public/images → 软链到 hosting/images/
+apps/slides/    → 幻灯前端；源在 hosting/slides/（dev/build 由 plugin 挂载）
+hosting/        → 静态资源子模块（见下）
+  images/
+    blog/                 → 博客配图（如 blog/simple-cache/）
+    profile/github/personal/ → 个人头像等
+  slides/
+    open-source-innovation/
+    national-scholarship/
 ```
 
-博客 frontmatter / 排版规范：[AGENTS.md — 博客编写规范](./AGENTS.md#博客编写规范)。
+博客 frontmatter / 排版规范：[AGENTS.md — 博客规范](./AGENTS.md#博客规范)。
 
 ## 部署模型
 

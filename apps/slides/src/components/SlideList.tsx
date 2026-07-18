@@ -1,5 +1,15 @@
 import { useState, useEffect } from "preact/hooks";
 
+/** Display titles for hosting/slides/<slug>/ directory names. */
+const SLIDE_TITLES: Record<string, string> = {
+  "open-source-innovation": "开源创新大赛答辩",
+  "national-scholarship": "国家奖学金答辩",
+};
+
+function slideTitle(slug: string): string {
+  return SLIDE_TITLES[slug] ?? slug;
+}
+
 /** `client:*` is for Astro's tag typing only; the runtime strips these before hydration. */
 export type SlideListProps = {
   slides: string[];
@@ -129,14 +139,14 @@ export function SlideList({ slides }: SlideListProps): any {
                         : "h-12 text-2xl font-semibold"
                     }`}
                   >
-                    {slide}
+                    {slideTitle(slide)}
                   </h2>
                   <div class="flex aspect-video w-full items-center justify-center overflow-hidden rounded-md border border-border bg-gray-100 dark:bg-gray-800">
                     <iframe
                       src={`/slides/${slide}/index.html`}
                       class="h-full w-full rounded-xl border-0 transition-all duration-300"
                       loading="lazy"
-                      title={`幻灯片预览-${slide}`}
+                      title={`幻灯片预览-${slideTitle(slide)}`}
                     ></iframe>
                   </div>
                 </a>
