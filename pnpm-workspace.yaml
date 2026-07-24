@@ -29,7 +29,7 @@ overrides:
   vitest: "catalog:"
   # 审计与兼容性钉死（勿随意升到未验证的 major）
   glob: "13.0.6"
-  style-to-js: "1.1.21"
+  style-to-js: "2.0.2"
   yaml: "2.9.0"
 
 peerDependencyRules:
