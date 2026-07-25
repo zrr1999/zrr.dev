@@ -13,17 +13,18 @@
     "lint:check": "vp lint ."
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.9",
+    "@astrojs/check": "catalog:",
     "@astrojs/preact": "^6.0.1",
     "@tailwindcss/vite": "catalog:",
-    "@vite-pwa/astro": "^1.2.0",
+    "@vite-pwa/astro": "catalog:",
+    "@zrr-website/site-meta": "workspace:*",
+    "@zrr-website/site-theme": "workspace:*",
     "astro": "catalog:",
     "preact": "^10.29.7",
     "tailwindcss": "catalog:"
   },
   "devDependencies": {
-    "@tailwindcss/typography": "^0.5.20",
-    "@types/lodash.kebabcase": "^4.1.9",
+    "@tailwindcss/typography": "catalog:",
     "vite": "catalog:",
     "vite-plus": "catalog:"
   }

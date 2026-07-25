@@ -4,12 +4,14 @@
 
 ## 结构
 
-| 路径           | 说明                                                                    |
-| :------------- | :---------------------------------------------------------------------- |
-| `apps/root/`   | 主页 `zrr.dev`（`sixbones.dev` → 308）                                  |
-| `apps/blog/`   | 博客 `blog.zrr.dev`；`public/images` → `hosting/images/`                |
-| `apps/slides/` | 幻灯片 `slides.zrr.dev`；源在 `hosting/slides/<slug>/`                  |
-| `hosting/`     | 静态资源子模块（[zrr1999/hosting](https://github.com/zrr1999/hosting)） |
+| 路径                   | 说明                                                                    |
+| :--------------------- | :---------------------------------------------------------------------- |
+| `apps/root/`           | 主页 `zrr.dev`（`sixbones.dev` → 308）                                  |
+| `apps/blog/`           | 博客 `blog.zrr.dev`；`public/images` → `hosting/images/`                |
+| `apps/slides/`         | 幻灯片 `slides.zrr.dev`；源在 `hosting/slides/<slug>/`                  |
+| `packages/site-meta/`  | 站点身份：作者、版权文案、共用字体 URL                                  |
+| `packages/site-theme/` | blog/slides 共用主题 CSS；`brand.css` 供 root 对齐品牌色                |
+| `hosting/`             | 静态资源子模块（[zrr1999/hosting](https://github.com/zrr1999/hosting)） |
 
 ## 工具链
 

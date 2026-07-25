@@ -1,4 +1,6 @@
 ---
+import AmbientBackground from "@/components/AmbientBackground.astro";
+import { SITE_AUTHOR, SITE_FONTS_HREF } from "@zrr-website/site-meta";
 import "@/styles/global.css";
 
 export interface Props {
@@ -19,9 +21,10 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://zrr.dev"
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
-    <meta name="author" content="Zhan Rongrui" />
+    <meta name="author" content={SITE_AUTHOR} />
     <meta name="robots" content="index, follow" />
-    <meta name="theme-color" content="#f7f1e8" />
+    <meta name="theme-color" content="#f6f7fb" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b1220" media="(prefers-color-scheme: dark)" />
     <meta name="color-scheme" content="light dark" />
     <meta name="generator" content={Astro.generator} />
     <meta property="og:title" content={title} />
@@ -38,12 +41,10 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://zrr.dev"
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <link href={SITE_FONTS_HREF} rel="stylesheet" />
   </head>
-  <body class="min-h-screen bg-(--bg) text-(--fg) antialiased">
+  <body class="relative min-h-screen text-(--fg) antialiased">
+    <AmbientBackground />
     <slot />
   </body>
 </html>

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@zrr-website/site-theme/brand.css";
 
 :root {
   color-scheme: light dark;
@@ -11,12 +12,12 @@
   --card-border: rgba(11, 18, 32, 0.12);
   --card-hover: rgba(255, 255, 255, 0.92);
 
-  --accent: #2b59ff;
-  --accent-2: #12b5a6;
-  --ring: rgba(43, 89, 255, 0.4);
+  --accent: var(--brand-accent-bright);
+  --accent-2: var(--brand-teal);
+  --ring: color-mix(in srgb, var(--brand-accent-bright) 40%, transparent);
 
-  --g1: rgba(43, 89, 255, 0.18);
-  --g2: rgba(18, 181, 166, 0.12);
+  --g1: color-mix(in srgb, var(--brand-accent-bright) 18%, transparent);
+  --g2: color-mix(in srgb, var(--brand-teal) 12%, transparent);
   --g3: rgba(255, 163, 74, 0.1);
 }
 
@@ -32,11 +33,7 @@ body {
     Arial,
     "Apple Color Emoji",
     "Segoe UI Emoji";
-  background:
-    radial-gradient(1200px 800px at 20% 10%, var(--g1), transparent 55%),
-    radial-gradient(900px 700px at 78% 18%, var(--g2), transparent 60%),
-    radial-gradient(900px 700px at 50% 100%, var(--g3), transparent 55%),
-    var(--bg);
+  background: var(--bg);
 }
 
 .display-font {
@@ -63,22 +60,20 @@ body {
     --card-border: rgba(255, 255, 255, 0.12);
     --card-hover: rgba(255, 255, 255, 0.09);
 
-    --accent: #78a6ff;
+    --accent: var(--brand-accent-dark);
     --accent-2: #59e3c9;
-    --ring: rgba(120, 166, 255, 0.55);
+    --ring: color-mix(in srgb, var(--brand-accent-dark) 55%, transparent);
 
-    --g1: rgba(120, 166, 255, 0.22);
+    --g1: color-mix(in srgb, var(--brand-accent-dark) 22%, transparent);
     --g2: rgba(89, 227, 201, 0.14);
     --g3: rgba(255, 214, 120, 0.08);
   }
 }
 
-/* Intentional, accessible selection colors */
 ::selection {
-  background: rgba(43, 89, 255, 0.22);
+  background: color-mix(in srgb, var(--brand-accent-bright) 22%, transparent);
 }
 
-/* Improve focus visibility for keyboard users */
 :where(a, button, input, textarea, select):focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 3px;
@@ -109,6 +104,6 @@ body {
 
 @media (prefers-color-scheme: dark) {
   ::selection {
-    background: rgba(120, 166, 255, 0.28);
+    background: color-mix(in srgb, var(--brand-accent-dark) 28%, transparent);
   }
 }

@@ -1,8 +1,7 @@
 ---
+import { copyrightText } from "@zrr-website/site-meta";
 import Hr from "./Hr.astro";
 import Socials from "./Socials.astro";
-
-const currentYear = new Date().getFullYear();
 
 export interface Props {
   noMarginTop?: boolean;
@@ -18,10 +17,7 @@ const { noMarginTop = false } = Astro.props;
   >
     <Socials centered />
     <div class="my-2 flex flex-col items-center whitespace-nowrap sm:flex-row">
-      <span
-        >&#169; 2024-{currentYear}
-        <a href="https://github.com/zrr1999">Zhan Rongrui</a></span
-      >
+      <span>{copyrightText()}</span>
     </div>
   </div>
 </footer>

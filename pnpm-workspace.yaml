@@ -1,5 +1,6 @@
 packages:
   - "apps/*"
+  - "packages/*"
 allowBuilds:
   esbuild: true
   sharp: true
@@ -14,6 +15,9 @@ catalog:
   vitest: "npm:@voidzero-dev/vite-plus-test@0.1.24"
   tailwindcss: "^4.3.3"
   "@tailwindcss/vite": "^4.3.3"
+  "@tailwindcss/typography": "^0.5.20"
+  "@astrojs/check": "^0.9.9"
+  "@vite-pwa/astro": "^1.2.0"
 
 minimumReleaseAgeExclude:
   - astro@7.1.1

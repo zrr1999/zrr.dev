@@ -13,9 +13,11 @@
     "lint:check": "vp lint ."
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.9",
+    "@astrojs/check": "catalog:",
     "@lucide/astro": "^1.25.0",
     "@tailwindcss/vite": "catalog:",
+    "@zrr-website/site-meta": "workspace:*",
+    "@zrr-website/site-theme": "workspace:*",
     "astro": "catalog:",
     "tailwindcss": "catalog:"
   },

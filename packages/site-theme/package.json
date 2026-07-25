@@ -1,0 +1,17 @@
+{
+  "name": "@zrr-website/site-theme",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./brand.css": "./src/brand.css",
+    "./tokens.css": "./src/tokens.css",
+    "./base.css": "./src/base.css",
+    "./typography.css": "./src/typography.css",
+    "./typst.css": "./src/typst.css"
+  },
+  "peerDependencies": {
+    "@tailwindcss/typography": "^0.5.20",
+    "tailwindcss": "^4.3.3"
+  }
+}

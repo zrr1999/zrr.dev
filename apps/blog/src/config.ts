@@ -1,6 +1,8 @@
+import { SITE_AUTHOR } from "@zrr-website/site-meta";
+
 export const SITE = {
   website: "https://blog.zrr.dev/",
-  author: "Zhan Rongrui",
+  author: SITE_AUTHOR,
   profile: "https://blog.zrr.dev/",
   desc: "写一点对自己有用的笔记。",
   title: "六个骨头的博客",

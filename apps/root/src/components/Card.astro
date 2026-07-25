@@ -12,7 +12,7 @@ const { title, description, href, icon = "🔗", external = false } = Astro.prop
 
 <a
   href={href}
-  class="group relative flex flex-col overflow-hidden rounded-2xl border border-(--card-border) bg-(--card) p-6 shadow-[0_12px_40px_rgba(0,0,0,0.14)] backdrop-blur transition will-change-transform hover:-translate-y-1 hover:border-black/18 hover:bg-(--card-hover) dark:hover:border-white/18"
+  class="group relative flex flex-col overflow-hidden rounded-2xl border border-(--card-border) bg-(--card) p-6 shadow-[0_12px_40px_rgba(0,0,0,0.14)] backdrop-blur transition hover:-translate-y-1 hover:border-black/18 hover:bg-(--card-hover) dark:hover:border-white/18"
   target={external ? "_blank" : undefined}
   rel={external ? "noopener noreferrer" : undefined}
 >

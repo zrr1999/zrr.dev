@@ -1,0 +1,11 @@
+/**
+ * Shared brand accents across apps.
+ * Blog/slides map these via tokens.css; root maps onto --accent / --ring.
+ */
+:root {
+  --brand-accent: #006cac;
+  --brand-accent-bright: #2b59ff;
+  --brand-accent-dark: #78a6ff;
+  --brand-warm: #ff6b01;
+  --brand-teal: #12b5a6;
+}

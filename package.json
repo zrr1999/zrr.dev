@@ -4,7 +4,8 @@
   "license": "GPL-3.0",
   "author": "Zhan Rongrui",
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "packages/*"
   ],
   "type": "module",
   "scripts": {

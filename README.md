@@ -26,6 +26,9 @@ apps/blog/
   data/blog/    → 文章
   public/images → 软链到 hosting/images/
 apps/slides/    → 幻灯前端；源在 hosting/slides/（dev/build 由 plugin 挂载）
+packages/
+  site-meta/    → 作者 / 版权 / 共用字体
+  site-theme/   → blog·slides 主题 CSS；brand 色供 root 对齐
 hosting/        → 静态资源子模块（见下）
   images/
     blog/                 → 博客配图（如 blog/simple-cache/）

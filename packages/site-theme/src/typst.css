@@ -1,0 +1,14 @@
+/* Typst rendered figures */
+.code-image {
+  @apply flex justify-center;
+}
+.code-image svg {
+  @apply max-w-full;
+  @apply h-fit;
+}
+figcaption {
+  @apply text-center;
+  @apply font-bold;
+  @apply text-foreground;
+  @apply text-lg;
+}

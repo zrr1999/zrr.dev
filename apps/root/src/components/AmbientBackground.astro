@@ -1,0 +1,146 @@
+---
+/**
+ * Soft radial blobs — transform-only motion, no filter:blur.
+ * Pauses when the tab is hidden; static under prefers-reduced-motion.
+ */
+---
+
+<div class="ambient" aria-hidden="true">
+  <div class="ambient__blob ambient__blob--1"></div>
+  <div class="ambient__blob ambient__blob--2"></div>
+  <div class="ambient__blob ambient__blob--3"></div>
+</div>
+
+<style>
+  .ambient {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+    background: var(--bg);
+    contain: strict;
+  }
+
+  .ambient__blob {
+    position: absolute;
+    border-radius: 50%;
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+
+  .ambient__blob--1 {
+    top: -18%;
+    left: -12%;
+    width: min(72vw, 720px);
+    height: min(72vw, 720px);
+    background: radial-gradient(
+      circle at 40% 40%,
+      var(--g1) 0%,
+      transparent 68%
+    );
+    animation: ambient-drift-a 32s ease-in-out infinite;
+  }
+
+  .ambient__blob--2 {
+    top: -8%;
+    right: -16%;
+    width: min(58vw, 580px);
+    height: min(58vw, 580px);
+    background: radial-gradient(
+      circle at 55% 45%,
+      var(--g2) 0%,
+      transparent 70%
+    );
+    animation: ambient-drift-b 38s ease-in-out infinite;
+  }
+
+  .ambient__blob--3 {
+    bottom: -22%;
+    left: 28%;
+    width: min(64vw, 640px);
+    height: min(64vw, 640px);
+    background: radial-gradient(
+      circle at 50% 40%,
+      var(--g3) 0%,
+      transparent 68%
+    );
+    animation: ambient-drift-c 44s ease-in-out infinite;
+  }
+
+  @keyframes ambient-drift-a {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    40% {
+      transform: translate3d(8%, 6%, 0) scale(1.06);
+    }
+    70% {
+      transform: translate3d(3%, 12%, 0) scale(0.96);
+    }
+  }
+
+  @keyframes ambient-drift-b {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    35% {
+      transform: translate3d(-10%, 8%, 0) scale(1.05);
+    }
+    65% {
+      transform: translate3d(-4%, 14%, 0) scale(0.97);
+    }
+  }
+
+  @keyframes ambient-drift-c {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    45% {
+      transform: translate3d(6%, -10%, 0) scale(1.08);
+    }
+    75% {
+      transform: translate3d(-5%, -4%, 0) scale(0.95);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ambient__blob {
+      animation: none !important;
+      will-change: auto;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .ambient__blob--1 {
+      width: min(90vw, 420px);
+      height: min(90vw, 420px);
+    }
+    .ambient__blob--2 {
+      width: min(70vw, 340px);
+      height: min(70vw, 340px);
+    }
+    .ambient__blob--3 {
+      width: min(80vw, 380px);
+      height: min(80vw, 380px);
+    }
+  }
+</style>
+
+<script>
+  const root = document.querySelector(".ambient");
+  if (root instanceof HTMLElement) {
+    const blobs = root.querySelectorAll(".ambient__blob");
+    const sync = () => {
+      const state = document.hidden ? "paused" : "running";
+      for (const el of blobs) {
+        if (el instanceof HTMLElement) el.style.animationPlayState = state;
+      }
+    };
+    document.addEventListener("visibilitychange", sync);
+  }
+</script>

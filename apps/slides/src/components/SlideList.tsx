@@ -1,4 +1,5 @@
 import { useState, useEffect } from "preact/hooks";
+import { copyrightText } from "@zrr-website/site-meta";
 
 /** Display titles for hosting/slides/<slug>/ directory names. */
 const SLIDE_TITLES: Record<string, string> = {
@@ -26,7 +27,6 @@ export function SlideList({ slides }: SlideListProps): any {
   const [scale, setScale] = useState(1);
   const [fullscreenSlide, setFullscreenSlide] = useState<string | null>(null);
 
-  // 响应式处理屏幕宽度
   useEffect(() => {
     function handleResize() {
       const w = window.innerWidth;
@@ -88,14 +88,7 @@ export function SlideList({ slides }: SlideListProps): any {
   }
 
   return (
-    <div class="flex min-h-svh flex-col bg-background font-mono text-foreground">
-      <img
-        id="background"
-        src="/background.svg"
-        fetchpriority="high"
-        class="fixed inset-0 h-full w-full object-cover backdrop-blur-3xl"
-      />
-
+    <div class="slide-page flex min-h-svh flex-col bg-background font-mono text-foreground">
       <div
         class="z-1 flex min-h-[60vh] flex-1 items-center justify-center"
         hidden={!showWarning}
@@ -124,7 +117,7 @@ export function SlideList({ slides }: SlideListProps): any {
               {slides.map(slide => (
                 <a
                   id={`slide-card-${slide}`}
-                  href="#"
+                  href={`/slides/${slide}/index.html`}
                   class={`block overflow-y-auto bg-white/50 no-underline backdrop-blur transition-all duration-300 dark:bg-muted/50 ${
                     fullscreenSlide === slide
                       ? "h-screen w-screen p-12"
@@ -155,10 +148,30 @@ export function SlideList({ slides }: SlideListProps): any {
           )}
         </section>
       </main>
+
+      <footer class="z-1 mt-auto py-8 text-center text-sm text-foreground/55">
+        <span>{copyrightText()}</span>
+      </footer>
+
       <style>
         {`
+          .slide-page::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            background: url("/background.svg") center / cover no-repeat;
+          }
           .animate-slidein {
             animation: slidein 0.7s cubic-bezier(.4,0,.2,1);
+          }
+          @keyframes slidein {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .animate-slidein { animation: none; }
           }
         `}
       </style>

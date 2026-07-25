@@ -6,9 +6,18 @@ settings:
 
 catalogs:
   default:
+    '@astrojs/check':
+      specifier: ^0.9.9
+      version: 0.9.9
+    '@tailwindcss/typography':
+      specifier: ^0.5.20
+      version: 0.5.20
     '@tailwindcss/vite':
       specifier: ^4.3.3
       version: 4.3.3
+    '@vite-pwa/astro':
+      specifier: ^1.2.0
+      version: 1.2.0
     tailwindcss:
       specifier: ^4.3.3
       version: 4.3.3
@@ -40,7 +49,7 @@ importers:
   apps/blog:
     dependencies:
       '@astrojs/check':
-        specifier: ^0.9.9
+        specifier: 'catalog:'
         version: 0.9.9(prettier@3.8.4)(typescript@6.0.3)
       '@astrojs/markdown-remark':
         specifier: ^7.2.1
@@ -61,8 +70,14 @@ importers:
         specifier: 'catalog:'
         version: 4.3.3(@voidzero-dev/vite-plus-core@0.2.5(@types/node@26.0.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(typescript@6.0.3)(yaml@2.9.0))
       '@vite-pwa/astro':
-        specifier: ^1.2.0
+        specifier: 'catalog:'
         version: 1.2.0(astro@7.1.1(@astrojs/markdown-remark@7.2.1(supports-color@10.2.2))(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@26.0.0)(jiti@2.7.0)(rollup@4.62.2)(terser@5.48.0)(typescript@6.0.3)(yaml@2.9.0))(vite-plugin-pwa@1.3.0(@voidzero-dev/vite-plus-core@0.2.5(@types/node@26.0.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(typescript@6.0.3)(yaml@2.9.0))(supports-color@10.2.2)(workbox-build@7.4.1(@types/babel__core@7.20.5)(supports-color@10.2.2))(workbox-window@7.4.1))
+      '@zrr-website/site-meta':
+        specifier: workspace:*
+        version: link:../../packages/site-meta
+      '@zrr-website/site-theme':
+        specifier: workspace:*
+        version: link:../../packages/site-theme
       astro:
         specifier: ^7.1.1
         version: 7.1.1(@astrojs/markdown-remark@7.2.1(supports-color@10.2.2))(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@26.0.0)(jiti@2.7.0)(rollup@4.62.2)(terser@5.48.0)(typescript@6.0.3)(yaml@2.9.0)
@@ -128,7 +143,7 @@ importers:
         specifier: ^7.0.1
         version: 7.0.1(@types/node@26.0.0)(astro@7.1.1(@astrojs/markdown-remark@7.2.1(supports-color@10.2.2))(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@26.0.0)(jiti@2.7.0)(rollup@4.62.2)(terser@5.48.0)(typescript@6.0.3)(yaml@2.9.0))(esbuild@0.28.1)(jiti@2.7.0)(supports-color@10.2.2)(terser@5.48.0)(typescript@6.0.3)(vue@3.5.40(typescript@6.0.3))(yaml@2.9.0)
       '@tailwindcss/typography':
-        specifier: ^0.5.20
+        specifier: 'catalog:'
         version: 0.5.20(tailwindcss@4.3.3)
       '@types/lodash.kebabcase':
         specifier: ^4.1.9
@@ -155,7 +170,7 @@ importers:
   apps/root:
     dependencies:
       '@astrojs/check':
-        specifier: ^0.9.9
+        specifier: 'catalog:'
         version: 0.9.9(prettier@3.8.4)(typescript@6.0.3)
       '@lucide/astro':
         specifier: ^1.25.0
@@ -163,6 +178,12 @@ importers:
       '@tailwindcss/vite':
         specifier: 'catalog:'
         version: 4.3.3(@voidzero-dev/vite-plus-core@0.2.5(@types/node@26.0.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(typescript@6.0.3)(yaml@2.9.0))
+      '@zrr-website/site-meta':
+        specifier: workspace:*
+        version: link:../../packages/site-meta
+      '@zrr-website/site-theme':
+        specifier: workspace:*
+        version: link:../../packages/site-theme
       astro:
         specifier: ^7.1.1
         version: 7.1.1(@astrojs/markdown-remark@7.2.1(supports-color@10.2.2))(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@26.0.0)(jiti@2.7.0)(rollup@4.62.2)(terser@5.48.0)(typescript@6.0.3)(yaml@2.9.0)
@@ -180,7 +201,7 @@ importers:
   apps/slides:
     dependencies:
       '@astrojs/check':
-        specifier: ^0.9.9
+        specifier: 'catalog:'
         version: 0.9.9(prettier@3.8.4)(typescript@6.0.3)
       '@astrojs/preact':
         specifier: ^6.0.1
@@ -189,8 +210,14 @@ importers:
         specifier: 'catalog:'
         version: 4.3.3(@voidzero-dev/vite-plus-core@0.2.5(@types/node@26.0.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(typescript@6.0.3)(yaml@2.9.0))
       '@vite-pwa/astro':
-        specifier: ^1.2.0
+        specifier: 'catalog:'
         version: 1.2.0(astro@7.1.1(@astrojs/markdown-remark@7.2.1(supports-color@10.2.2))(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@26.0.0)(jiti@2.7.0)(rollup@4.62.2)(terser@5.48.0)(typescript@6.0.3)(yaml@2.9.0))(vite-plugin-pwa@1.3.0(@voidzero-dev/vite-plus-core@0.2.5(@types/node@26.0.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(typescript@6.0.3)(yaml@2.9.0))(supports-color@10.2.2)(workbox-build@7.4.1(@types/babel__core@7.20.5)(supports-color@10.2.2))(workbox-window@7.4.1))
+      '@zrr-website/site-meta':
+        specifier: workspace:*
+        version: link:../../packages/site-meta
+      '@zrr-website/site-theme':
+        specifier: workspace:*
+        version: link:../../packages/site-theme
       astro:
         specifier: ^7.1.1
         version: 7.1.1(@astrojs/markdown-remark@7.2.1(supports-color@10.2.2))(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@26.0.0)(jiti@2.7.0)(rollup@4.62.2)(terser@5.48.0)(typescript@6.0.3)(yaml@2.9.0)
@@ -202,17 +229,25 @@ importers:
         version: 4.3.3
     devDependencies:
       '@tailwindcss/typography':
-        specifier: ^0.5.20
+        specifier: 'catalog:'
         version: 0.5.20(tailwindcss@4.3.3)
-      '@types/lodash.kebabcase':
-        specifier: ^4.1.9
-        version: 4.1.9
       vite:
         specifier: npm:@voidzero-dev/vite-plus-core@0.2.5
         version: '@voidzero-dev/vite-plus-core@0.2.5(@types/node@26.0.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(typescript@6.0.3)(yaml@2.9.0)'
       vite-plus:
         specifier: 0.2.5
         version: 0.2.5(@types/node@26.0.0)(@voidzero-dev/vite-plus-core@0.2.5(@types/node@26.0.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(typescript@6.0.3)(yaml@2.9.0))(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(typescript@6.0.3)(yaml@2.9.0)
+
+  packages/site-meta: {}
+
+  packages/site-theme:
+    dependencies:
+      '@tailwindcss/typography':
+        specifier: ^0.5.20
+        version: 0.5.20(tailwindcss@4.3.3)
+      tailwindcss:
+        specifier: ^4.3.3
+        version: 4.3.3
 
 packages:
 
