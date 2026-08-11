@@ -9,7 +9,7 @@ allowBuilds:
 catalog:
   astro: "^7.1.1"
   # astro check 仍依赖 TS 6 的 sys API；TS 7 原生编译器尚不兼容（withastro/astro#17268）
-  typescript: "6.0.3"
+  typescript: "7.0.2"
   vite: "npm:@voidzero-dev/vite-plus-core@0.2.7"
   vite-plus: "0.2.7"
   vitest: "npm:@voidzero-dev/vite-plus-test@0.1.24"
