@@ -12,7 +12,7 @@ catalog:
   typescript: "6.0.3"
   vite: "npm:@voidzero-dev/vite-plus-core@0.3.0"
   vite-plus: "0.3.0"
-  vitest: "npm:@voidzero-dev/vite-plus-test@0.1.24"
+  vitest: "4.1.11"
   tailwindcss: "^4.3.3"
   "@tailwindcss/vite": "^4.3.3"
   "@tailwindcss/typography": "^0.5.20"
