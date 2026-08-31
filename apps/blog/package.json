@@ -30,7 +30,7 @@
     "caniuse-lite": "^1.0.30001806",
     "dayjs": "^1.11.21",
     "lodash.kebabcase": "^4.1.1",
-    "mermaid": "11.16.0",
+    "mermaid": "11.17.2",
     "rehype-autolink-headings": "^7.1.0",
     "rehype-katex": "^7.0.1",
     "rehype-slug": "^6.0.0",
@@ -38,7 +38,7 @@
     "remark-collapse": "^0.1.2",
     "remark-math": "^6.0.0",
     "remark-toc": "^9.0.0",
-    "satori": "^0.29.0",
+    "satori": "^0.33.0",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"
   },
@@ -53,6 +53,6 @@
     "react-dom": "^19.2.7",
     "vite": "catalog:",
     "vite-plus": "catalog:",
-    "vue": "3.5.40"
+    "vue": "3.5.42"
   }
 }
