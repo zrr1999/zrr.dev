@@ -14,11 +14,17 @@
   },
   "dependencies": {
     "@astrojs/check": "catalog:",
+    "@astrojs/react": "^6.0.4",
     "@lucide/astro": "^1.25.0",
     "@tailwindcss/vite": "catalog:",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
     "@zrr-website/site-meta": "workspace:*",
     "@zrr-website/site-theme": "workspace:*",
     "astro": "catalog:",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "sonner": "^2.0.8",
     "tailwindcss": "catalog:"
   },
   "devDependencies": {

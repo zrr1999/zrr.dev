@@ -1,0 +1,140 @@
+---
+import Layout from "@/components/Layout.astro";
+import Header from "@/components/Header.astro";
+import { copyrightText } from "@zrr-website/site-meta";
+import { friends } from "@/friends";
+
+const mySite = `{ "name": "六个骨头", "url": "https://zrr.dev" }`;
+
+const steps = [
+  {
+    title: "先友后链",
+    detail: "先在你的站点添加本站链接，格式如下：",
+    code: mySite,
+  },
+  {
+    title: "提交 PR",
+    detail:
+      "编辑 apps/root/src/friends.ts，在 friends 数组中按同样格式追加你的站点（打开下方编辑页即可，无需本地环境）：",
+    link: {
+      href: "https://github.com/zrr1999/zrr.dev/edit/main/apps/root/src/friends.ts",
+      text: "在 GitHub 上编辑 friends.ts",
+    },
+  },
+  {
+    title: "等待合入",
+    detail: "PR 合入后自动部署，首页与本页会同时更新。",
+  },
+];
+
+const criteria = ["内容以原创为主，转载内容尽可能少", "站点使用 HTTPS"];
+---
+
+<Layout
+  title="友链 — 六个骨头"
+  description="朋友们的站点，以及互换友链的方式与标准。"
+  ambient={false}
+>
+  <Header />
+
+  <main class="mx-auto max-w-6xl px-5 pt-28 pb-16 md:px-8 md:pt-36">
+    <section class="reveal">
+      <h1
+        class="display-font text-[clamp(3rem,10vw,7.5rem)] leading-[0.95] font-bold tracking-[-0.03em] text-(--fg) uppercase"
+      >
+        友链<span class="text-(--accent)"> / Friends</span>
+      </h1>
+      <p
+        class="mt-8 max-w-2xl text-base leading-relaxed text-(--muted) md:text-lg"
+      >
+        朋友们的站点，欢迎常来常往。
+      </p>
+    </section>
+
+    <section class="reveal reveal-2 mt-20 md:mt-24">
+      <h2 class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase">
+        <span class="mr-2 font-medium text-(--accent)">01</span>朋友们 / Links
+      </h2>
+
+      <div class="mt-4">
+        {
+          friends.map(friend => (
+            <a
+              href={friend.url}
+              class="group grid grid-cols-[1fr_auto] items-baseline gap-6 border-t border-(--card-border) py-4 transition-[padding] duration-300 last:border-b hover:pl-4"
+            >
+              <span class="flex items-baseline gap-6">
+                <span class="text-[15px] font-medium text-(--fg) transition-colors duration-300 group-hover:text-(--accent)">
+                  {friend.name}
+                </span>
+                <span class="mono text-xs text-(--subtle)">
+                  {new URL(friend.url).host}
+                </span>
+              </span>
+              <span
+                class="text-sm text-(--subtle) transition-all duration-300 group-hover:translate-x-1 group-hover:text-(--accent)"
+                aria-hidden="true"
+              >
+                →
+              </span>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="reveal reveal-3 mt-20 md:mt-24">
+      <h2 class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase">
+        <span class="mr-2 font-medium text-(--accent)">02</span>互换 / Exchange
+      </h2>
+
+      <div class="mt-4">
+        {
+          steps.map((step, i) => (
+            <div class="grid grid-cols-[1fr_auto] items-baseline gap-2 border-t border-(--card-border) py-6 last:border-b md:grid-cols-[140px_1fr] md:gap-6">
+              <span class="mono col-span-2 text-xs text-(--subtle) md:col-span-1">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div>
+                <p class="text-[15px] font-medium text-(--fg)">{step.title}</p>
+                <p class="mt-1 max-w-2xl text-sm leading-relaxed text-(--muted)">
+                  {step.detail}
+                  {step.link && (
+                    <a
+                      href={step.link.href}
+                      class="text-(--fg) underline decoration-(--subtle) underline-offset-4 transition-colors hover:text-(--accent)"
+                    >
+                      {step.link.text}
+                    </a>
+                  )}
+                </p>
+                {step.code && (
+                  <pre class="mono mt-3 max-w-2xl overflow-x-auto border border-(--card-border) px-4 py-3 text-xs text-(--muted)">
+{step.code}</pre>
+                )}
+              </div>
+            </div>
+          ))
+        }
+      </div>
+
+      <p class="mt-6 max-w-2xl text-xs leading-relaxed text-(--subtle)">
+        标准：{criteria.join("；")}。
+      </p>
+    </section>
+
+    <footer
+      class="mono mt-24 flex flex-wrap items-baseline justify-between gap-3 border-t border-(--card-border) pt-6 text-xs text-(--subtle)"
+    >
+      <span>{copyrightText()}</span>
+      <span>
+        <a href="/" class="transition-colors hover:text-(--fg)">首页</a>
+        <span class="mx-2">·</span>
+        <a
+          href="https://github.com/zrr1999"
+          class="transition-colors hover:text-(--fg)">GitHub</a
+        >
+      </span>
+    </footer>
+  </main>
+</Layout>

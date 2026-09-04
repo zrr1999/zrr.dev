@@ -1,4 +1,5 @@
 import { defineConfig } from "astro/config";
+import react from "@astrojs/react";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
@@ -8,6 +9,7 @@ export default defineConfig({
     locales: ["en", "zh-cn"],
     defaultLocale: "zh-cn",
   },
+  integrations: [react()],
   vite: {
     plugins: [tailwindcss()],
   },
