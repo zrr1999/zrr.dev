@@ -4,18 +4,27 @@ import Header from "@/components/Header.astro";
 import { copyrightText } from "@zrr-website/site-meta";
 import { friends } from "@/friends";
 
-const mySite = `{ "name": "六个骨头", "url": "https://zrr.dev" }`;
+const mySite = `{
+  "name": "六个骨头",
+  "url": "https://zrr.dev",
+  "desc": "编程语言、深度学习框架与编码智能体",
+  "avatar": "https://blog.zrr.dev/images/profile/personal/avatar.png"
+}`;
+
+const yourSite = `{ "name": "你的网站", "url": "https://example.com" },`;
 
 const steps = [
   {
     title: "先友后链",
-    detail: "先在你的站点添加本站链接，格式如下：",
+    detail:
+      "先在你的站点添加本站链接。除 name 与 url 外，有些站点还会要求 desc / avatar 字段，一并给出，按需取用：",
     code: mySite,
   },
   {
     title: "提交 PR",
     detail:
-      "编辑 apps/root/src/friends.ts，在 friends 数组中按同样格式追加你的站点（打开下方编辑页即可，无需本地环境）：",
+      "编辑 apps/root/src/friends.ts，在 friends 数组中追加你的站点；这里只需要 name 与 url 两个字段：",
+    code: yourSite,
     link: {
       href: "https://github.com/zrr1999/zrr.dev/edit/main/apps/root/src/friends.ts",
       text: "在 GitHub 上编辑 friends.ts",
@@ -99,18 +108,18 @@ const criteria = ["内容以原创为主，转载内容尽可能少", "站点使
                 <p class="text-[15px] font-medium text-(--fg)">{step.title}</p>
                 <p class="mt-1 max-w-2xl text-sm leading-relaxed text-(--muted)">
                   {step.detail}
-                  {step.link && (
-                    <a
-                      href={step.link.href}
-                      class="text-(--fg) underline decoration-(--subtle) underline-offset-4 transition-colors hover:text-(--accent)"
-                    >
-                      {step.link.text}
-                    </a>
-                  )}
                 </p>
                 {step.code && (
                   <pre class="mono mt-3 max-w-2xl overflow-x-auto border border-(--card-border) px-4 py-3 text-xs text-(--muted)">
 {step.code}</pre>
+                )}
+                {step.link && (
+                  <a
+                    href={step.link.href}
+                    class="mt-3 inline-block text-sm text-(--fg) underline decoration-(--subtle) underline-offset-4 transition-colors hover:text-(--accent)"
+                  >
+                    {step.link.text} →
+                  </a>
                 )}
               </div>
             </div>
