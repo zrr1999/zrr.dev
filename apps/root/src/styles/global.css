@@ -49,6 +49,10 @@ body {
     Arial;
 }
 
+.mono {
+  font-family: "IBM Plex Mono", "Noto Sans SC", ui-monospace, monospace;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #0b1220;
