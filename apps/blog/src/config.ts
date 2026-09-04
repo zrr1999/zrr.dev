@@ -16,7 +16,7 @@ export const SITE = {
   editPost: {
     enabled: true,
     text: "建议修改",
-    url: "https://github.com/zrr1999/sixbones.dev/edit/main/",
+    url: "https://github.com/zrr1999/zrr.dev/edit/main/apps/blog/",
   },
   dynamicOgImage: true,
   lang: "cn", // html lang code. Set this empty and default will be "en"
