@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" font-family="'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif">
+  <rect width="960" height="540" fill="#222222"/>
+  <text x="114" y="78" font-size="23" font-weight="bold" fill="#3d5a76">人工智能学院</text>
+  <text x="113" y="183" font-size="84" font-weight="bold" fill="#6c9ce9">国家奖学金答辩</text>
+  <circle cx="168" cy="353" r="56" fill="#ffffff"/>
+  <text x="168" y="347.5" text-anchor="middle" font-size="15.5" fill="#333333">学习</text>
+  <text x="168" y="368.5" text-anchor="middle" font-size="15.5" fill="#333333">成绩</text>
+  <circle cx="360" cy="325" r="56" fill="#4e4e4e"/>
+  <text x="360" y="319.5" text-anchor="middle" font-size="15.5" fill="#ffffff">综合</text>
+  <text x="360" y="340.5" text-anchor="middle" font-size="15.5" fill="#ffffff">素质</text>
+  <circle cx="605" cy="325" r="56" fill="#4e4e4e"/>
+  <text x="605" y="319.5" text-anchor="middle" font-size="15.5" fill="#ffffff">荣誉</text>
+  <text x="605" y="340.5" text-anchor="middle" font-size="15.5" fill="#ffffff">奖项</text>
+  <circle cx="785" cy="325" r="56" fill="#4e4e4e"/>
+  <text x="785" y="319.5" text-anchor="middle" font-size="15.5" fill="#ffffff">项目</text>
+  <text x="785" y="340.5" text-anchor="middle" font-size="15.5" fill="#ffffff">经历</text>
+  <text x="480" y="492" text-anchor="middle" font-size="15" fill="#e9e9e9">答辩人：詹荣瑞</text>
+</svg>
