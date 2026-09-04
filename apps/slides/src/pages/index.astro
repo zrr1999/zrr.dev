@@ -47,8 +47,8 @@ const decks = slugs
       event: "",
       description: "",
     },
-    cover: existsSync(join(coversDir, `${slug}.webp`))
-      ? `/covers/${slug}.webp`
+    cover: existsSync(join(coversDir, `${slug}.svg`))
+      ? `/covers/${slug}.svg`
       : null,
   }))
   .sort((a, b) => b.meta.date.localeCompare(a.meta.date));
