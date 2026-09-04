@@ -2,9 +2,6 @@
 import Layout from "@/components/Layout.astro";
 import { copyrightText } from "@zrr-website/site-meta";
 
-const vision =
-  "长期致力于推动基础设施走向个人化与可定制，使每个人都能按照自身目标和工作方式构造、验证并演化自己的系统；持续探索可编程基础设施、可组合运行时与人机协作编程模型。";
-
 const experiences = [
   {
     period: "2025–至今",
@@ -33,7 +30,7 @@ const contacts = [
 
 <Layout
   title="关于 — 六个骨头"
-  description="关于詹荣瑞：深度学习基础框架研发工程师，关注可编程基础设施与人机协作编程模型。"
+  description="关于六个骨头（詹荣瑞）：白天做飞桨基础框架研发，晚上捣鼓编程语言与编码智能体。"
   ambient={false}
 >
   <header
@@ -62,8 +59,17 @@ const contacts = [
       >
         关于<span class="text-(--accent)"> / About</span>
       </h1>
-      <p class="mt-8 max-w-2xl text-base leading-relaxed text-(--muted) md:text-lg">
-        我是詹荣瑞（Zhan Rongrui），深度学习基础框架研发工程师，目前在百度参与飞桨基础框架研发；毕业于西安电子科技大学，硕士就读计算机科学与技术专业。{vision}
+      <p
+        class="mt-8 max-w-2xl text-base leading-relaxed text-(--muted) md:text-lg"
+      >
+        嗨，我是六个骨头（sixbones），现实里叫詹荣瑞。白天在百度做飞桨基础框架研发，晚上捣鼓自己的编程语言和编码智能体；对编程语言、类型论和一切可编程的基础设施，有超出工作需要的热情。
+      </p>
+      <p
+        class="mono mt-6 flex flex-wrap gap-x-5 gap-y-2 text-xs text-(--subtle)"
+      >
+        <span><span class="text-(--accent)">@</span> 百度 · 飞桨基础框架</span>
+        <span>PaddlePaddle Committer</span>
+        <span>西安电子科技大学 · 计算机硕士</span>
       </p>
     </section>
 
@@ -116,7 +122,25 @@ const contacts = [
 
     <section class="reveal reveal-3 mt-20 md:mt-24">
       <h2 class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase">
-        <span class="mr-2 font-medium text-(--accent)">03</span>联系 / Find me
+        <span class="mr-2 font-medium text-(--accent)">03</span>本站 /
+        Colophon
+      </h2>
+      <p
+        class="mt-4 max-w-2xl border-t border-(--card-border) pt-5 text-sm leading-relaxed text-(--muted)"
+      >
+        本站使用 Astro 与 Vite+ 构建，正文字体为 Noto Sans SC，标题与等宽字体为
+        Space Grotesk 与 IBM Plex Mono；源码开源于
+        <a
+          href="https://github.com/zrr1999/zrr.dev"
+          class="text-(--fg) underline decoration-(--subtle) underline-offset-4 transition-colors hover:text-(--accent)"
+          >zrr1999/zrr.dev</a
+        >。
+      </p>
+    </section>
+
+    <section class="reveal reveal-3 mt-20 md:mt-24">
+      <h2 class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase">
+        <span class="mr-2 font-medium text-(--accent)">04</span>联系 / Find me
       </h2>
 
       <div class="mt-4">
