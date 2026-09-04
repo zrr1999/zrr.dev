@@ -31,26 +31,60 @@ const projects = [
   {
     name: "spore",
     description:
-      "面向 Agent 与人类意图交互的通用编程语言（孢子），强调可读意图与可组合性。",
+      "意图编程语言（实验阶段）：以函数签名统一表达类型、可失败结果与 effect，允许带 hole 的未完整程序通过编译，作为人机协作协议。",
     href: "https://github.com/spore-lang/spore",
     tags: ["Rust", "Language"],
   },
   {
+    name: "volvox",
+    description:
+      "可组合性深度学习元框架（探索阶段），在调研主流框架与编译器后重新设计的可扩展框架。",
+    href: "https://github.com/volvox-ai/volvox",
+    tags: ["Python", "DL Framework"],
+  },
+  {
+    name: "cue",
+    description:
+      "持久、可观察的统一命令执行底座，支持断线恢复、共享 session 与多观察者 PTY。",
+    href: "https://github.com/zendev-lab/cue",
+    tags: ["Rust", "Runtime"],
+  },
+  {
+    name: "spark",
+    description:
+      "本地优先的持久化编码智能体：本地 daemon 托管会话、执行与恢复，支撑长期任务与跨工作区委托。",
+    href: "https://github.com/zendev-lab/spark",
+    tags: ["TypeScript", "Agent"],
+  },
+  {
     name: "emotion-recognition",
-    description: "多模态情绪识别方法研究与实现，探索语音、文本等多通道融合。",
+    description:
+      "多模态情绪识别系统（硕士毕业设计），覆盖文本、音频、视频三模态的情绪分类与情感分析。",
     href: "https://github.com/zrr1999/emotion-recognition",
     tags: ["Python", "ML"],
   },
 ];
 
 const friends = [
-  { name: "时雨梦之零", url: "https://nyakku.moe/" },
-  { name: "Hi, gouzi", url: "https://www.gouzill.com/" },
-  { name: "Jack's Blog", url: "https://www.jackzhu.top/" },
+  {
+    name: "时雨梦之零",
+    url: "https://nyakku.moe/",
+    desc: "一个小透明的透明世界",
+  },
+  {
+    name: "Hi, gouzi",
+    url: "https://www.gouzill.com/",
+    desc: "服务器折腾与框架踩坑记录",
+  },
+  {
+    name: "Jack's Blog",
+    url: "https://www.jackzhu.top/",
+    desc: "AI Coding 与 Agent 工程随笔",
+  },
 ];
 
 const education = [
-  { degree: "本科", major: "智能科学与技术", years: "2018–2022" },
+  { degree: "学士", major: "智能科学与技术", years: "2018–2022" },
   { degree: "硕士", major: "计算机科学与技术", years: "2022–2025" },
 ];
 
@@ -102,6 +136,7 @@ const posts = await fetchRecentPosts();
       <nav class="mono flex gap-5 text-xs text-(--muted) md:gap-7">
         <a class="nav-link" href="https://blog.zrr.dev">博客</a>
         <a class="nav-link" href="https://slides.zrr.dev">幻灯片</a>
+        <a class="nav-link" href="/about">关于</a>
         <a class="nav-link" href="https://github.com/zrr1999">GitHub</a>
         <a class="nav-link" href="https://blog.zrr.dev/rss.xml">RSS</a>
       </nav>
@@ -189,7 +224,7 @@ const posts = await fetchRecentPosts();
       </div>
     </section>
 
-    <section class="reveal reveal-2 mt-20 md:mt-24">
+    <section id="projects" class="reveal reveal-2 mt-20 md:mt-24">
       <div class="flex items-baseline justify-between gap-6">
         <h2
           class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase"
@@ -288,7 +323,9 @@ const posts = await fetchRecentPosts();
       <p
         class="mt-4 flex flex-wrap items-baseline gap-y-2 border-t border-(--card-border) pt-5 text-sm"
       >
-        <span class="mr-6 text-(--subtle)">朋友们的站点，欢迎交换友链 —</span>
+        <span class="mr-6 text-(--subtle)">
+          朋友们的站点，欢迎写信至 me@zrr.dev 交换友链 —
+        </span>
         {
           friends.map((friend, i) => (
             <>
@@ -302,6 +339,7 @@ const posts = await fetchRecentPosts();
                 </sup>
                 {friend.name}
               </a>
+              <span class="ml-1.5 text-xs text-(--subtle)">{friend.desc}</span>
             </>
           ))
         }
