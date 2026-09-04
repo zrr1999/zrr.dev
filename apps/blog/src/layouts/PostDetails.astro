@@ -35,7 +35,9 @@ const {
   hideEditPost,
 } = post.data;
 
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
+const toc = headings.filter(h => h.depth === 2 || h.depth === 3);
+const readingMinutes = Math.max(1, Math.round((post.body ?? "").length / 400));
 
 let ogImageUrl: string | undefined;
 
@@ -94,17 +96,46 @@ const nextPost =
   >
     <h1
       transition:name={slugifyStr(title)}
-      class="inline-block text-2xl font-bold text-accent sm:text-3xl"
+      class="inline-block text-2xl font-bold sm:text-3xl"
     >
       {title}
     </h1>
     <div class="flex items-center gap-4">
       <Datetime {pubDatetime} {modDatetime} {timezone} size="lg" class="my-2" />
+      <span class="text-sm text-foreground/60" data-pagefind-ignore
+        >约 {readingMinutes} 分钟</span
+      >
       <EditPost class="max-sm:hidden" {hideEditPost} {post} />
     </div>
     <article id="article" class="mx-auto prose mt-8 max-w-3xl">
       <Content />
     </article>
+
+    {
+      toc.length >= 3 && (
+        <nav
+          id="toc"
+          aria-label="目录"
+          data-pagefind-ignore
+          class="fixed top-28 left-[calc(50%+26rem)] hidden max-h-[65vh] w-56 overflow-y-auto border-l-2 border-border pl-4 text-sm min-[1440px]:block"
+        >
+          <p class="mb-2 font-medium text-foreground/70">目录</p>
+          <ul class="space-y-1.5">
+            {toc.map(h => (
+              <li class={h.depth === 3 ? "pl-4" : ""}>
+                <a
+                  href={`#${h.slug}`}
+                  data-toc={h.slug}
+                  class="block leading-snug text-foreground/55 transition-colors hover:text-accent"
+                >
+                  {h.text}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )
+    }
 
     <hr class="my-8 border-dashed" />
 
@@ -229,6 +260,34 @@ const nextPost =
     }
   }
   addHeadingLinks();
+
+  /** Highlights the current section in the TOC rail
+   *  while scrolling. */
+  function setupTocSpy() {
+    const tocNav = document.getElementById("toc");
+    if (!tocNav) return;
+    const links = Array.from(tocNav.querySelectorAll("[data-toc]"));
+    const headings = links
+      .map(link => document.getElementById(link.getAttribute("data-toc")))
+      .filter(Boolean);
+    if (headings.length === 0) return;
+    const observer = new IntersectionObserver(
+      entries => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            for (const link of links) {
+              const active = link.getAttribute("data-toc") === entry.target.id;
+              link.classList.toggle("text-accent", active);
+              link.classList.toggle("font-medium", active);
+            }
+          }
+        }
+      },
+      { rootMargin: "0px 0px -70% 0px" }
+    );
+    for (const heading of headings) observer.observe(heading);
+  }
+  setupTocSpy();
 
   /** Attaches copy buttons to code blocks in the document,
    * allowing users to copy code easily. */
