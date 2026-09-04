@@ -6,11 +6,14 @@ import "@/styles/global.css";
 export interface Props {
   title?: string;
   description?: string;
+  /** 是否渲染渐变背景光斑，默认开启 */
+  ambient?: boolean;
 }
 
 const {
   title = "六个骨头的个人主页",
   description = "六个骨头的个人网站主页，包含博客、幻灯片等内容",
+  ambient = true,
 } = Astro.props;
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://zrr.dev");
 ---
@@ -44,7 +47,7 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://zrr.dev"
     <link href={SITE_FONTS_HREF} rel="stylesheet" />
   </head>
   <body class="relative min-h-screen text-(--fg) antialiased">
-    <AmbientBackground />
+    {ambient && <AmbientBackground />}
     <slot />
   </body>
 </html>

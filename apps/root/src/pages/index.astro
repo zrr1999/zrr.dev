@@ -1,9 +1,31 @@
 ---
 import Layout from "@/components/Layout.astro";
-import Card from "@/components/Card.astro";
-import ProjectCard from "@/components/ProjectCard.astro";
 import { copyrightText } from "@zrr-website/site-meta";
-import { BookOpen, ExternalLink, Presentation } from "@lucide/astro";
+
+const vision =
+  "长期致力于推动基础设施走向个人化与可定制，使每个人都能按照自身目标和工作方式构造、验证并演化自己的系统；持续探索可编程基础设施、可组合运行时与人机协作编程模型。";
+
+const sites = [
+  {
+    name: "博客",
+    domain: "blog.zrr.dev",
+    href: "https://blog.zrr.dev",
+    description:
+      "学习笔记、技术文章和项目经验。最近在写解析器、等价饱和与符号计算。",
+  },
+  {
+    name: "幻灯片",
+    domain: "slides.zrr.dev",
+    href: "https://slides.zrr.dev",
+    description: "技术演讲、课程分享，以及项目汇报的幻灯片合集。",
+  },
+  {
+    name: "GitHub",
+    domain: "github.com/zrr1999",
+    href: "https://github.com/zrr1999",
+    description: "开源项目、代码贡献和一些实验性质的仓库。",
+  },
+];
 
 const projects = [
   {
@@ -22,218 +44,362 @@ const projects = [
 ];
 
 const friends = [
-  {
-    name: "时雨梦之零",
-    url: "https://nyakku.moe/",
-    description: "一个小透明的透明世界",
-  },
-  {
-    name: "Hi,gouzi",
-    url: "https://www.gouzill.com/",
-    description: "哪有什么岁月静好，只是有人为你负重前行",
-    icon: "https://avatars.githubusercontent.com/u/66515297?v=4",
-  },
-  {
-    name: "Jack's Blog",
-    url: "https://www.jackzhu.top/",
-    description: "不乱于心，不困于情，不念过往，不畏将来",
-    icon: "https://gcore.jsdelivr.net/gh/CoderJackZhu/bloggallery/PicGo/mingzi.png",
-  },
+  { name: "时雨梦之零", url: "https://nyakku.moe/" },
+  { name: "Hi, gouzi", url: "https://www.gouzill.com/" },
+  { name: "Jack's Blog", url: "https://www.jackzhu.top/" },
 ];
 
-const AVATAR_PATHS = ["avatar.png", "avatar.webp", "avatar.jpg", "favicon.ico"];
+const education = [
+  { degree: "本科", major: "智能科学与技术", years: "2018–2022" },
+  { degree: "硕士", major: "计算机科学与技术", years: "2022–2025" },
+];
 
-function getFriendIconUrls(friend: { url: string; icon?: string }): string[] {
-  const base = `https://${new URL(friend.url).hostname}`;
-  if (friend.icon) {
-    return [friend.icon, ...AVATAR_PATHS.map(p => `${base}/${p}`)];
-  }
-  return AVATAR_PATHS.map(p => `${base}/${p}`);
+interface Post {
+  title: string;
+  href: string;
+  date: string;
 }
+
+/** 构建期从博客 RSS 拉取最新文章；失败时静默降级，不阻断构建。 */
+async function fetchRecentPosts(limit = 4): Promise<Post[]> {
+  try {
+    const res = await fetch("https://blog.zrr.dev/rss.xml");
+    if (!res.ok) return [];
+    const xml = await res.text();
+    const pick = (item: string, tag: string) =>
+      item.match(new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`))?.[1]?.trim() ??
+      "";
+    return [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)]
+      .slice(0, limit)
+      .map(m => {
+        const item = m[1];
+        const d = new Date(pick(item, "pubDate"));
+        return {
+          title: pick(item, "title"),
+          href: pick(item, "link"),
+          date: Number.isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10),
+        };
+      })
+      .filter(p => p.title && p.href);
+  } catch {
+    return [];
+  }
+}
+
+const posts = await fetchRecentPosts();
 ---
 
-<Layout>
-  <main class="mx-auto max-w-6xl px-5 pt-14 pb-16 md:px-8 md:pt-20 md:pb-20">
-    <section class="reveal">
-      <div class="mx-auto max-w-3xl text-center">
-        <div
-          class="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/55 px-3 py-1 text-xs text-(--muted) shadow-sm backdrop-blur dark:border-white/12 dark:bg-white/6"
-        >
-          <span class="h-1.5 w-1.5 rounded-full bg-(--accent)"></span>
-          <span>zrr.dev</span>
-          <span class="text-(--subtle)">/</span>
-          <span>Engineering</span>
-        </div>
-
-        <h1
-          class="display-font text-5xl font-semibold tracking-tight text-(--fg) md:text-6xl"
-        >
-          你好，我是六个骨头
-        </h1>
-        <p class="mt-5 text-lg leading-relaxed text-(--muted) md:text-xl">
-          百度飞桨研发工程师。做一些有意思的项目，也写一点对自己有用的笔记。
-        </p>
-
-        <div
-          class="mt-7 flex flex-wrap justify-center gap-2 text-sm text-(--muted)"
-        >
-          <span
-            class="rounded-full border border-black/10 bg-white/55 px-3 py-1 shadow-sm backdrop-blur dark:border-white/12 dark:bg-white/6"
-            >西电 智能科学与技术 (2018-2022)</span
-          >
-          <span
-            class="rounded-full border border-black/10 bg-white/55 px-3 py-1 shadow-sm backdrop-blur dark:border-white/12 dark:bg-white/6"
-            >西电 计算机科学与技术 (2022-2025)</span
-          >
-        </div>
-
-        <div class="mt-10 flex flex-wrap justify-center gap-3">
-          <a
-            href="https://blog.zrr.dev"
-            class="inline-flex items-center gap-2 rounded-full bg-(--fg) px-5 py-2 text-sm font-medium text-(--bg) shadow-sm transition hover:opacity-90"
-          >
-            <BookOpen aria-hidden="true" size={18} stroke-width={2} />
-            阅读博客
-          </a>
-          <a
-            href="https://github.com/zrr1999"
-            class="inline-flex items-center gap-2 rounded-full border border-black/12 bg-white/55 px-5 py-2 text-sm font-medium text-(--fg) shadow-sm backdrop-blur transition hover:bg-white/75 dark:border-white/12 dark:bg-white/6 dark:hover:bg-white/9"
-          >
-            <ExternalLink aria-hidden="true" size={18} stroke-width={2} />
-            GitHub
-          </a>
-        </div>
-      </div>
-    </section>
-
+<Layout ambient={false}>
+  <header
+    class="fixed inset-x-0 top-0 z-10 border-b border-(--card-border) bg-(--bg)/85 backdrop-blur"
+  >
     <div
-      class="reveal reveal-2 mx-auto mt-12 h-px max-w-3xl bg-linear-to-r from-transparent via-black/15 to-transparent md:mt-14 dark:via-white/15"
-      aria-hidden="true"
+      class="mx-auto flex max-w-6xl items-baseline justify-between px-5 py-4 md:px-8"
     >
+      <a href="/" class="mono text-sm font-semibold tracking-tight text-(--fg)">
+        zrr<span class="text-(--subtle)">.dev</span>
+      </a>
+      <nav class="mono flex gap-5 text-xs text-(--muted) md:gap-7">
+        <a class="nav-link" href="https://blog.zrr.dev">博客</a>
+        <a class="nav-link" href="https://slides.zrr.dev">幻灯片</a>
+        <a class="nav-link" href="https://github.com/zrr1999">GitHub</a>
+        <a class="nav-link" href="https://blog.zrr.dev/rss.xml">RSS</a>
+      </nav>
     </div>
+  </header>
 
-    <section class="reveal reveal-2 mt-14 md:mt-16">
-      <div class="flex items-end justify-between gap-6">
+  <main class="mx-auto max-w-6xl px-5 pt-28 pb-16 md:px-8 md:pt-36">
+    <section class="reveal">
+      <div class="grid items-end gap-10 md:grid-cols-[1fr_250px]">
         <div>
-          <h2 class="text-2xl font-semibold tracking-tight text-(--fg)">
-            站点
-          </h2>
-          <p class="mt-2 text-sm text-(--muted)">博客与幻灯片</p>
+          <h1
+            class="display-font text-[clamp(3.6rem,13vw,10.5rem)] leading-[0.92] font-bold tracking-[-0.035em] text-(--fg) uppercase"
+          >
+            <span class="hero-line"><span>Zhan</span></span>
+            <span class="hero-line hero-line--accent text-right">
+              <span>Rongrui</span>
+            </span>
+          </h1>
+          <p
+            class="mt-8 max-w-2xl text-base leading-relaxed text-(--muted) md:text-lg"
+          >
+            {vision}
+          </p>
         </div>
-      </div>
 
-      <div class="mt-7 grid gap-5 md:grid-cols-2">
-        <Card
-          title="博客"
-          description="技术笔记、项目经验与学习记录"
-          href="https://blog.zrr.dev"
-          external={true}
-        >
-          <BookOpen slot="icon" size={24} stroke-width={1.8} />
-        </Card>
-        <Card
-          title="幻灯片"
-          description="技术演讲、课程分享与项目汇报"
-          href="https://slides.zrr.dev"
-          external={true}
-        >
-          <Presentation slot="icon" size={24} stroke-width={1.8} />
-        </Card>
+        <aside class="mono text-xs leading-loose text-(--muted)">
+          <span
+            class="mb-3 block text-[11px] tracking-[0.14em] text-(--subtle) uppercase"
+          >
+            Education
+          </span>
+          <p class="mb-2 text-sm font-semibold tracking-wide text-(--fg)">
+            西安电子科技大学
+          </p>
+          {
+            education.map(e => (
+              <p class="flex items-baseline justify-between gap-3">
+                <span>
+                  <span class="mr-2 text-(--accent)">{e.degree}</span>
+                  {e.major}
+                </span>
+                <span class="text-(--subtle)">{e.years}</span>
+              </p>
+            ))
+          }
+        </aside>
       </div>
     </section>
 
-    <section class="reveal reveal-3 mt-14 md:mt-16">
-      <div class="flex items-end justify-between gap-6">
-        <div>
-          <h2 class="text-2xl font-semibold tracking-tight text-(--fg)">
-            开源项目
-          </h2>
-          <p class="mt-2 text-sm text-(--muted)">近期在做的一些公开仓库</p>
-        </div>
-        <a
-          href="https://github.com/zrr1999"
-          class="hidden text-sm text-(--subtle) underline decoration-black/15 underline-offset-4 hover:text-(--muted) hover:decoration-black/35 md:inline dark:decoration-white/20 dark:hover:decoration-white/45"
-          target="_blank"
-          rel="noopener noreferrer"
+    <section class="reveal reveal-2 mt-20 md:mt-24">
+      <div class="flex items-baseline justify-between gap-6">
+        <h2
+          class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase"
         >
-          在 GitHub 查看更多
-        </a>
+          <span class="mr-2 font-medium text-(--accent)">01</span>站点 / Index
+        </h2>
+        <span class="text-xs text-(--subtle)">持续更新中</span>
       </div>
 
-      <div class="mt-7 grid gap-5 md:grid-cols-2">
+      <div class="mt-4">
         {
-          projects.map(project => (
-            <ProjectCard
-              name={project.name}
-              description={project.description}
-              href={project.href}
-              tags={project.tags}
-            />
+          sites.map(site => (
+            <a
+              href={site.href}
+              class="group grid grid-cols-[1fr_auto] items-center gap-6 border-t border-(--card-border) py-7 transition-[padding] duration-300 last:border-b hover:pl-4"
+            >
+              <div class="flex flex-wrap items-baseline gap-x-6 gap-y-1">
+                <span class="display-font text-3xl font-bold tracking-tight text-(--fg) transition-colors duration-300 group-hover:text-(--accent) md:text-4xl">
+                  {site.name}
+                </span>
+                <span class="mono text-xs text-(--subtle)">{site.domain}</span>
+                <span class="basis-full text-sm text-(--muted)">
+                  {site.description}
+                </span>
+              </div>
+              <span
+                class="text-2xl text-(--subtle) transition-all duration-300 group-hover:translate-x-1.5 group-hover:-translate-y-1.5 group-hover:text-(--accent)"
+                aria-hidden="true"
+              >
+                ↗
+              </span>
+            </a>
           ))
         }
       </div>
     </section>
 
-    <section class="reveal reveal-3 mt-14 md:mt-16">
-      <div class="flex items-end justify-between gap-6">
-        <div>
-          <h2 class="text-2xl font-semibold tracking-tight text-(--fg)">
-            友链
-          </h2>
-          <p class="mt-2 text-sm text-(--muted)">朋友们的站点，欢迎交换友链</p>
-        </div>
+    <section class="reveal reveal-2 mt-20 md:mt-24">
+      <div class="flex items-baseline justify-between gap-6">
+        <h2
+          class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase"
+        >
+          <span class="mr-2 font-medium text-(--accent)">02</span>开源项目 /
+          Projects
+        </h2>
+        <a
+          href="https://github.com/zrr1999"
+          class="mono hidden text-xs text-(--subtle) transition-colors hover:text-(--fg) md:inline"
+        >
+          在 GitHub 查看更多 →
+        </a>
       </div>
 
-      <div class="mt-7 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+      <div class="mt-4">
         {
-          friends.map(friend => {
-            const urls = getFriendIconUrls(friend);
-            const [primary, ...fallbacks] = urls;
-            const onError =
-              fallbacks.length > 0
-                ? `var f=JSON.parse(this.dataset.fb||'[]');if(f.length){this.src=f.shift();this.dataset.fb=JSON.stringify(f);f.length||(this.onerror=null)}`
-                : undefined;
-            return (
-              <Card
-                title={friend.name}
-                description={friend.description}
-                href={friend.url}
-                external={true}
+          projects.map(project => (
+            <a
+              href={project.href}
+              class="group grid grid-cols-[1fr_auto] items-center gap-6 border-t border-(--card-border) py-6 transition-[padding] duration-300 last:border-b hover:pl-4"
+            >
+              <div class="flex flex-wrap items-baseline gap-x-6 gap-y-1">
+                <span class="mono text-xl font-semibold tracking-tight text-(--fg) transition-colors duration-300 group-hover:text-(--accent) md:text-2xl">
+                  {project.name}
+                </span>
+                <span class="mono text-xs text-(--subtle)">
+                  {project.tags.join(" / ")}
+                </span>
+                <span class="basis-full text-sm text-(--muted)">
+                  {project.description}
+                </span>
+              </div>
+              <span
+                class="text-xl text-(--subtle) transition-all duration-300 group-hover:translate-x-1.5 group-hover:-translate-y-1.5 group-hover:text-(--accent)"
+                aria-hidden="true"
               >
-                <img
-                  slot="icon"
-                  src={primary}
-                  alt=""
-                  width={44}
-                  height={44}
-                  class="size-11 h-11 w-11 rounded-2xl object-cover"
-                  loading="lazy"
-                  decoding="async"
-                  referrerpolicy="no-referrer"
-                  data-fb={
-                    fallbacks.length > 0 ? JSON.stringify(fallbacks) : undefined
-                  }
-                  onerror={onError}
-                />
-              </Card>
-            );
-          })
+                ↗
+              </span>
+            </a>
+          ))
         }
       </div>
     </section>
 
-    <footer class="reveal reveal-3 mt-16 text-center text-sm text-(--subtle)">
+    {
+      posts.length > 0 && (
+        <section class="reveal reveal-3 mt-20 md:mt-24">
+          <div class="flex items-baseline justify-between gap-6">
+            <h2 class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase">
+              <span class="mr-2 font-medium text-(--accent)">03</span>最近文章 /
+              Writing
+            </h2>
+            <span class="mono text-xs text-(--subtle)">via RSS</span>
+          </div>
+
+          <div class="mt-4">
+            {posts.map(post => (
+              <a
+                href={post.href}
+                class="group grid grid-cols-[1fr_auto] items-baseline gap-2 border-t border-(--card-border) py-4 last:border-b md:grid-cols-[120px_1fr_auto] md:gap-6"
+              >
+                <span class="mono col-span-2 text-xs text-(--subtle) md:col-span-1">
+                  {post.date}
+                </span>
+                <span class="post-title text-[15px] font-medium text-(--fg)">
+                  {post.title}
+                </span>
+                <span
+                  class="hidden text-sm text-(--subtle) transition-all duration-300 group-hover:translate-x-1 group-hover:text-(--accent) md:inline"
+                  aria-hidden="true"
+                >
+                  →
+                </span>
+              </a>
+            ))}
+          </div>
+
+          <a
+            href="https://blog.zrr.dev"
+            class="group mono mt-6 inline-block text-xs text-(--muted) transition-colors hover:text-(--accent)"
+          >
+            所有文章
+            <span class="inline-block transition-transform duration-300 group-hover:translate-x-1">
+              →
+            </span>
+          </a>
+        </section>
+      )
+    }
+
+    <section class="reveal reveal-3 mt-20 md:mt-24">
+      <h2 class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase">
+        <span class="mr-2 font-medium text-(--accent)">04</span>友链 / Friends
+      </h2>
+      <p
+        class="mt-4 flex flex-wrap items-baseline gap-y-2 border-t border-(--card-border) pt-5 text-sm"
+      >
+        <span class="mr-6 text-(--subtle)">朋友们的站点，欢迎交换友链 —</span>
+        {
+          friends.map((friend, i) => (
+            <>
+              {i > 0 && <span class="mx-3 text-(--card-border)">/</span>}
+              <a
+                href={friend.url}
+                class="friend-link text-(--muted) transition-colors hover:text-(--accent)"
+              >
+                <sup class="mono mr-1 text-[10px] text-(--subtle)">
+                  {String(i + 1).padStart(2, "0")}
+                </sup>
+                {friend.name}
+              </a>
+            </>
+          ))
+        }
+      </p>
+    </section>
+
+    <footer
+      class="mono mt-24 flex flex-wrap items-baseline justify-between gap-3 border-t border-(--card-border) pt-6 text-xs text-(--subtle)"
+    >
       <span>{copyrightText()}</span>
+      <span>
+        <a
+          href="https://blog.zrr.dev/rss.xml"
+          class="transition-colors hover:text-(--fg)">RSS</a
+        >
+        <span class="mx-2">·</span>
+        <a
+          href="https://github.com/zrr1999"
+          class="transition-colors hover:text-(--fg)">GitHub</a
+        >
+      </span>
     </footer>
   </main>
 </Layout>
 
 <style>
+  .mono {
+    font-family:
+      "IBM Plex Mono",
+      "Noto Sans SC",
+      ui-monospace,
+      monospace;
+  }
+
+  .hero-line {
+    display: block;
+    overflow: hidden;
+  }
+  .hero-line > span {
+    display: block;
+    transform: translateY(110%);
+    animation: hero-rise 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  .hero-line--accent > span {
+    color: var(--accent);
+    animation-delay: 0.12s;
+  }
+  @keyframes hero-rise {
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  .nav-link {
+    position: relative;
+    transition: color 0.25s ease;
+  }
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -3px;
+    width: 100%;
+    height: 1px;
+    background: var(--fg);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .nav-link:hover {
+    color: var(--fg);
+  }
+  .nav-link:hover::after {
+    transform: scaleX(1);
+  }
+
+  .post-title {
+    width: fit-content;
+    background-image: linear-gradient(var(--accent), var(--accent));
+    background-size: 0% 1px;
+    background-repeat: no-repeat;
+    background-position: left calc(100% - 2px);
+    transition:
+      background-size 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      color 0.25s ease;
+  }
+  a:hover .post-title {
+    background-size: 100% 1px;
+    color: var(--accent);
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .reveal,
     .reveal-2,
-    .reveal-3 {
+    .reveal-3,
+    .hero-line > span {
       animation: none !important;
+      transform: none !important;
     }
   }
 </style>
