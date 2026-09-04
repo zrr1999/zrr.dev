@@ -66,22 +66,12 @@ const projects = [
 ];
 
 const friends = [
-  {
-    name: "时雨梦之零",
-    url: "https://nyakku.moe/",
-    desc: "一个小透明的透明世界",
-  },
-  {
-    name: "Hi, gouzi",
-    url: "https://www.gouzill.com/",
-    desc: "服务器折腾与框架踩坑记录",
-  },
-  {
-    name: "Jack's Blog",
-    url: "https://www.jackzhu.top/",
-    desc: "AI Coding 与 Agent 工程随笔",
-  },
+  { name: "时雨梦之零", url: "https://nyakku.moe/" },
+  { name: "Hi, gouzi", url: "https://www.gouzill.com/" },
+  { name: "Jack's Blog", url: "https://www.jackzhu.top/" },
 ];
+
+const friendExchangeInfo = `{ "name": "六个骨头", "url": "https://zrr.dev" }`;
 
 const education = [
   { degree: "学士", major: "智能科学与技术", years: "2018–2022" },
@@ -320,30 +310,43 @@ const posts = await fetchRecentPosts();
       <h2 class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase">
         <span class="mr-2 font-medium text-(--accent)">04</span>友链 / Friends
       </h2>
-      <p
-        class="mt-4 flex flex-wrap items-baseline gap-y-2 border-t border-(--card-border) pt-5 text-sm"
-      >
-        <span class="mr-6 text-(--subtle)">
-          朋友们的站点，欢迎写信至 me@zrr.dev 交换友链 —
-        </span>
-        {
-          friends.map((friend, i) => (
-            <>
-              {i > 0 && <span class="mx-3 text-(--card-border)">/</span>}
-              <a
-                href={friend.url}
-                class="friend-link text-(--muted) transition-colors hover:text-(--accent)"
-              >
-                <sup class="mono mr-1 text-[10px] text-(--subtle)">
-                  {String(i + 1).padStart(2, "0")}
-                </sup>
-                {friend.name}
-              </a>
-              <span class="ml-1.5 text-xs text-(--subtle)">{friend.desc}</span>
-            </>
-          ))
-        }
-      </p>
+      <div class="mt-4 border-t border-(--card-border) pt-5">
+        <p class="flex flex-wrap items-baseline gap-y-2 text-sm">
+          {
+            friends.map((friend, i) => (
+              <>
+                {i > 0 && <span class="mx-3 text-(--card-border)">/</span>}
+                <a
+                  href={friend.url}
+                  class="friend-link text-(--muted) transition-colors hover:text-(--accent)"
+                >
+                  <sup class="mono mr-1 text-[10px] text-(--subtle)">
+                    {String(i + 1).padStart(2, "0")}
+                  </sup>
+                  {friend.name}
+                </a>
+              </>
+            ))
+          }
+        </p>
+        <p class="mt-5 max-w-2xl text-xs leading-relaxed text-(--subtle)">
+          互换友链欢迎直接
+          <a
+            href="https://github.com/zrr1999/zrr.dev/edit/main/apps/root/src/pages/index.astro"
+            class="text-(--muted) underline decoration-(--card-border) underline-offset-4 transition-colors hover:text-(--accent)"
+            >提 PR</a
+          >
+          或写信至
+          <a
+            href="mailto:me@zrr.dev"
+            class="text-(--muted) underline decoration-(--card-border) underline-offset-4 transition-colors hover:text-(--accent)"
+            >me@zrr.dev</a
+          >，附上你的站点信息；标准：先友后链、内容以原创为主、站点使用 HTTPS。
+        </p>
+        <pre
+          class="mono mt-3 max-w-2xl overflow-x-auto border border-(--card-border) px-4 py-3 text-xs text-(--muted)"
+        >{friendExchangeInfo}</pre>
+      </div>
     </section>
 
     <footer
