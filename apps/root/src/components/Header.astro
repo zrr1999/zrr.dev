@@ -1,0 +1,35 @@
+---
+import RssCopy from "@/components/RssCopy";
+
+const pathname = Astro.url.pathname.replace(/\/+$/, "");
+const navItems = [
+  { name: "关于", href: "/about" },
+  { name: "友链", href: "/friends" },
+];
+---
+
+<header
+  class="fixed inset-x-0 top-0 z-10 border-b border-(--card-border) bg-(--bg)/85 backdrop-blur"
+>
+  <div
+    class="mx-auto flex max-w-6xl items-baseline justify-between px-5 py-4 md:px-8"
+  >
+    <a href="/" class="mono text-sm font-semibold tracking-tight text-(--fg)">
+      zrr<span class="text-(--subtle)">.dev</span>
+    </a>
+    <nav class="mono flex items-baseline gap-5 text-xs text-(--muted) md:gap-7">
+      {
+        navItems.map(item => (
+          <a
+            class:list={["nav-link", { "text-(--fg)": pathname === item.href }]}
+            href={item.href}
+            aria-current={pathname === item.href ? "page" : undefined}
+          >
+            {item.name}
+          </a>
+        ))
+      }
+      <RssCopy client:load />
+    </nav>
+  </div>
+</header>

@@ -49,6 +49,35 @@ body {
     Arial;
 }
 
+.mono {
+  font-family: "IBM Plex Mono", "Noto Sans SC", ui-monospace, monospace;
+}
+
+/* 顶栏导航链接（React island 内也会用到，故放在全局） */
+.nav-link {
+  position: relative;
+  transition: color 0.25s ease;
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 100%;
+  height: 1px;
+  background: var(--fg);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.nav-link:hover {
+  color: var(--fg);
+}
+.nav-link:hover::after,
+.nav-link[aria-current="page"]::after {
+  transform: scaleX(1);
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #0b1220;

@@ -31,8 +31,11 @@ packages/
   site-theme/   → blog·slides 主题 CSS；brand 色供 root 对齐
 hosting/        → 静态资源子模块（见下）
   images/
-    blog/                 → 博客配图（如 blog/simple-cache/）
-    profile/github/personal/ → 个人头像等
+    blog/             → 博客配图（如 blog/simple-cache/）
+    profile/          → 跨平台头像与标识（按身份分目录）
+      personal/       → 个人头像
+      zendev-lab/     → Zendev Lab 标识
+      morirun/        → Mori 标识
   slides/
     open-source-innovation/
     national-scholarship/

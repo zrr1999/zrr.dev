@@ -1,0 +1,169 @@
+---
+import Layout from "@/components/Layout.astro";
+import Header from "@/components/Header.astro";
+import { copyrightText } from "@zrr-website/site-meta";
+
+const experiences = [
+  {
+    period: "2025–至今",
+    title: "百度 · 大模型预训练部",
+    detail: "飞桨基础框架研发，负责正确性与生态兼容方向。",
+  },
+  {
+    period: "2023–2025",
+    title: "百度 · 飞桨基础框架（实习）",
+    detail: "参与 PIR 新一代 IR 体系与 SOT 动转静架构研发。",
+  },
+  {
+    period: "2023",
+    title: "PaddlePaddle 社区 Committer",
+    detail: "通过多期黑客松的算子与编译器贡献，成为社区第五位 Committer。",
+  },
+];
+
+const contacts = [
+  { name: "GitHub", href: "https://github.com/zrr1999", note: "zrr1999" },
+  { name: "邮箱", href: "mailto:me@zrr.dev", note: "me@zrr.dev" },
+  { name: "博客", href: "https://blog.zrr.dev", note: "blog.zrr.dev" },
+  { name: "RSS", href: "https://blog.zrr.dev/rss.xml", note: "订阅最新文章" },
+];
+---
+
+<Layout
+  title="关于 — 六个骨头"
+  description="关于六个骨头：白天做飞桨框架研发，晚上捣鼓编程语言。"
+  ambient={false}
+>
+  <Header />
+
+  <main class="mx-auto max-w-6xl px-5 pt-28 pb-16 md:px-8 md:pt-36">
+    <section class="reveal">
+      <h1
+        class="display-font text-[clamp(3rem,10vw,7.5rem)] leading-[0.95] font-bold tracking-[-0.03em] text-(--fg) uppercase"
+      >
+        关于<span class="text-(--accent)"> / About</span>
+      </h1>
+      <p
+        class="mt-8 max-w-2xl text-base leading-relaxed text-(--muted) md:text-lg"
+      >
+        嗨，我是六个骨头（sixbones）。现在在百度做飞桨框架研发工作，自由时间捣鼓自己的编程语言、深度学习框架以及编码智能体；对编程语言、类型论和一切可编程的基础设施，有极大的热情。
+      </p>
+      <p
+        class="mono mt-6 flex flex-wrap gap-x-5 gap-y-2 text-xs text-(--subtle)"
+      >
+        <span><span class="text-(--accent)">@</span> 百度 · 飞桨基础框架</span>
+        <span>PaddlePaddle Committer</span>
+        <span>西安电子科技大学 · 计算机硕士</span>
+      </p>
+    </section>
+
+    <section class="reveal reveal-2 mt-20 md:mt-24">
+      <h2 class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase">
+        <span class="mr-2 font-medium text-(--accent)">01</span>经历 / Path
+      </h2>
+
+      <div class="mt-4">
+        {
+          experiences.map(e => (
+            <div class="grid grid-cols-[1fr_auto] items-baseline gap-2 border-t border-(--card-border) py-6 last:border-b md:grid-cols-[140px_1fr] md:gap-6">
+              <span class="mono col-span-2 text-xs text-(--subtle) md:col-span-1">
+                {e.period}
+              </span>
+              <div>
+                <p class="text-[15px] font-medium text-(--fg)">{e.title}</p>
+                <p class="mt-1 text-sm text-(--muted)">{e.detail}</p>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="reveal reveal-3 mt-20 md:mt-24">
+      <h2 class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase">
+        <span class="mr-2 font-medium text-(--accent)">02</span>开源 / Open
+        Source
+      </h2>
+      <p
+        class="mt-4 max-w-2xl border-t border-(--card-border) pt-5 text-sm leading-relaxed text-(--muted)"
+      >
+        习惯把工作和研究中遇到的问题修回上游：在 pytorch/pytorch、
+        huggingface/transformers、flet-dev/flet、astral-sh/uv、lepture/mistune
+        等仓库均有合入；个人项目见
+        <a
+          href="/#projects"
+          class="text-(--fg) underline decoration-(--subtle) underline-offset-4 transition-colors hover:text-(--accent)"
+          >主页项目索引</a
+        >
+        或
+        <a
+          href="https://github.com/zrr1999"
+          class="text-(--fg) underline decoration-(--subtle) underline-offset-4 transition-colors hover:text-(--accent)"
+          >GitHub</a
+        >。
+      </p>
+    </section>
+
+    <section class="reveal reveal-3 mt-20 md:mt-24">
+      <h2 class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase">
+        <span class="mr-2 font-medium text-(--accent)">03</span>本站 /
+        Colophon
+      </h2>
+      <p
+        class="mt-4 max-w-2xl border-t border-(--card-border) pt-5 text-sm leading-relaxed text-(--muted)"
+      >
+        本站使用 Astro 与 Vite+ 构建，正文字体为 Noto Sans SC，标题与等宽字体为
+        Space Grotesk 与 IBM Plex Mono；源码开源于
+        <a
+          href="https://github.com/zrr1999/zrr.dev"
+          class="text-(--fg) underline decoration-(--subtle) underline-offset-4 transition-colors hover:text-(--accent)"
+          >zrr1999/zrr.dev</a
+        >。
+      </p>
+    </section>
+
+    <section class="reveal reveal-3 mt-20 md:mt-24">
+      <h2 class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase">
+        <span class="mr-2 font-medium text-(--accent)">04</span>联系 / Find me
+      </h2>
+
+      <div class="mt-4">
+        {
+          contacts.map(c => (
+            <a
+              href={c.href}
+              class="group grid grid-cols-[1fr_auto] items-baseline gap-6 border-t border-(--card-border) py-4 transition-[padding] duration-300 last:border-b hover:pl-4"
+            >
+              <span class="flex items-baseline gap-6">
+                <span class="text-[15px] font-medium text-(--fg) transition-colors duration-300 group-hover:text-(--accent)">
+                  {c.name}
+                </span>
+                <span class="mono text-xs text-(--subtle)">{c.note}</span>
+              </span>
+              <span
+                class="text-sm text-(--subtle) transition-all duration-300 group-hover:translate-x-1 group-hover:text-(--accent)"
+                aria-hidden="true"
+              >
+                →
+              </span>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+
+    <footer
+      class="mono mt-24 flex flex-wrap items-baseline justify-between gap-3 border-t border-(--card-border) pt-6 text-xs text-(--subtle)"
+    >
+      <span>{copyrightText()}</span>
+      <span>
+        <a href="/" class="transition-colors hover:text-(--fg)">首页</a>
+        <span class="mx-2">·</span>
+        <a
+          href="https://github.com/zrr1999"
+          class="transition-colors hover:text-(--fg)">GitHub</a
+        >
+      </span>
+    </footer>
+  </main>
+</Layout>
