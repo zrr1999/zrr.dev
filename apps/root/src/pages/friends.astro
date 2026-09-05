@@ -1,13 +1,15 @@
 ---
 import Layout from "@/components/Layout.astro";
 import Header from "@/components/Header.astro";
-import { copyrightText } from "@zrr-website/site-meta";
+import PageContent from "@/components/PageContent.astro";
+import SectionHeading from "@/components/SectionHeading.astro";
+import { SITE_AUTHOR, copyrightText } from "@zrr-website/site-meta";
 import { friends } from "@/friends";
 
 const mySite = `{
-  "name": "六个骨头",
+  "name": "${SITE_AUTHOR}",
   "url": "https://zrr.dev",
-  "desc": "六个骨头的个人主页",
+  "desc": "${SITE_AUTHOR}的个人主页",
   "avatar": "https://raw.githubusercontent.com/zrr1999/hosting/main/images/profile/personal/avatar.png"
 }`;
 
@@ -40,13 +42,13 @@ const criteria = ["内容以原创为主，转载内容尽可能少", "站点使
 ---
 
 <Layout
-  title="友链 — 六个骨头"
+  title={`友链 — ${SITE_AUTHOR}`}
   description="朋友们的站点，以及互换友链的方式与标准。"
   ambient={false}
 >
   <Header />
 
-  <main class="mx-auto max-w-6xl px-5 pt-28 pb-16 md:px-8 md:pt-36">
+  <PageContent>
     <section class="reveal">
       <h1
         class="display-font text-[clamp(3rem,10vw,7.5rem)] leading-[0.95] font-bold tracking-[-0.03em] text-(--fg) uppercase"
@@ -61,9 +63,7 @@ const criteria = ["内容以原创为主，转载内容尽可能少", "站点使
     </section>
 
     <section class="reveal reveal-2 mt-20 md:mt-24">
-      <h2 class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase">
-        <span class="mr-2 font-medium text-(--accent)">01</span>朋友们 / Links
-      </h2>
+      <SectionHeading>朋友们 / Links</SectionHeading>
 
       <div class="mt-4">
         {
@@ -93,9 +93,7 @@ const criteria = ["内容以原创为主，转载内容尽可能少", "站点使
     </section>
 
     <section class="reveal reveal-3 mt-20 md:mt-24">
-      <h2 class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase">
-        <span class="mr-2 font-medium text-(--accent)">02</span>互换 / Exchange
-      </h2>
+      <SectionHeading>互换 / Exchange</SectionHeading>
 
       <div class="mt-4">
         {
@@ -145,5 +143,5 @@ const criteria = ["内容以原创为主，转载内容尽可能少", "站点使
         >
       </span>
     </footer>
-  </main>
+  </PageContent>
 </Layout>

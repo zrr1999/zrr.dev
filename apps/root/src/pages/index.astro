@@ -1,7 +1,9 @@
 ---
 import Layout from "@/components/Layout.astro";
 import Header from "@/components/Header.astro";
-import { copyrightText } from "@zrr-website/site-meta";
+import PageContent from "@/components/PageContent.astro";
+import SectionHeading from "@/components/SectionHeading.astro";
+import { SITE_AUTHOR, copyrightText } from "@zrr-website/site-meta";
 import { friends } from "@/friends";
 import { vision, researchFocus, background } from "@/profile";
 
@@ -105,20 +107,17 @@ async function fetchRecentPosts(limit = 4): Promise<Post[]> {
 const posts = await fetchRecentPosts();
 ---
 
-<Layout description={`詹荣瑞的系统工程与研究。${vision}`} ambient={false}>
+<Layout description={`${SITE_AUTHOR}的个人网站。${vision}`} ambient={false}>
   <Header />
 
-  <main class="mx-auto max-w-6xl px-5 pt-28 pb-16 md:px-8 md:pt-36">
+  <PageContent>
     <section class="reveal">
       <div class="grid items-end gap-10 md:grid-cols-[1fr_250px]">
         <div>
           <h1
             class="display-font text-[clamp(3.6rem,13vw,10.5rem)] leading-[0.92] font-bold tracking-[-0.035em] text-(--fg) uppercase"
           >
-            <span class="hero-line"><span>Zhan</span></span>
-            <span class="hero-line hero-line--accent text-right">
-              <span>Rongrui</span>
-            </span>
+            <span class="hero-line"><span>{SITE_AUTHOR}</span></span>
           </h1>
           <p class="mt-8 text-sm font-medium text-(--accent)">
             {researchFocus}
@@ -163,11 +162,7 @@ const posts = await fetchRecentPosts();
 
     <section class="reveal reveal-2 mt-20 md:mt-24">
       <div class="flex items-baseline justify-between gap-6">
-        <h2
-          class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase"
-        >
-          <span class="mr-2 font-medium text-(--accent)">01</span>站点 / Index
-        </h2>
+        <SectionHeading>站点 / Index</SectionHeading>
         <span class="text-xs text-(--subtle)">持续更新中</span>
       </div>
 
@@ -201,12 +196,7 @@ const posts = await fetchRecentPosts();
 
     <section id="projects" class="reveal reveal-2 mt-20 md:mt-24">
       <div class="flex items-baseline justify-between gap-6">
-        <h2
-          class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase"
-        >
-          <span class="mr-2 font-medium text-(--accent)">02</span>系统与研究项目 /
-          Projects
-        </h2>
+        <SectionHeading>系统与研究项目 / Projects</SectionHeading>
         <a
           href="https://github.com/zrr1999"
           class="mono hidden text-xs text-(--subtle) transition-colors hover:text-(--fg) md:inline"
@@ -249,10 +239,7 @@ const posts = await fetchRecentPosts();
       posts.length > 0 && (
         <section class="reveal reveal-3 mt-20 md:mt-24">
           <div class="flex items-baseline justify-between gap-6">
-            <h2 class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase">
-              <span class="mr-2 font-medium text-(--accent)">03</span>最近文章 /
-              Writing
-            </h2>
+            <SectionHeading>最近文章 / Writing</SectionHeading>
             <span class="mono text-xs text-(--subtle)">via RSS</span>
           </div>
 
@@ -293,9 +280,7 @@ const posts = await fetchRecentPosts();
 
     <section class="reveal reveal-3 mt-20 md:mt-24">
       <div class="flex items-baseline justify-between gap-6">
-        <h2 class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase">
-          <span class="mr-2 font-medium text-(--accent)">04</span>友链 / Friends
-        </h2>
+        <SectionHeading>友链 / Friends</SectionHeading>
         <a
           href="/friends"
           class="mono text-xs text-(--subtle) transition-colors hover:text-(--fg)"
@@ -341,7 +326,7 @@ const posts = await fetchRecentPosts();
         >
       </span>
     </footer>
-  </main>
+  </PageContent>
 </Layout>
 
 <style>
@@ -353,10 +338,6 @@ const posts = await fetchRecentPosts();
     display: block;
     transform: translateY(110%);
     animation: hero-rise 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  }
-  .hero-line--accent > span {
-    color: var(--accent);
-    animation-delay: 0.12s;
   }
   @keyframes hero-rise {
     to {

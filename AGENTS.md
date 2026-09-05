@@ -13,6 +13,11 @@
 | `packages/site-theme/` | blog/slides 共用主题 CSS；`brand.css` 供 root 对齐品牌色                |
 | `hosting/`             | 静态资源子模块（[zrr1999/hosting](https://github.com/zrr1999/hosting)） |
 
+## 网站展示
+
+- 网站统一使用“六个骨头”作为展示名，通过 `packages/site-meta` 的 `SITE_AUTHOR` 复用；网站不照搬简历姓名。
+- 根站点的章节标题使用 `PageContent` 与 `SectionHeading`，按显示顺序自动编号，不手写章节序号。
+
 ## 工具链
 
 统一用 **Vite+（`vp`）**，不要直接调 pnpm/npm/yarn（PATH 里的 `pnpm` 可能是旧版 `vp` shim）。

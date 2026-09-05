@@ -1,6 +1,6 @@
 /** Shared site identity for zrr.dev apps. */
 
-export const SITE_AUTHOR = "Zhan Rongrui";
+export const SITE_AUTHOR = "六个骨头";
 
 export const COPYRIGHT_FROM_YEAR = 2024;
 

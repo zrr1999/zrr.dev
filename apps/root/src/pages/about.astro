@@ -1,7 +1,9 @@
 ---
 import Layout from "@/components/Layout.astro";
 import Header from "@/components/Header.astro";
-import { copyrightText } from "@zrr-website/site-meta";
+import PageContent from "@/components/PageContent.astro";
+import SectionHeading from "@/components/SectionHeading.astro";
+import { SITE_AUTHOR, copyrightText } from "@zrr-website/site-meta";
 import { vision, background, researchDirections } from "@/profile";
 
 const experiences = [
@@ -31,13 +33,13 @@ const contacts = [
 ---
 
 <Layout
-  title="关于 — 六个骨头"
-  description={`关于詹荣瑞：系统工程与研究。${vision}`}
+  title={`关于 — ${SITE_AUTHOR}`}
+  description={`关于${SITE_AUTHOR}。${vision}`}
   ambient={false}
 >
   <Header />
 
-  <main class="mx-auto max-w-6xl px-5 pt-28 pb-16 md:px-8 md:pt-36">
+  <PageContent>
     <section class="reveal">
       <h1
         class="display-font text-[clamp(3rem,10vw,7.5rem)] leading-[0.95] font-bold tracking-[-0.03em] text-(--fg) uppercase"
@@ -47,7 +49,7 @@ const contacts = [
       <p
         class="mt-8 max-w-2xl text-base leading-relaxed text-(--muted) md:text-lg"
       >
-        嗨，我是六个骨头，詹荣瑞。现在在百度做飞桨基础框架研发，也持续构建自己的编程语言、深度学习框架和智能体系统。{background}
+        嗨，我是{SITE_AUTHOR}。现在在百度做飞桨基础框架研发，也持续构建自己的编程语言、深度学习框架和智能体系统。{background}
       </p>
       <p
         class="mono mt-6 flex flex-wrap gap-x-5 gap-y-2 text-xs text-(--subtle)"
@@ -59,9 +61,7 @@ const contacts = [
     </section>
 
     <section id="research" class="reveal reveal-2 mt-20 scroll-mt-24 md:mt-24">
-      <h2 class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase">
-        <span class="mr-2 font-medium text-(--accent)">01</span>研究方向 / Research
-      </h2>
+      <SectionHeading>研究方向 / Research</SectionHeading>
       <p class="mt-5 max-w-3xl text-xl leading-relaxed text-(--fg) md:text-2xl">
         {vision}
       </p>
@@ -81,9 +81,7 @@ const contacts = [
     </section>
 
     <section class="reveal reveal-2 mt-20 md:mt-24">
-      <h2 class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase">
-        <span class="mr-2 font-medium text-(--accent)">02</span>经历 / Path
-      </h2>
+      <SectionHeading>经历 / Path</SectionHeading>
 
       <div class="mt-4">
         {
@@ -103,10 +101,7 @@ const contacts = [
     </section>
 
     <section class="reveal reveal-3 mt-20 md:mt-24">
-      <h2 class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase">
-        <span class="mr-2 font-medium text-(--accent)">03</span>开源 / Open
-        Source
-      </h2>
+      <SectionHeading>开源 / Open Source</SectionHeading>
       <p
         class="mt-4 max-w-2xl border-t border-(--card-border) pt-5 text-sm leading-relaxed text-(--muted)"
       >
@@ -128,10 +123,7 @@ const contacts = [
     </section>
 
     <section class="reveal reveal-3 mt-20 md:mt-24">
-      <h2 class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase">
-        <span class="mr-2 font-medium text-(--accent)">04</span>本站 /
-        Colophon
-      </h2>
+      <SectionHeading>本站 / Colophon</SectionHeading>
       <p
         class="mt-4 max-w-2xl border-t border-(--card-border) pt-5 text-sm leading-relaxed text-(--muted)"
       >
@@ -146,9 +138,7 @@ const contacts = [
     </section>
 
     <section class="reveal reveal-3 mt-20 md:mt-24">
-      <h2 class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase">
-        <span class="mr-2 font-medium text-(--accent)">05</span>联系 / Find me
-      </h2>
+      <SectionHeading>联系 / Find me</SectionHeading>
 
       <div class="mt-4">
         {
@@ -188,5 +178,5 @@ const contacts = [
         >
       </span>
     </footer>
-  </main>
+  </PageContent>
 </Layout>

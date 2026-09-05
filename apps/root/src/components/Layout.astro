@@ -11,8 +11,8 @@ export interface Props {
 }
 
 const {
-  title = "六个骨头的个人主页",
-  description = "六个骨头的个人网站主页，包含博客、幻灯片等内容",
+  title = `${SITE_AUTHOR}的个人主页`,
+  description = `${SITE_AUTHOR}的个人网站主页，包含博客、幻灯片等内容`,
   ambient = true,
 } = Astro.props;
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://zrr.dev");
