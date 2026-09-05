@@ -15,7 +15,7 @@
 
 ## 网站展示
 
-- 网站统一使用“六个骨头”作为展示名，通过 `packages/site-meta` 的 `SITE_AUTHOR` 复用；网站不照搬简历姓名。
+- 网站统一使用“六个骨头”作为展示名，通过 `packages/site-meta` 的 `SITE_AUTHOR` 复用；中文介绍不使用简历姓名；首页主标题保留英文 `Zhan Rongrui`，沿用 `Zhan` 在上、`Rongrui` 在下方靠右的两行布局。
 - 根站点的章节标题使用 `PageContent` 与 `SectionHeading`，按显示顺序自动编号，不手写章节序号。
 
 ## 工具链

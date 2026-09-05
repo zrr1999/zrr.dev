@@ -117,7 +117,10 @@ const posts = await fetchRecentPosts();
           <h1
             class="display-font text-[clamp(3.6rem,13vw,10.5rem)] leading-[0.92] font-bold tracking-[-0.035em] text-(--fg) uppercase"
           >
-            <span class="hero-line"><span>{SITE_AUTHOR}</span></span>
+            <span class="hero-line"><span>Zhan</span></span>
+            <span class="hero-line hero-line--accent text-right">
+              <span>Rongrui</span>
+            </span>
           </h1>
           <p class="mt-8 text-sm font-medium text-(--accent)">
             {researchFocus}
@@ -338,6 +341,10 @@ const posts = await fetchRecentPosts();
     display: block;
     transform: translateY(110%);
     animation: hero-rise 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  .hero-line--accent > span {
+    color: var(--accent);
+    animation-delay: 0.12s;
   }
   @keyframes hero-rise {
     to {
