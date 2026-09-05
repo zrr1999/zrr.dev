@@ -1,6 +1,7 @@
 ---
 import Layout from "@/components/Layout.astro";
 import Header from "@/components/Header.astro";
+import RssCopy from "@/components/RssCopy";
 import PageContent from "@/components/PageContent.astro";
 import SectionHeading from "@/components/SectionHeading.astro";
 import { SITE_AUTHOR, copyrightText } from "@zrr-website/site-meta";
@@ -317,17 +318,14 @@ const posts = await fetchRecentPosts();
       class="mono mt-24 flex flex-wrap items-baseline justify-between gap-3 border-t border-(--card-border) pt-6 text-xs text-(--subtle)"
     >
       <span>{copyrightText()}</span>
-      <span>
-        <a
-          href="https://blog.zrr.dev/rss.xml"
-          class="transition-colors hover:text-(--fg)">RSS</a
-        >
+      <div class="flex items-center">
+        <RssCopy client:load />
         <span class="mx-2">·</span>
         <a
           href="https://github.com/zrr1999"
           class="transition-colors hover:text-(--fg)">GitHub</a
         >
-      </span>
+      </div>
     </footer>
   </PageContent>
 </Layout>
