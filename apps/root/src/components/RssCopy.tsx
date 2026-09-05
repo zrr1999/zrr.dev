@@ -1,5 +1,4 @@
-import { Toaster, toast } from "sonner";
-import "sonner/dist/styles.css";
+import { toast } from "sonner";
 
 const RSS_URL = "https://blog.zrr.dev/rss.xml";
 
@@ -43,22 +42,13 @@ export default function RssCopy() {
   }
 
   return (
-    <>
-      <a className="nav-link" href={RSS_URL} onClick={handleClick}>
-        RSS
-      </a>
-      <Toaster
-        position="bottom-center"
-        theme="system"
-        duration={2000}
-        toastOptions={{
-          unstyled: true,
-          classNames: {
-            toast:
-              "mono flex items-center gap-2 bg-(--fg) px-4 py-2 text-xs text-(--bg)",
-          },
-        }}
-      />
-    </>
+    <a
+      className="transition-colors hover:text-(--fg)"
+      href={RSS_URL}
+      title="复制 RSS 链接"
+      onClick={handleClick}
+    >
+      RSS
+    </a>
   );
 }

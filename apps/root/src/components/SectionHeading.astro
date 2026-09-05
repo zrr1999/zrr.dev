@@ -1,0 +1,13 @@
+<h2 class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase">
+  <span class="mr-2 font-medium text-(--accent)" aria-hidden="true"></span><slot />
+</h2>
+
+<style>
+  h2 {
+    counter-increment: page-section;
+  }
+
+  span::before {
+    content: counter(page-section, decimal-leading-zero);
+  }
+</style>

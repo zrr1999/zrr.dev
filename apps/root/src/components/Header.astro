@@ -1,6 +1,4 @@
 ---
-import RssCopy from "@/components/RssCopy";
-
 const pathname = Astro.url.pathname.replace(/\/+$/, "");
 const navItems = [
   { name: "关于", href: "/about" },
@@ -29,7 +27,7 @@ const navItems = [
           </a>
         ))
       }
-      <RssCopy client:load />
+      <a class="nav-link" href="https://blog.zrr.dev/rss.xml">RSS</a>
     </nav>
   </div>
 </header>

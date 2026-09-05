@@ -1,11 +1,12 @@
 ---
 import Layout from "@/components/Layout.astro";
 import Header from "@/components/Header.astro";
-import { copyrightText } from "@zrr-website/site-meta";
+import RssCopy from "@/components/RssCopy";
+import PageContent from "@/components/PageContent.astro";
+import SectionHeading from "@/components/SectionHeading.astro";
+import { SITE_AUTHOR, copyrightText } from "@zrr-website/site-meta";
 import { friends } from "@/friends";
-
-const vision =
-  "长期致力于推动基础设施走向个人化与可定制，使每个人都能按照自身目标和工作方式构造、验证并演化自己的系统；持续探索可编程基础设施、可组合运行时与人机协作编程模型。";
+import { vision, researchFocus, background } from "@/profile";
 
 const sites = [
   {
@@ -31,32 +32,32 @@ const sites = [
 
 const projects = [
   {
+    name: "spark",
+    description:
+      "让智能体工作跨越一次终端会话：本地 daemon 托管会话、执行与恢复，支撑长期任务与跨工作区委托。",
+    href: "https://github.com/zendev-lab/spark",
+    tags: ["TypeScript", "Agent"],
+  },
+  {
+    name: "cue",
+    description:
+      "持久、可观察的命令执行底座，让人和智能体共享执行状态，支持断线恢复、共享 session 与多观察者 PTY。",
+    href: "https://github.com/zendev-lab/cue",
+    tags: ["Rust", "Runtime"],
+  },
+  {
     name: "spore",
     description:
-      "意图编程语言（实验阶段）：以函数签名统一表达类型、可失败结果与 effect，允许带 hole 的未完整程序通过编译，作为人机协作协议。",
+      "意图编程语言（实验阶段）：用函数签名表达类型、可失败结果与 effect，以 hole 承载尚未完成的实现，让人和智能体在同一份约束上协作。",
     href: "https://github.com/spore-lang/spore",
     tags: ["Rust", "Language"],
   },
   {
     name: "volvox",
     description:
-      "可组合性深度学习元框架（探索阶段），在调研主流框架与编译器后重新设计的可扩展框架。",
+      "可组合深度学习元框架（探索阶段）：在早期框架实验基础上，研究组件边界、依赖与执行语义，以及替换组件后需要保持和验证的性质。",
     href: "https://github.com/volvox-ai/volvox",
     tags: ["Python", "DL Framework"],
-  },
-  {
-    name: "cue",
-    description:
-      "持久、可观察的统一命令执行底座，支持断线恢复、共享 session 与多观察者 PTY。",
-    href: "https://github.com/zendev-lab/cue",
-    tags: ["Rust", "Runtime"],
-  },
-  {
-    name: "spark",
-    description:
-      "本地优先的持久化编码智能体：本地 daemon 托管会话、执行与恢复，支撑长期任务与跨工作区委托。",
-    href: "https://github.com/zendev-lab/spark",
-    tags: ["TypeScript", "Agent"],
   },
   {
     name: "emotion-recognition",
@@ -107,10 +108,10 @@ async function fetchRecentPosts(limit = 4): Promise<Post[]> {
 const posts = await fetchRecentPosts();
 ---
 
-<Layout ambient={false}>
+<Layout description={`${SITE_AUTHOR}的个人网站。${vision}`} ambient={false}>
   <Header />
 
-  <main class="mx-auto max-w-6xl px-5 pt-28 pb-16 md:px-8 md:pt-36">
+  <PageContent>
     <section class="reveal">
       <div class="grid items-end gap-10 md:grid-cols-[1fr_250px]">
         <div>
@@ -122,11 +123,21 @@ const posts = await fetchRecentPosts();
               <span>Rongrui</span>
             </span>
           </h1>
-          <p
-            class="mt-8 max-w-2xl text-base leading-relaxed text-(--muted) md:text-lg"
-          >
+          <p class="mt-8 text-sm font-medium text-(--accent)">
+            {researchFocus}
+          </p>
+          <p class="mt-4 max-w-2xl text-xl leading-relaxed text-(--fg) md:text-2xl">
             {vision}
           </p>
+          <p class="mt-4 max-w-2xl text-sm leading-relaxed text-(--muted) md:text-base">
+            {background}
+          </p>
+          <a
+            href="/about#research"
+            class="mt-5 inline-block text-sm text-(--fg) underline decoration-(--subtle) underline-offset-4 transition-colors hover:text-(--accent)"
+          >
+            研究方向与经历 →
+          </a>
         </div>
 
         <aside class="mono text-xs leading-loose text-(--muted)">
@@ -155,11 +166,7 @@ const posts = await fetchRecentPosts();
 
     <section class="reveal reveal-2 mt-20 md:mt-24">
       <div class="flex items-baseline justify-between gap-6">
-        <h2
-          class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase"
-        >
-          <span class="mr-2 font-medium text-(--accent)">01</span>站点 / Index
-        </h2>
+        <SectionHeading>站点 / Index</SectionHeading>
         <span class="text-xs text-(--subtle)">持续更新中</span>
       </div>
 
@@ -193,12 +200,7 @@ const posts = await fetchRecentPosts();
 
     <section id="projects" class="reveal reveal-2 mt-20 md:mt-24">
       <div class="flex items-baseline justify-between gap-6">
-        <h2
-          class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase"
-        >
-          <span class="mr-2 font-medium text-(--accent)">02</span>开源项目 /
-          Projects
-        </h2>
+        <SectionHeading>系统与研究项目 / Projects</SectionHeading>
         <a
           href="https://github.com/zrr1999"
           class="mono hidden text-xs text-(--subtle) transition-colors hover:text-(--fg) md:inline"
@@ -241,10 +243,7 @@ const posts = await fetchRecentPosts();
       posts.length > 0 && (
         <section class="reveal reveal-3 mt-20 md:mt-24">
           <div class="flex items-baseline justify-between gap-6">
-            <h2 class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase">
-              <span class="mr-2 font-medium text-(--accent)">03</span>最近文章 /
-              Writing
-            </h2>
+            <SectionHeading>最近文章 / Writing</SectionHeading>
             <span class="mono text-xs text-(--subtle)">via RSS</span>
           </div>
 
@@ -285,9 +284,7 @@ const posts = await fetchRecentPosts();
 
     <section class="reveal reveal-3 mt-20 md:mt-24">
       <div class="flex items-baseline justify-between gap-6">
-        <h2 class="mono text-xs tracking-[0.18em] text-(--subtle) uppercase">
-          <span class="mr-2 font-medium text-(--accent)">04</span>友链 / Friends
-        </h2>
+        <SectionHeading>友链 / Friends</SectionHeading>
         <a
           href="/friends"
           class="mono text-xs text-(--subtle) transition-colors hover:text-(--fg)"
@@ -321,19 +318,16 @@ const posts = await fetchRecentPosts();
       class="mono mt-24 flex flex-wrap items-baseline justify-between gap-3 border-t border-(--card-border) pt-6 text-xs text-(--subtle)"
     >
       <span>{copyrightText()}</span>
-      <span>
-        <a
-          href="https://blog.zrr.dev/rss.xml"
-          class="transition-colors hover:text-(--fg)">RSS</a
-        >
+      <div class="flex items-center">
+        <RssCopy client:load />
         <span class="mx-2">·</span>
         <a
           href="https://github.com/zrr1999"
           class="transition-colors hover:text-(--fg)">GitHub</a
         >
-      </span>
+      </div>
     </footer>
-  </main>
+  </PageContent>
 </Layout>
 
 <style>

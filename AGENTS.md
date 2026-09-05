@@ -13,6 +13,11 @@
 | `packages/site-theme/` | blog/slides 共用主题 CSS；`brand.css` 供 root 对齐品牌色                |
 | `hosting/`             | 静态资源子模块（[zrr1999/hosting](https://github.com/zrr1999/hosting)） |
 
+## 网站展示
+
+- 网站统一使用“六个骨头”作为展示名，通过 `packages/site-meta` 的 `SITE_AUTHOR` 复用；中文介绍不使用简历姓名；首页主标题保留英文 `Zhan Rongrui`，沿用 `Zhan` 在上、`Rongrui` 在下方靠右的两行布局；页脚版权署名使用 `Zhan Rongrui`，通过共享的 `copyrightText()` 生成。
+- 根站点的章节标题使用 `PageContent` 与 `SectionHeading`，按显示顺序自动编号，不手写章节序号。
+
 ## 工具链
 
 统一用 **Vite+（`vp`）**，不要直接调 pnpm/npm/yarn（PATH 里的 `pnpm` 可能是旧版 `vp` shim）。
@@ -27,6 +32,7 @@
 - **改 Astro / vite-plus 后**必须本地跑通 `vp run build`（或按 app `vp run --filter … build`），避免 vite-plus-core `generateBundle` 的 `Not implemented`（[vitejs/vite#22356](https://github.com/vitejs/vite/issues/22356)）。
 - **TypeScript** 钉在 6.x：`astro check` 不兼容 TS 7 原生编译器（[withastro/astro#17268](https://github.com/withastro/astro/issues/17268)）。
 - **pre-commit**：[prek](https://github.com/j178/prek)（`prek.toml`）。`vp install` → `prepare` 装钩子；本机需有 `prek`（如 `uvx prek`）。
+- **PR 标题**：始终使用英文，与对话或 PR 正文的语言无关；同时遵守仓库既有标题格式。
 - **CI**：`.github/workflows/`（校验，非生产部署）。部署模型见 [README](./README.md#部署模型)。
 - 勿单独安装 Vitest / Oxlint / Oxfmt / tsdown；从 `vite-plus` 导入，不要从 `vite` / `vitest` 导入。自定义脚本与内置同名时用 `vp run <script>`。
 
