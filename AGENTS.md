@@ -27,6 +27,7 @@
 - **改 Astro / vite-plus 后**必须本地跑通 `vp run build`（或按 app `vp run --filter … build`），避免 vite-plus-core `generateBundle` 的 `Not implemented`（[vitejs/vite#22356](https://github.com/vitejs/vite/issues/22356)）。
 - **TypeScript** 钉在 6.x：`astro check` 不兼容 TS 7 原生编译器（[withastro/astro#17268](https://github.com/withastro/astro/issues/17268)）。
 - **pre-commit**：[prek](https://github.com/j178/prek)（`prek.toml`）。`vp install` → `prepare` 装钩子；本机需有 `prek`（如 `uvx prek`）。
+- **PR 标题**：始终使用英文，与对话或 PR 正文的语言无关；同时遵守仓库既有标题格式。
 - **CI**：`.github/workflows/`（校验，非生产部署）。部署模型见 [README](./README.md#部署模型)。
 - 勿单独安装 Vitest / Oxlint / Oxfmt / tsdown；从 `vite-plus` 导入，不要从 `vite` / `vitest` 导入。自定义脚本与内置同名时用 `vp run <script>`。
 
