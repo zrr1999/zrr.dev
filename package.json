@@ -19,9 +19,9 @@
     "build:cf:root": "pnpm --filter @zrr-website/root run build",
     "build:cf:blog": "pnpm --filter @zrr-website/blog run build",
     "build:cf:slides": "pnpm --filter @zrr-website/slides run build",
-    "deploy:cf:root": "pnpx wrangler deploy --cwd apps/root",
-    "deploy:cf:blog": "pnpx wrangler deploy --cwd apps/blog",
-    "deploy:cf:slides": "pnpx wrangler deploy --cwd apps/slides",
+    "deploy:cf:root": "wrangler deploy --cwd apps/root",
+    "deploy:cf:blog": "wrangler deploy --cwd apps/blog",
+    "deploy:cf:slides": "wrangler deploy --cwd apps/slides",
     "prepare": "pnpx @j178/prek install --hook-type commit-msg --hook-type pre-commit"
   },
   "devDependencies": {

@@ -19,7 +19,7 @@ export const SITE = {
     url: "https://github.com/zrr1999/zrr.dev/edit/main/apps/blog/",
   },
   dynamicOgImage: true,
-  lang: "cn", // html lang code. Set this empty and default will be "en"
+  lang: "zh-CN",
   timezone: "Asia/Shanghai", // Default global timezone (IANA format) https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 } as const;
 
