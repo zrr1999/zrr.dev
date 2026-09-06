@@ -6,6 +6,7 @@ import { SITE } from "@/config";
 export const BLOG_PATH = "data/blog";
 
 const blog = defineCollection({
+  // Recurse into `_topic/` dirs; only skip files whose names start with `_`.
   loader: glob({ pattern: "**/[^_]*.{md,typ}", base: `./${BLOG_PATH}` }),
   schema: ({ image }) =>
     z.object({

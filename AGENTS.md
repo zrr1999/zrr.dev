@@ -40,11 +40,13 @@
 
 ## 博客规范
 
-文章在 `apps/blog/data/blog/`（Markdown / Typst）。Frontmatter 必填：`title`、`description`、`pubDatetime`、`tags`（默认 `["未分类"]`）；可选 `modDatetime`、`draft`、`featured` 等（见 `content.config.ts`）。
+文章在 `apps/blog/data/blog/`（Markdown / Typst），用一层 `_主题/` 目录分组。目录名以下划线开头，只给作者侧定位，不进入 URL；文件名在整个 `data/blog/` 下保持唯一，已发布路由仍是 `/posts/<slug>`。Frontmatter 必填：`title`、`description`、`pubDatetime`、`tags`（默认 `["未分类"]`）；可选 `modDatetime`、`draft`、`featured` 等（见 `content.config.ts`）。
+
+当前主题：`_language/`、`_ai/`、`_engineering/`、`_homelab/`、`_math/`。新文放入最接近的主题，其余维度用 `tags`。是否发布看 `draft`，不要靠 `_drafts/` 这类目录名隐藏。Typst 配图用项目根路径（如 `/public/images/blog/...`），避免相对 `../` 随目录深度变化。
 
 - 开篇 1～2 段引入，标题用 frontmatter；小节用 `##` / `###` / `####`，标题内不用「一、二、三」或「1.1」类序号；节间不用 `---`。
 - 中英文之间加空格；能写纯中文则少混用；文末用 `## 参考文献` 或 `## 参考资料`。
-- 示例：`eq-type-lsp.md`、`pycapsule-dlpack.md`、`incus-qcow2.md`。
+- 示例：`_language/eq-type-lsp.md`、`_engineering/pycapsule-dlpack.md`、`_homelab/incus-qcow2.md`。
 
 ## 代理自检
 

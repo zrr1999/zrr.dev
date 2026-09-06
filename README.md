@@ -23,7 +23,7 @@
 ```
 apps/root/      → 主页
 apps/blog/
-  data/blog/    → 文章
+  data/blog/    → 文章（`_主题/` 分组，不影响 `/posts/<slug>`）
   public/images → 软链到 hosting/images/
 apps/slides/    → 幻灯前端；源在 hosting/slides/（dev/build 由 plugin 挂载）
 packages/

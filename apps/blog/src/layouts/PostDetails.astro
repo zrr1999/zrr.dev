@@ -71,16 +71,19 @@ const layoutProps = {
 
 /* ========== Prev/Next Posts ========== */
 
-const allPosts = posts.map(({ data: { title }, id }) => ({
-  slug: id,
-  title,
+const allPosts = posts.map(entry => ({
+  id: entry.id,
+  href: getPath(entry.id, entry.filePath),
+  title: entry.data.title,
 }));
 
-const currentPostIndex = allPosts.findIndex(a => a.slug === post.id);
+const currentPostIndex = allPosts.findIndex(a => a.id === post.id);
 
-const prevPost = currentPostIndex !== 0 ? allPosts[currentPostIndex - 1] : null;
+const prevPost = currentPostIndex > 0 ? allPosts[currentPostIndex - 1] : null;
 const nextPost =
-  currentPostIndex !== allPosts.length ? allPosts[currentPostIndex + 1] : null;
+  currentPostIndex >= 0 && currentPostIndex < allPosts.length - 1
+    ? allPosts[currentPostIndex + 1]
+    : null;
 ---
 
 <Layout {...layoutProps}>
@@ -166,7 +169,7 @@ const nextPost =
       {
         prevPost && (
           <a
-            href={`/posts/${prevPost.slug}`}
+            href={prevPost.href}
             class="flex w-full gap-1 hover:opacity-75"
           >
             <IconChevronLeft class="inline-block flex-none" />
@@ -180,7 +183,7 @@ const nextPost =
       {
         nextPost && (
           <a
-            href={`/posts/${nextPost.slug}`}
+            href={nextPost.href}
             class="flex w-full justify-end gap-1 text-right hover:opacity-75 sm:col-start-2"
           >
             <div>

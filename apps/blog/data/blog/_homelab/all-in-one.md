@@ -84,7 +84,7 @@ incus config device add ikuai iso-ikuai-volume disk pool=default source=iso-ikua
 
 ### 搭建 ArchLinux 网关
 
-这部分内容可以参考我的另一篇文章 [利用 nftables 搭建 Linux 网关](../linux-gateway)。
+这部分内容可以参考我的另一篇文章 [利用 nftables 搭建 Linux 网关](/posts/linux-gateway)。
 
 ### 搭建 ArchLinux 网络服务
 
