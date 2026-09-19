@@ -25,9 +25,9 @@
     "prepare": "pnpx @j178/prek install --hook-type commit-msg --hook-type pre-commit"
   },
   "devDependencies": {
-    "oxlint": "1.81.0",
+    "oxlint": "1.83.0",
     "vite-plus": "catalog:",
-    "wrangler": "4.129.0"
+    "wrangler": "4.135.0"
   },
-  "packageManager": "pnpm@11.25.0"
+  "packageManager": "pnpm@11.27.0"
 }
