@@ -181,7 +181,7 @@ body {
     border: 1px solid var(--card-border);
     border-radius: var(--radius-cell);
     padding: 1.25rem 1.35rem;
-    animation: rise 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: rise 700ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
     animation-delay: calc(var(--bento-i, 0) * 55ms);
   }
 
