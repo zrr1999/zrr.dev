@@ -1,6 +1,8 @@
 ---
 const pathname = Astro.url.pathname.replace(/\/+$/, "");
 const navItems = [
+  { name: "博客", href: "https://blog.zrr.dev" },
+  { name: "幻灯片", href: "https://slides.zrr.dev" },
   { name: "关于", href: "/about" },
   { name: "友链", href: "/friends" },
 ];
@@ -10,7 +12,7 @@ const navItems = [
   class="fixed inset-x-0 top-0 z-10 border-b border-(--card-border) bg-(--bg)/85 backdrop-blur"
 >
   <div
-    class="mx-auto flex max-w-6xl items-baseline justify-between px-5 py-4 md:px-8"
+    class="mx-auto flex h-14 max-w-6xl items-center justify-between px-5 md:h-16 md:px-8"
   >
     <a href="/" class="mono text-sm font-semibold tracking-tight text-(--fg)">
       zrr<span class="text-(--subtle)">.dev</span>
@@ -27,7 +29,6 @@ const navItems = [
           </a>
         ))
       }
-      <a class="nav-link" href="https://blog.zrr.dev/rss.xml">RSS</a>
     </nav>
   </div>
 </header>

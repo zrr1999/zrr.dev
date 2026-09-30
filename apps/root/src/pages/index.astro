@@ -1,20 +1,32 @@
 ---
 import Layout from "@/components/Layout.astro";
 import Header from "@/components/Header.astro";
-import RssCopy from "@/components/RssCopy";
 import PageContent from "@/components/PageContent.astro";
-import SectionHeading from "@/components/SectionHeading.astro";
-import { SITE_AUTHOR, copyrightText } from "@zrr-website/site-meta";
+import BentoGrid from "@/components/BentoGrid.astro";
+import BentoCell from "@/components/BentoCell.astro";
+import SiteFooter from "@/components/SiteFooter.astro";
+import { SITE_AUTHOR } from "@zrr-website/site-meta";
 import { friends } from "@/friends";
-import { vision, researchFocus, background } from "@/profile";
+import {
+  vision,
+  currentRole,
+  school,
+  education,
+  researchDirections,
+  researchDirection,
+} from "@/profile";
+import { spore, spark, volvox } from "@/projects";
+import { fetchRecentPosts } from "@/lib/recentPosts";
+
+const avatarSrc =
+  "https://raw.githubusercontent.com/zrr1999/hosting/main/images/profile/personal/avatar.png";
 
 const sites = [
   {
     name: "博客",
     domain: "blog.zrr.dev",
     href: "https://blog.zrr.dev",
-    description:
-      "学习笔记、技术文章和项目经验。最近在写解析器、等价饱和与符号计算。",
+    description: "学习笔记、技术文章和项目经验。",
   },
   {
     name: "幻灯片",
@@ -30,345 +42,268 @@ const sites = [
   },
 ];
 
-const projects = [
-  {
-    name: "spark",
-    description:
-      "让智能体工作跨越一次终端会话：本地 daemon 托管会话、执行与恢复，支撑长期任务与跨工作区委托。",
-    href: "https://github.com/zendev-lab/spark",
-    tags: ["TypeScript", "Agent"],
-  },
-  {
-    name: "cue",
-    description:
-      "持久、可观察的命令执行底座，让人和智能体共享执行状态，支持断线恢复、共享 session 与多观察者 PTY。",
-    href: "https://github.com/zendev-lab/cue",
-    tags: ["Rust", "Runtime"],
-  },
-  {
-    name: "spore",
-    description:
-      "意图编程语言（实验阶段）：用函数签名表达类型、可失败结果与 effect，以 hole 承载尚未完成的实现，让人和智能体在同一份约束上协作。",
-    href: "https://github.com/spore-lang/spore",
-    tags: ["Rust", "Language"],
-  },
-  {
-    name: "volvox",
-    description:
-      "可组合深度学习元框架（探索阶段）：在早期框架实验基础上，研究组件边界、依赖与执行语义，以及替换组件后需要保持和验证的性质。",
-    href: "https://github.com/volvox-ai/volvox",
-    tags: ["Python", "DL Framework"],
-  },
-  {
-    name: "emotion-recognition",
-    description:
-      "多模态情绪识别系统（硕士毕业设计），覆盖文本、音频、视频三模态的情绪分类与情感分析。",
-    href: "https://github.com/zrr1999/emotion-recognition",
-    tags: ["Python", "ML"],
-  },
-];
-
-const education = [
-  { degree: "学士", major: "智能科学与技术", years: "2018–2022" },
-  { degree: "硕士", major: "计算机科学与技术", years: "2022–2025" },
-];
-
-interface Post {
-  title: string;
-  href: string;
-  date: string;
-}
-
-/** 构建期从博客 RSS 拉取最新文章；失败时静默降级，不阻断构建。 */
-async function fetchRecentPosts(limit = 4): Promise<Post[]> {
-  try {
-    const res = await fetch("https://blog.zrr.dev/rss.xml");
-    if (!res.ok) return [];
-    const xml = await res.text();
-    const pick = (item: string, tag: string) =>
-      item.match(new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`))?.[1]?.trim() ??
-      "";
-    return [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)]
-      .slice(0, limit)
-      .map(m => {
-        const item = m[1];
-        const d = new Date(pick(item, "pubDate"));
-        return {
-          title: pick(item, "title"),
-          href: pick(item, "link"),
-          date: Number.isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10),
-        };
-      })
-      .filter(p => p.title && p.href);
-  } catch {
-    return [];
-  }
-}
-
 const posts = await fetchRecentPosts();
+const sporeSample = spore.sample ?? "";
 ---
 
-<Layout description={`${SITE_AUTHOR}的个人网站。${vision}`} ambient={false}>
+<Layout description={`${SITE_AUTHOR}的个人网站。${vision}`}>
   <Header />
 
   <PageContent>
-    <section class="reveal">
-      <div class="grid items-end gap-10 md:grid-cols-[1fr_250px]">
-        <div>
-          <h1
-            class="display-font text-[clamp(3.6rem,13vw,10.5rem)] leading-[0.92] font-bold tracking-[-0.035em] text-(--fg) uppercase"
-          >
-            <span class="hero-line"><span>Zhan</span></span>
-            <span class="hero-line hero-line--accent text-right">
-              <span>Rongrui</span>
-            </span>
-          </h1>
-          <p class="mt-8 text-sm font-medium text-(--accent)">
-            {researchFocus}
+    <BentoGrid>
+      <BentoCell
+        tone="tint"
+        span="bento-order-identity col-span-1 md:col-span-6 lg:col-span-8 lg:row-span-2"
+        delay={0}
+      >
+        <div class="flex items-center gap-4">
+          <div class="shrink-0 rounded-2xl bg-white p-1">
+            <img
+              src={avatarSrc}
+              alt={`${SITE_AUTHOR}的头像`}
+              width="80"
+              height="80"
+              class="size-20 rounded-[0.9rem]"
+            />
+          </div>
+          <p class="mono text-xs tracking-wide text-(--muted)">
+            {SITE_AUTHOR} / zrr1999
           </p>
-          <p class="mt-4 max-w-2xl text-xl leading-relaxed text-(--fg) md:text-2xl">
-            {vision}
-          </p>
-          <p class="mt-4 max-w-2xl text-sm leading-relaxed text-(--muted) md:text-base">
-            {background}
-          </p>
-          <a
-            href="/about#research"
-            class="mt-5 inline-block text-sm text-(--fg) underline decoration-(--subtle) underline-offset-4 transition-colors hover:text-(--accent)"
-          >
-            研究方向与经历 →
+        </div>
+        <h1
+          aria-label="Zhan Rongrui"
+          class="display-font mt-6 text-[clamp(2.6rem,6vw,4.75rem)] leading-[0.95] font-bold tracking-[-0.035em] uppercase"
+        >
+          <span class="hero-line"><span>Zhan</span></span>
+          <span class="hero-line hero-line--accent text-right">
+            <span>Rongrui</span>
+          </span>
+        </h1>
+        <p class="mt-5 max-w-xl text-lg leading-relaxed md:text-xl">
+          {vision}
+        </p>
+        <div class="mt-auto flex flex-wrap items-center gap-x-6 pt-6">
+          <a href="/about" class="text-link font-medium">关于我</a>
+          <a href="/about#research" class="text-link text-(--muted)">
+            研究方向
           </a>
         </div>
+      </BentoCell>
 
-        <aside class="mono text-xs leading-loose text-(--muted)">
-          <span
-            class="mb-3 block text-[11px] tracking-[0.14em] text-(--subtle) uppercase"
-          >
-            Education
-          </span>
-          <p class="mb-2 text-sm font-semibold tracking-wide text-(--fg)">
-            西安电子科技大学
-          </p>
+      <BentoCell
+        tone="plain"
+        span="bento-order-now col-span-1 md:col-span-6 lg:col-span-4"
+        delay={1}
+      >
+        <p class="text-sm font-medium">{currentRole.org}</p>
+        <p class="mt-1 text-lg font-semibold tracking-tight">
+          {currentRole.group}
+        </p>
+        <p class="bento-muted mt-1 text-sm">{currentRole.detail}</p>
+        <p class="mt-4 text-sm">{currentRole.community}</p>
+        <div class="mt-auto pt-6">
+          <p class="text-sm font-medium">{school}</p>
           {
-            education.map(e => (
-              <p class="flex items-baseline justify-between gap-3">
+            education.map(item => (
+              <p class="mt-2 flex items-baseline justify-between gap-3 text-sm">
                 <span>
-                  <span class="mr-2 text-(--accent)">{e.degree}</span>
-                  {e.major}
+                  <span class="mr-2 text-(--accent)">{item.degree}</span>
+                  {item.major}
                 </span>
-                <span class="text-(--subtle)">{e.years}</span>
+                <span class="mono text-xs text-(--subtle)">{item.years}</span>
               </p>
             ))
           }
-        </aside>
-      </div>
-    </section>
+        </div>
+      </BentoCell>
 
-    <section class="reveal reveal-2 mt-20 md:mt-24">
-      <div class="flex items-baseline justify-between gap-6">
-        <SectionHeading>站点 / Index</SectionHeading>
-        <span class="text-xs text-(--subtle)">持续更新中</span>
-      </div>
-
-      <div class="mt-4">
-        {
-          sites.map(site => (
-            <a
-              href={site.href}
-              class="link-row group grid grid-cols-[1fr_auto] items-center gap-6 border-t border-(--card-border) py-7 last:border-b"
-            >
-              <div class="flex flex-wrap items-baseline gap-x-6 gap-y-1">
-                <span class="display-font text-3xl font-bold tracking-tight text-(--fg) transition-colors duration-150 group-hover:text-(--accent) md:text-4xl">
-                  {site.name}
-                </span>
-                <span class="mono text-xs text-(--subtle)">{site.domain}</span>
-                <span class="basis-full text-sm text-(--muted)">
+      <BentoCell
+        tone="plain"
+        span="bento-order-sites col-span-1 md:col-span-6 lg:col-span-4"
+        delay={2}
+      >
+        <div class="flex h-full flex-col justify-between gap-4">
+          {
+            sites.map(site => (
+              <a href={site.href} class="group min-w-0">
+                <p class="flex flex-wrap items-baseline gap-x-3">
+                  <span class="display-font text-xl font-bold tracking-tight group-hover:text-(--accent)">
+                    {site.name}
+                  </span>
+                  <span class="mono text-xs break-all text-(--subtle)">
+                    {site.domain}
+                  </span>
+                </p>
+                <p class="bento-muted mt-1 text-sm leading-relaxed">
                   {site.description}
-                </span>
-              </div>
-              <span
-                class="text-2xl text-(--subtle) transition-[transform,color] duration-150 group-hover:translate-x-1.5 group-hover:-translate-y-1.5 group-hover:text-(--accent)"
-                aria-hidden="true"
-              >
-                ↗
-              </span>
-            </a>
-          ))
-        }
-      </div>
-    </section>
-
-    <section id="projects" class="reveal reveal-2 mt-20 md:mt-24">
-      <div class="flex items-baseline justify-between gap-6">
-        <SectionHeading>系统与研究项目 / Projects</SectionHeading>
-        <a
-          href="https://github.com/zrr1999"
-          class="mono hidden text-xs text-(--subtle) transition-colors hover:text-(--fg) md:inline"
-        >
-          在 GitHub 查看更多 →
-        </a>
-      </div>
-
-      <div class="mt-4">
-        {
-          projects.map(project => (
-            <a
-              href={project.href}
-              class="link-row group grid grid-cols-[1fr_auto] items-center gap-6 border-t border-(--card-border) py-6 last:border-b"
-            >
-              <div class="flex flex-wrap items-baseline gap-x-6 gap-y-1">
-                <span class="mono text-xl font-semibold tracking-tight text-(--fg) transition-colors duration-150 group-hover:text-(--accent) md:text-2xl">
-                  {project.name}
-                </span>
-                <span class="mono text-xs text-(--subtle)">
-                  {project.tags.join(" / ")}
-                </span>
-                <span class="basis-full text-sm text-(--muted)">
-                  {project.description}
-                </span>
-              </div>
-              <span
-                class="text-xl text-(--subtle) transition-[transform,color] duration-150 group-hover:translate-x-1.5 group-hover:-translate-y-1.5 group-hover:text-(--accent)"
-                aria-hidden="true"
-              >
-                ↗
-              </span>
-            </a>
-          ))
-        }
-      </div>
-    </section>
-
-    {
-      posts.length > 0 && (
-        <section class="reveal reveal-3 mt-20 md:mt-24">
-          <div class="flex items-baseline justify-between gap-6">
-            <SectionHeading>最近文章 / Writing</SectionHeading>
-            <span class="mono text-xs text-(--subtle)">via RSS</span>
-          </div>
-
-          <div class="mt-4">
-            {posts.map(post => (
-              <a
-                href={post.href}
-                class="group grid grid-cols-[1fr_auto] items-baseline gap-2 border-t border-(--card-border) py-4 last:border-b md:grid-cols-[120px_1fr_auto] md:gap-6"
-              >
-                <span class="mono col-span-2 text-xs text-(--subtle) md:col-span-1">
-                  {post.date}
-                </span>
-                <span class="post-title text-[15px] font-medium text-(--fg)">
-                  {post.title}
-                </span>
-                <span
-                  class="hidden text-sm text-(--subtle) transition-colors duration-150 group-hover:text-(--accent) md:inline"
-                  aria-hidden="true"
-                >
-                  →
-                </span>
+                </p>
               </a>
-            ))}
-          </div>
+            ))
+          }
+        </div>
+      </BentoCell>
 
-          <a
-            href="https://blog.zrr.dev"
-            class="group mono mt-6 inline-block text-xs text-(--muted) transition-colors hover:text-(--accent)"
-          >
-            所有文章
-            <span class="inline-block transition-transform duration-150 group-hover:translate-x-1">
-              →
-            </span>
-          </a>
-        </section>
-      )
-    }
+      <BentoCell
+        href="/about#research"
+        tone="accent"
+        label="研究方向"
+        span="bento-order-research col-span-1 md:col-span-6 lg:col-span-4 lg:row-span-2"
+        delay={3}
+      >
+        <div class="flex h-full flex-col gap-5">
+          {
+            researchDirections.map(direction => (
+              <div>
+                <p class="text-base font-semibold">{direction.title}</p>
+                <p class="bento-muted mt-1 text-sm leading-relaxed">
+                  {direction.id === "self-improvement"
+                    ? "开放方向"
+                    : direction.question}
+                </p>
+              </div>
+            ))
+          }
+          <p class="mt-auto pt-2 text-sm font-medium">了解研究方向 →</p>
+        </div>
+      </BentoCell>
 
-    <section class="reveal reveal-3 mt-20 md:mt-24">
-      <div class="flex items-baseline justify-between gap-6">
-        <SectionHeading>友链 / Friends</SectionHeading>
-        <a
-          href="/friends#exchange"
-          class="mono text-xs text-(--subtle) transition-colors hover:text-(--fg)"
-        >
-          互换友链 →
-        </a>
-      </div>
-      <p
-        class="mt-4 flex flex-wrap items-baseline gap-y-2 border-t border-(--card-border) pt-5 text-sm"
+      <BentoCell
+        id="projects"
+        href={spore.href}
+        tone="tint"
+        span="bento-order-project col-span-1 md:col-span-6 lg:col-span-8"
+        delay={4}
+      >
+        <p class="bento-muted text-xs">
+          {researchDirection(spore.direction).title}
+        </p>
+        <h2 class="display-font mt-3 text-4xl font-bold tracking-tight md:text-5xl">
+          {spore.name}
+        </h2>
+        <p class="bento-muted mt-3 max-w-2xl text-sm leading-relaxed">
+          {spore.description}
+        </p>
+        <pre class="code-sample mono mt-5">{sporeSample}</pre>
+        <p class="mono bento-muted mt-auto flex items-baseline justify-between gap-3 pt-5 text-xs">
+          <span>{spore.tags.join(" / ")}</span>
+          <span aria-hidden="true">↗</span>
+        </p>
+      </BentoCell>
+
+      <BentoCell
+        href={spark.href}
+        tone="plain"
+        span="bento-order-project col-span-1 md:col-span-3 lg:col-span-4"
+        delay={5}
+      >
+        <p class="bento-muted text-xs">
+          {researchDirection(spark.direction).title}
+        </p>
+        <h2 class="display-font mt-3 text-3xl font-bold tracking-tight">
+          {spark.name}
+        </h2>
+        <p class="bento-muted mt-3 text-sm leading-relaxed">
+          {spark.description}
+        </p>
+        <p class="mono bento-muted mt-auto flex items-baseline justify-between gap-3 pt-5 text-xs">
+          <span>{spark.tags.join(" / ")}</span>
+          <span aria-hidden="true">↗</span>
+        </p>
+      </BentoCell>
+
+      <BentoCell
+        href={volvox.href}
+        tone="plain"
+        span="bento-order-project col-span-1 md:col-span-3 lg:col-span-4"
+        delay={6}
+      >
+        <p class="bento-muted text-xs">
+          {researchDirection(volvox.direction).title}
+        </p>
+        <h2 class="display-font mt-3 text-3xl font-bold tracking-tight">
+          {volvox.name}
+        </h2>
+        <p class="bento-muted mt-3 text-sm leading-relaxed">
+          {volvox.description}
+        </p>
+        <p class="mono bento-muted mt-auto flex items-baseline justify-between gap-3 pt-5 text-xs">
+          <span>{volvox.tags.join(" / ")}</span>
+          <span aria-hidden="true">↗</span>
+        </p>
+      </BentoCell>
+
+      <BentoCell
+        id="writing"
+        tone="tint"
+        label="最近文章"
+        span="bento-order-writing col-span-1 md:col-span-6 lg:col-span-8"
+        delay={7}
       >
         {
-          friends.map((friend, i) => (
-            <>
-              {i > 0 && <span class="mx-3 text-(--card-border)">/</span>}
-              <a
-                href={friend.url}
-                class="friend-link text-(--muted) transition-colors hover:text-(--accent)"
-              >
-                <sup class="mono mr-1 text-[10px] text-(--subtle)">
-                  {String(i + 1).padStart(2, "0")}
-                </sup>
+          posts.length > 0 ? (
+            <div class="flex flex-1 flex-col">
+              {posts.map(post => (
+                <a
+                  href={post.href}
+                  class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 border-t border-(--card-border) py-3 first:border-t-0 first:pt-0 last:pb-0 md:grid-cols-[7.5rem_minmax(0,1fr)_auto] md:gap-4"
+                >
+                  {post.date ? (
+                    <time
+                      datetime={post.date}
+                      class="mono col-span-2 text-xs text-(--subtle) md:col-span-1"
+                    >
+                      {post.date}
+                    </time>
+                  ) : (
+                    <span class="hidden md:block" aria-hidden="true" />
+                  )}
+                  <span class="text-[15px] leading-relaxed font-medium">
+                    {post.title}
+                  </span>
+                  <span class="text-(--subtle)" aria-hidden="true">
+                    ↗
+                  </span>
+                </a>
+              ))}
+            </div>
+          ) : (
+            <p class="bento-muted text-sm leading-relaxed">
+              这里记录编程语言、AI 系统与工程实践。
+            </p>
+          )
+        }
+        <a
+          href="https://blog.zrr.dev"
+          class="text-link mono mt-4 self-start text-xs text-(--muted)"
+        >
+          所有文章 <span aria-hidden="true">↗</span>
+        </a>
+      </BentoCell>
+
+      <BentoCell
+        tone="plain"
+        label="友链"
+        span="bento-order-friends col-span-1 md:col-span-6 lg:col-span-4"
+        delay={8}
+      >
+        <div class="flex flex-1 flex-col gap-3">
+          {
+            friends.map(friend => (
+              <a href={friend.url} class="text-link min-h-0 py-1 text-(--fg)">
                 {friend.name}
               </a>
-            </>
-          ))
-        }
-      </p>
-    </section>
-
-    <footer
-      class="mono mt-24 flex flex-wrap items-baseline justify-between gap-3 border-t border-(--card-border) pt-6 text-xs text-(--subtle)"
-    >
-      <span>{copyrightText()}</span>
-      <div class="flex items-center">
-        <RssCopy client:load />
-        <span class="mx-2">·</span>
+            ))
+          }
+        </div>
         <a
-          href="https://github.com/zrr1999"
-          class="transition-colors hover:text-(--fg)">GitHub</a
+          href="/friends#exchange"
+          class="text-link mt-4 self-start text-sm text-(--muted)"
         >
-      </div>
-    </footer>
+          互换友链
+        </a>
+      </BentoCell>
+    </BentoGrid>
+
+    <SiteFooter />
   </PageContent>
 </Layout>
-
-<style>
-  .hero-line {
-    display: block;
-    overflow: hidden;
-  }
-  .hero-line > span {
-    display: block;
-    transform: translateY(110%);
-    animation: hero-rise 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  }
-  .hero-line--accent > span {
-    color: var(--accent);
-    animation-delay: 0.12s;
-  }
-  @keyframes hero-rise {
-    to {
-      transform: translateY(0);
-    }
-  }
-
-  .post-title {
-    width: fit-content;
-    background-image: linear-gradient(var(--accent), var(--accent));
-    background-size: 0% 1px;
-    background-repeat: no-repeat;
-    background-position: left calc(100% - 2px);
-    transition:
-      background-size 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-      color 0.25s ease;
-  }
-  a:hover .post-title {
-    background-size: 100% 1px;
-    color: var(--accent);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .hero-line > span {
-      animation: none !important;
-      transform: none !important;
-    }
-  }
-</style>
