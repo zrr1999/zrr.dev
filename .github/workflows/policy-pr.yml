@@ -1,4 +1,4 @@
-name: "CI - PR Checks"
+name: Policy - PR
 
 on:
   pull_request:
@@ -13,12 +13,12 @@ permissions:
   pull-requests: read
 
 concurrency:
-  group: pr-checks-${{ github.event.pull_request.number }}
+  group: policy-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  title:
-    name: PR title
+  pr-message:
+    name: PR message
     if: github.event.pull_request.user.login != 'renovate[bot]'
     runs-on: ubuntu-latest
     steps:
@@ -30,13 +30,6 @@ jobs:
         uses: zendev-lab/zendev/actions/validate-title@v0.4.0
         with:
           text: ${{ github.event.pull_request.title }}
-
-  body:
-    name: PR body
-    if: github.event.pull_request.user.login != 'renovate[bot]'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
 
       - name: Check PR body
         uses: zendev-lab/zendev/actions/validate-body@v0.4.0
