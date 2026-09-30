@@ -55,3 +55,15 @@
 - [ ] 拉代码后 `vp install`
 - [ ] 改完跑 `vp check`（及需要时的 `vp test` / 相关 `build`）
 - [ ] 提交信息简洁；密钥不进仓库
+
+## Cursor Cloud specific instructions
+
+- Node 以 `.nvmrc` 的 `24.21.0` 为准（`nvm use`）。镜像 PATH 里靠前的 `node` 可能是 22.14，低于 Vite+ 要求的 `^22.18.0 || >=24.11.0`。环境安装会用 nvm 装上该版本，并全局安装与 catalog 一致的 `vite-plus@0.3.3`，使 `vp` 可用。
+- `hosting/` 是 git 子模块。幻灯片构建和博客配图依赖它，先执行 `git submodule update --init --recursive`。
+- 三个 app 的 `astro dev` 默认都占用 4321，不要用根脚本 `vp run dev` 同时拉起。分开端口：
+  - 主页：`vp run --filter @zrr-website/root dev --host 127.0.0.1 --port 4321`
+  - 博客：`vp run --filter @zrr-website/blog dev --host 127.0.0.1 --port 4322`
+  - 幻灯片：`vp run --filter @zrr-website/slides dev --host 127.0.0.1 --port 4323`
+- `vp check` 覆盖格式和 lint。博客类型检查在 `apps/blog` 的构建脚本里（`astro check && astro build`），随 `vp run build` 执行。
+- 仓库当前没有 `*.test` / `*.spec`。`vp test` 会打印 `No test files found` 并以退出码 1 结束，这不表示依赖没装好。
+- 本地开发和构建不需要 Cloudflare 密钥。不要在环境里执行 `deploy:cf:*`。
