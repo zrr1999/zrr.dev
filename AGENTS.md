@@ -16,7 +16,7 @@
 ## 网站展示
 
 - 网站统一使用“六个骨头”作为展示名，通过 `packages/site-meta` 的 `SITE_AUTHOR` 复用；中文介绍不使用简历姓名；首页主标题保留英文 `Zhan Rongrui`，沿用 `Zhan` 在上、`Rongrui` 在下方靠右的两行布局；页脚版权署名使用 `Zhan Rongrui`，通过共享的 `copyrightText()` 生成。
-- 根站点的章节标题使用 `PageContent` 与 `SectionHeading`，按显示顺序自动编号，不手写章节序号。
+- 根站点页面由 `BentoGrid` 与 `BentoCell` 组成。只用品牌强调色，单元格共用一个圆角；单元格用短标签，不写章节序号。
 
 ## 工具链
 

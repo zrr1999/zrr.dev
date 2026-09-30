@@ -8,17 +8,18 @@
   --muted: rgba(11, 18, 32, 0.72);
   --subtle: rgba(11, 18, 32, 0.6);
 
-  --card: rgba(255, 255, 255, 0.75);
+  --card: rgba(255, 255, 255, 0.78);
   --card-border: rgba(11, 18, 32, 0.12);
-  --card-hover: rgba(255, 255, 255, 0.92);
+  --card-hover: rgba(255, 255, 255, 0.96);
+  --cell-plain: color-mix(in srgb, var(--card) 55%, transparent);
+  --cell-on-accent: #f6f7fb;
 
   --accent: var(--brand-accent-bright);
   --accent-2: var(--brand-teal);
   --ring: color-mix(in srgb, var(--brand-accent-bright) 40%, transparent);
 
-  --g1: color-mix(in srgb, var(--brand-accent-bright) 18%, transparent);
-  --g2: color-mix(in srgb, var(--brand-teal) 12%, transparent);
-  --g3: rgba(255, 163, 74, 0.1);
+  --radius-cell: 1.25rem;
+  --radius-chip: 999px;
 
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --duration-hover: 150ms;
@@ -58,7 +59,6 @@ body {
   font-family: "IBM Plex Mono", "Noto Sans SC", ui-monospace, monospace;
 }
 
-/* 顶栏导航链接（React island 内也会用到，故放在全局） */
 .nav-link {
   position: relative;
   transition: color var(--duration-hover) ease;
@@ -92,15 +92,13 @@ body {
 
     --card: rgba(255, 255, 255, 0.06);
     --card-border: rgba(255, 255, 255, 0.12);
-    --card-hover: rgba(255, 255, 255, 0.09);
+    --card-hover: rgba(255, 255, 255, 0.1);
+    --cell-plain: rgba(255, 255, 255, 0.04);
+    --cell-on-accent: #0b1220;
 
     --accent: var(--brand-accent-dark);
     --accent-2: #59e3c9;
     --ring: color-mix(in srgb, var(--brand-accent-dark) 55%, transparent);
-
-    --g1: color-mix(in srgb, var(--brand-accent-dark) 22%, transparent);
-    --g2: rgba(89, 227, 201, 0.14);
-    --g3: rgba(255, 214, 120, 0.08);
   }
 }
 
@@ -124,58 +122,215 @@ body {
   }
 }
 
-.reveal {
-  animation: rise 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.reveal-2 {
-  animation-delay: 90ms;
-}
-
-.reveal-3 {
-  animation-delay: 180ms;
-}
-
-.link-row {
-  transform-origin: left center;
-  transition:
-    transform var(--duration-press) var(--ease-out),
-    color var(--duration-hover) ease;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .link-row:hover {
-    transform: translateX(1rem);
+@keyframes hero-rise {
+  from {
+    transform: translateY(110%);
   }
-
-  .link-row:hover:active {
-    transform: translateX(1rem) scale(0.99);
+  to {
+    transform: translateY(0);
   }
 }
 
-.link-row:active {
-  transform: scale(0.99);
+@layer components {
+  .text-link {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    gap: 0.4rem;
+    text-underline-offset: 0.3em;
+    transition: color var(--duration-hover) ease;
+  }
+
+  .text-link:hover,
+  .text-link:focus-visible {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-chip);
+    padding: 0.2rem 0.75rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+    transition:
+      color var(--duration-hover) ease,
+      border-color var(--duration-hover) ease;
+  }
+
+  .chip:hover,
+  .chip:focus-visible {
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 40%, var(--card-border));
+  }
+
+  .bento-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+
+  .bento-cell {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    scroll-margin-top: 5.5rem;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-cell);
+    padding: 1.25rem 1.35rem;
+    animation: rise 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(var(--bento-i, 0) * 55ms);
+  }
+
+  .bento-cell--plain {
+    background: var(--cell-plain);
+  }
+
+  .bento-cell--tint {
+    background: var(--card);
+  }
+
+  .bento-cell--accent {
+    background: var(--accent);
+    color: var(--cell-on-accent);
+    border-color: transparent;
+  }
+
+  .bento-muted {
+    color: var(--muted);
+  }
+
+  .bento-cell--accent .bento-label,
+  .bento-cell--accent .bento-muted {
+    color: color-mix(in srgb, var(--cell-on-accent) 78%, transparent);
+  }
+
+  a.bento-cell {
+    text-decoration: none;
+    color: inherit;
+    transition:
+      transform var(--duration-press) var(--ease-out),
+      background-color var(--duration-hover) ease,
+      border-color var(--duration-hover) ease;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    a.bento-cell:hover {
+      transform: translateY(-2px);
+    }
+
+    a.bento-cell--plain:hover,
+    a.bento-cell--tint:hover {
+      background: var(--card-hover);
+    }
+
+    a.bento-cell:active {
+      transform: translateY(0) scale(0.99);
+    }
+  }
+
+  .bento-label {
+    margin-bottom: 0.75rem;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: var(--subtle);
+  }
+
+  .hero-line {
+    display: block;
+    overflow: hidden;
+  }
+
+  .hero-line > span {
+    display: block;
+    animation: hero-rise 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .hero-line--accent > span {
+    color: var(--accent);
+    animation-delay: 0.12s;
+  }
+
+  .bento-cell--accent .hero-line--accent > span {
+    color: inherit;
+  }
+
+  .code-sample {
+    overflow-x: auto;
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--fg) 6%, transparent);
+    padding: 0.9rem 1rem;
+    font-size: 0.75rem;
+    line-height: 1.55;
+    white-space: pre;
+  }
+
+  .bento-order-identity {
+    order: 1;
+  }
+  .bento-order-now {
+    order: 2;
+  }
+  .bento-order-project {
+    order: 3;
+  }
+  .bento-order-research {
+    order: 4;
+  }
+  .bento-order-writing {
+    order: 5;
+  }
+  .bento-order-sites {
+    order: 6;
+  }
+  .bento-order-friends {
+    order: 7;
+  }
+}
+
+@media (min-width: 48rem) {
+  .bento-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 64rem) {
+  .bento-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .bento-order-identity,
+  .bento-order-now,
+  .bento-order-project,
+  .bento-order-research,
+  .bento-order-writing,
+  .bento-order-sites,
+  .bento-order-friends {
+    order: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal,
-  .reveal-2,
-  .reveal-3 {
-    animation: rise 200ms ease both;
+  .bento-cell,
+  .hero-line > span {
+    animation: none;
+    transform: none;
   }
 
-  @keyframes rise {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+  a.bento-cell,
+  .text-link,
+  .chip,
+  .nav-link,
+  .nav-link::after {
+    transition: none;
   }
 
-  .link-row:hover,
-  .link-row:active,
-  .link-row:hover:active {
+  a.bento-cell:hover,
+  a.bento-cell:active {
     transform: none;
   }
 }

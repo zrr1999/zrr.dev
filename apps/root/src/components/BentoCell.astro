@@ -1,0 +1,53 @@
+---
+type Tone = "plain" | "tint" | "accent";
+
+export interface Props {
+  href?: string;
+  label?: string;
+  tone?: Tone;
+  span?: string;
+  id?: string;
+  delay?: number;
+}
+
+const {
+  href,
+  label,
+  tone = "plain",
+  span = "",
+  id,
+  delay = 0,
+} = Astro.props;
+
+function toneClass(value: Tone): string {
+  switch (value) {
+    case "plain":
+      return "bento-cell--plain";
+    case "tint":
+      return "bento-cell--tint";
+    case "accent":
+      return "bento-cell--accent";
+    default: {
+      const _exhaustive: never = value;
+      throw new Error(`unexpected tone: ${String(_exhaustive)}`);
+    }
+  }
+}
+
+const classes = ["bento-cell", toneClass(tone), span];
+const style = `--bento-i: ${delay}`;
+---
+
+{
+  href ? (
+    <a href={href} id={id} class:list={classes} style={style}>
+      {label && <p class="bento-label">{label}</p>}
+      <slot />
+    </a>
+  ) : (
+    <div id={id} class:list={classes} style={style}>
+      {label && <p class="bento-label">{label}</p>}
+      <slot />
+    </div>
+  )
+}
