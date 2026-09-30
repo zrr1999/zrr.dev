@@ -13,8 +13,7 @@ const sites = [
     name: "博客",
     domain: "blog.zrr.dev",
     href: "https://blog.zrr.dev",
-    description:
-      "学习笔记、技术文章和项目经验。最近在写解析器、等价饱和与符号计算。",
+    description: "学习笔记、技术文章和项目经验。",
   },
   {
     name: "幻灯片",
@@ -30,23 +29,19 @@ const sites = [
   },
 ];
 
+// 这里只决定首页的展示层级，不承担 Lab / Docs 的项目登记与路由。
 const projects = [
   {
     name: "spark",
+    focus: "执行 / Agent infrastructure",
     description:
       "让智能体工作跨越一次终端会话：本地 daemon 托管会话、执行与恢复，支撑长期任务与跨工作区委托。",
     href: "https://github.com/zendev-lab/spark",
     tags: ["TypeScript", "Agent"],
   },
   {
-    name: "cue",
-    description:
-      "持久、可观察的命令执行底座，让人和智能体共享执行状态，支持断线恢复、共享 session 与多观察者 PTY。",
-    href: "https://github.com/zendev-lab/cue",
-    tags: ["Rust", "Runtime"],
-  },
-  {
     name: "spore",
+    focus: "表达 / Programming language",
     description:
       "意图编程语言（实验阶段）：用函数签名表达类型、可失败结果与 effect，以 hole 承载尚未完成的实现，让人和智能体在同一份约束上协作。",
     href: "https://github.com/spore-lang/spore",
@@ -54,17 +49,28 @@ const projects = [
   },
   {
     name: "volvox",
+    focus: "学习 / Deep learning framework",
     description:
       "可组合深度学习元框架（探索阶段）：在早期框架实验基础上，研究组件边界、依赖与执行语义，以及替换组件后需要保持和验证的性质。",
     href: "https://github.com/volvox-ai/volvox",
     tags: ["Python", "DL Framework"],
   },
+];
+
+const supportingProjects = [
+  {
+    name: "cue",
+    kind: "执行工具",
+    description:
+      "持久、可观察的命令执行底座，让人和智能体共享执行状态，支持断线恢复、共享 session 与多观察者 PTY。",
+    href: "https://github.com/zendev-lab/cue",
+  },
   {
     name: "emotion-recognition",
+    kind: "早期作品",
     description:
       "多模态情绪识别系统（硕士毕业设计），覆盖文本、音频、视频三模态的情绪分类与情感分析。",
     href: "https://github.com/zrr1999/emotion-recognition",
-    tags: ["Python", "ML"],
   },
 ];
 
@@ -79,10 +85,12 @@ interface Post {
   date: string;
 }
 
-/** 构建期从博客 RSS 拉取最新文章；失败时静默降级，不阻断构建。 */
+/** 构建期读取博客 RSS；限时失败降级，页面仍保留博客入口。 */
 async function fetchRecentPosts(limit = 4): Promise<Post[]> {
   try {
-    const res = await fetch("https://blog.zrr.dev/rss.xml");
+    const res = await fetch("https://blog.zrr.dev/rss.xml", {
+      signal: AbortSignal.timeout(5000),
+    });
     if (!res.ok) return [];
     const xml = await res.text();
     const pick = (item: string, tag: string) =>
@@ -113,10 +121,14 @@ const posts = await fetchRecentPosts();
 
   <PageContent>
     <section class="reveal">
-      <div class="grid items-end gap-10 md:grid-cols-[1fr_250px]">
-        <div>
+      <div class="grid items-end gap-10 lg:grid-cols-[minmax(0,1fr)_250px]">
+        <div class="min-w-0">
+          <p class="mono mb-5 text-xs tracking-wide text-(--muted)">
+            {SITE_AUTHOR} / zrr1999
+          </p>
           <h1
-            class="display-font text-[clamp(3.6rem,13vw,10.5rem)] leading-[0.92] font-bold tracking-[-0.035em] text-(--fg) uppercase"
+            aria-label="Zhan Rongrui"
+            class="display-font text-[clamp(3rem,12vw,9rem)] leading-[0.98] font-bold tracking-[-0.035em] text-(--fg) uppercase"
           >
             <span class="hero-line"><span>Zhan</span></span>
             <span class="hero-line hero-line--accent text-right">
@@ -132,15 +144,17 @@ const posts = await fetchRecentPosts();
           <p class="mt-4 max-w-2xl text-sm leading-relaxed text-(--muted) md:text-base">
             {background}
           </p>
-          <a
-            href="/about#research"
-            class="mt-5 inline-block text-sm text-(--fg) underline decoration-(--subtle) underline-offset-4 transition-colors hover:text-(--accent)"
-          >
-            研究方向与经历 →
-          </a>
+          <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2">
+            <a href="#projects" class="text-link font-medium">
+              探索项目 <span aria-hidden="true">↓</span>
+            </a>
+            <a href="/about#research" class="text-link text-(--muted)">
+              研究方向与经历 <span aria-hidden="true">→</span>
+            </a>
+          </div>
         </div>
 
-        <aside class="mono text-xs leading-loose text-(--muted)">
+        <aside class="mono text-xs leading-loose text-(--muted)" aria-label="教育经历">
           <span
             class="mb-3 block text-[11px] tracking-[0.14em] text-(--subtle) uppercase"
           >
@@ -164,211 +178,297 @@ const posts = await fetchRecentPosts();
       </div>
     </section>
 
-    <section class="reveal reveal-2 mt-20 md:mt-24">
-      <div class="flex items-baseline justify-between gap-6">
-        <SectionHeading>站点 / Index</SectionHeading>
-        <span class="text-xs text-(--subtle)">持续更新中</span>
+    <section id="projects" class="reveal reveal-2 mt-16 md:mt-20">
+      <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+        <SectionHeading>代表项目 / Selected work</SectionHeading>
+        <a href="https://github.com/zrr1999" class="text-link mono text-xs text-(--muted)">
+          更多代码 <span aria-hidden="true">↗</span>
+        </a>
       </div>
+      <p class="mt-3 max-w-2xl text-sm leading-relaxed text-(--muted)">
+        从执行、表达与学习三个方向，探索可组合、可验证的计算系统。
+      </p>
 
-      <div class="mt-4">
+      <ul class="project-grid mt-6">
         {
-          sites.map(site => (
-            <a
-              href={site.href}
-              class="link-row group grid grid-cols-[1fr_auto] items-center gap-6 border-t border-(--card-border) py-7 last:border-b"
-            >
-              <div class="flex flex-wrap items-baseline gap-x-6 gap-y-1">
-                <span class="display-font text-3xl font-bold tracking-tight text-(--fg) transition-colors duration-150 group-hover:text-(--accent) md:text-4xl">
-                  {site.name}
-                </span>
-                <span class="mono text-xs text-(--subtle)">{site.domain}</span>
-                <span class="basis-full text-sm text-(--muted)">
-                  {site.description}
-                </span>
-              </div>
-              <span
-                class="text-2xl text-(--subtle) transition-[transform,color] duration-150 group-hover:translate-x-1.5 group-hover:-translate-y-1.5 group-hover:text-(--accent)"
-                aria-hidden="true"
+          projects.map(project => (
+            <li>
+              <a
+                href={project.href}
+                class="project-card"
+                aria-labelledby={`project-${project.name}-title`}
+                aria-describedby={`project-${project.name}-description`}
               >
-                ↗
-              </span>
+                <p class="mono text-xs leading-relaxed text-(--muted)">{project.focus}</p>
+                <h3
+                  id={`project-${project.name}-title`}
+                  class="display-font mt-4 text-4xl font-bold tracking-tight"
+                >
+                  {project.name}
+                </h3>
+                <p
+                  id={`project-${project.name}-description`}
+                  class="mt-4 text-sm leading-relaxed text-(--muted)"
+                >
+                  {project.description}
+                </p>
+                <span class="project-meta mono text-xs text-(--muted)">
+                  <span>{project.tags.join(" / ")}</span>
+                  <span class="text-lg" aria-hidden="true">↗</span>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      <h3 class="mt-8 text-sm font-medium text-(--fg)">工具与早期工作</h3>
+      <div class="mt-3">
+        {
+          supportingProjects.map(project => (
+            <a href={project.href} class="supporting-project">
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                  <span class="mono project-name text-base font-semibold text-(--fg)">{project.name}</span>
+                  <span class="text-xs text-(--muted)">{project.kind}</span>
+                </div>
+                <p class="mt-2 text-sm leading-relaxed text-(--muted)">{project.description}</p>
+              </div>
+              <span aria-hidden="true" class="text-(--muted)">↗</span>
             </a>
           ))
         }
       </div>
     </section>
 
-    <section id="projects" class="reveal reveal-2 mt-20 md:mt-24">
-      <div class="flex items-baseline justify-between gap-6">
-        <SectionHeading>系统与研究项目 / Projects</SectionHeading>
-        <a
-          href="https://github.com/zrr1999"
-          class="mono hidden text-xs text-(--subtle) transition-colors hover:text-(--fg) md:inline"
-        >
-          在 GitHub 查看更多 →
+    <section id="writing" class="reveal reveal-3 mt-16 md:mt-20">
+      <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+        <SectionHeading>最近文章 / Writing</SectionHeading>
+        <a href="https://blog.zrr.dev" class="text-link mono text-xs text-(--muted)">
+          所有文章 <span aria-hidden="true">↗</span>
         </a>
       </div>
 
-      <div class="mt-4">
-        {
-          projects.map(project => (
-            <a
-              href={project.href}
-              class="link-row group grid grid-cols-[1fr_auto] items-center gap-6 border-t border-(--card-border) py-6 last:border-b"
-            >
-              <div class="flex flex-wrap items-baseline gap-x-6 gap-y-1">
-                <span class="mono text-xl font-semibold tracking-tight text-(--fg) transition-colors duration-150 group-hover:text-(--accent) md:text-2xl">
-                  {project.name}
-                </span>
-                <span class="mono text-xs text-(--subtle)">
-                  {project.tags.join(" / ")}
-                </span>
-                <span class="basis-full text-sm text-(--muted)">
-                  {project.description}
-                </span>
-              </div>
-              <span
-                class="text-xl text-(--subtle) transition-[transform,color] duration-150 group-hover:translate-x-1.5 group-hover:-translate-y-1.5 group-hover:text-(--accent)"
-                aria-hidden="true"
-              >
-                ↗
-              </span>
-            </a>
-          ))
-        }
-      </div>
-    </section>
-
-    {
-      posts.length > 0 && (
-        <section class="reveal reveal-3 mt-20 md:mt-24">
-          <div class="flex items-baseline justify-between gap-6">
-            <SectionHeading>最近文章 / Writing</SectionHeading>
-            <span class="mono text-xs text-(--subtle)">via RSS</span>
-          </div>
-
+      {
+        posts.length > 0 ? (
           <div class="mt-4">
             {posts.map(post => (
               <a
                 href={post.href}
-                class="group grid grid-cols-[1fr_auto] items-baseline gap-2 border-t border-(--card-border) py-4 last:border-b md:grid-cols-[120px_1fr_auto] md:gap-6"
+                class="writing-row grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-2 border-t border-(--card-border) py-5 last:border-b md:grid-cols-[120px_minmax(0,1fr)_auto] md:gap-6"
               >
-                <span class="mono col-span-2 text-xs text-(--subtle) md:col-span-1">
-                  {post.date}
-                </span>
-                <span class="post-title text-[15px] font-medium text-(--fg)">
-                  {post.title}
-                </span>
-                <span
-                  class="hidden text-sm text-(--subtle) transition-colors duration-150 group-hover:text-(--accent) md:inline"
-                  aria-hidden="true"
-                >
-                  →
-                </span>
+                {post.date ? (
+                  <time datetime={post.date} class="mono col-span-2 text-xs text-(--muted) md:col-span-1">
+                    {post.date}
+                  </time>
+                ) : (
+                  <span class="hidden md:block" aria-hidden="true" />
+                )}
+                <span class="post-title text-[15px] leading-relaxed font-medium text-(--fg)">{post.title}</span>
+                <span class="text-sm text-(--muted)" aria-hidden="true">↗</span>
               </a>
             ))}
           </div>
+        ) : (
+          <p class="mt-4 border-y border-(--card-border) py-6 text-sm leading-relaxed text-(--muted)">
+            这里记录编程语言、AI 系统与工程实践。
+            <a href="https://blog.zrr.dev" class="text-link">到博客阅读全部文章 <span aria-hidden="true">↗</span></a>
+          </p>
+        )
+      }
+    </section>
 
-          <a
-            href="https://blog.zrr.dev"
-            class="group mono mt-6 inline-block text-xs text-(--muted) transition-colors hover:text-(--accent)"
-          >
-            所有文章
-            <span class="inline-block transition-transform duration-150 group-hover:translate-x-1">
-              →
-            </span>
-          </a>
-        </section>
-      )
-    }
+    <section id="elsewhere" class="reveal reveal-3 mt-16 md:mt-20">
+      <SectionHeading>站点 / Elsewhere</SectionHeading>
+      <div class="mt-4">
+        {
+          sites.map(site => (
+            <a href={site.href} class="site-row">
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-baseline gap-x-5 gap-y-1">
+                  <span class="display-font site-name text-2xl font-bold tracking-tight text-(--fg)">{site.name}</span>
+                  <span class="mono text-xs break-all text-(--muted)">{site.domain}</span>
+                </div>
+                <p class="mt-2 text-sm leading-relaxed text-(--muted)">{site.description}</p>
+              </div>
+              <span class="text-xl text-(--muted)" aria-hidden="true">↗</span>
+            </a>
+          ))
+        }
+      </div>
+    </section>
 
-    <section class="reveal reveal-3 mt-20 md:mt-24">
-      <div class="flex items-baseline justify-between gap-6">
+    <section class="reveal reveal-3 mt-16 md:mt-20">
+      <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
         <SectionHeading>友链 / Friends</SectionHeading>
-        <a
-          href="/friends#exchange"
-          class="mono text-xs text-(--subtle) transition-colors hover:text-(--fg)"
-        >
-          互换友链 →
+        <a href="/friends#exchange" class="text-link mono text-xs text-(--muted)">
+          互换友链 <span aria-hidden="true">→</span>
         </a>
       </div>
-      <p
-        class="mt-4 flex flex-wrap items-baseline gap-y-2 border-t border-(--card-border) pt-5 text-sm"
-      >
+      <p class="mt-4 flex flex-wrap items-baseline gap-x-5 gap-y-1 border-t border-(--card-border) pt-4 text-sm">
         {
-          friends.map((friend, i) => (
-            <>
-              {i > 0 && <span class="mx-3 text-(--card-border)">/</span>}
-              <a
-                href={friend.url}
-                class="friend-link text-(--muted) transition-colors hover:text-(--accent)"
-              >
-                <sup class="mono mr-1 text-[10px] text-(--subtle)">
-                  {String(i + 1).padStart(2, "0")}
-                </sup>
-                {friend.name}
-              </a>
-            </>
+          friends.map(friend => (
+            <a href={friend.url} class="text-link text-(--muted)">{friend.name}</a>
           ))
         }
       </p>
     </section>
 
-    <footer
-      class="mono mt-24 flex flex-wrap items-baseline justify-between gap-3 border-t border-(--card-border) pt-6 text-xs text-(--subtle)"
-    >
+    <footer class="mono mt-20 flex flex-wrap items-baseline justify-between gap-3 border-t border-(--card-border) pt-6 text-xs text-(--subtle)">
       <span>{copyrightText()}</span>
       <div class="flex items-center">
         <RssCopy client:load />
-        <span class="mx-2">·</span>
-        <a
-          href="https://github.com/zrr1999"
-          class="transition-colors hover:text-(--fg)">GitHub</a
-        >
+        <span class="mx-2" aria-hidden="true">·</span>
+        <a href="https://github.com/zrr1999" class="text-link">GitHub</a>
       </div>
     </footer>
   </PageContent>
 </Layout>
 
 <style>
+  section[id] {
+    scroll-margin-top: 7rem;
+  }
+
   .hero-line {
     display: block;
     overflow: hidden;
   }
+
   .hero-line > span {
     display: block;
-    transform: translateY(110%);
-    animation: hero-rise 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation: hero-rise 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
   }
+
   .hero-line--accent > span {
     color: var(--accent);
     animation-delay: 0.12s;
   }
+
   @keyframes hero-rise {
+    from {
+      transform: translateY(110%);
+    }
     to {
       transform: translateY(0);
     }
   }
 
-  .post-title {
-    width: fit-content;
-    background-image: linear-gradient(var(--accent), var(--accent));
-    background-size: 0% 1px;
-    background-repeat: no-repeat;
-    background-position: left calc(100% - 2px);
-    transition:
-      background-size 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-      color 0.25s ease;
+  .text-link {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    text-underline-offset: 0.3em;
+    transition: color 150ms ease;
   }
-  a:hover .post-title {
-    background-size: 100% 1px;
+
+  .text-link:hover,
+  .text-link:focus-visible {
     color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .project-grid {
+    display: grid;
+    padding: 0;
+    list-style: none;
+    border-block: 1px solid var(--card-border);
+  }
+
+  .project-grid > li + li {
+    border-top: 1px solid var(--card-border);
+  }
+
+  .project-card {
+    display: flex;
+    min-width: 0;
+    height: 100%;
+    flex-direction: column;
+    padding: 1.5rem 1rem;
+    transition: background-color 150ms ease;
+  }
+
+  .project-card:hover,
+  .project-card:focus-visible {
+    background: var(--card);
+  }
+
+  .project-card:hover h3,
+  .project-card:focus-visible h3,
+  .supporting-project:hover .project-name,
+  .supporting-project:focus-visible .project-name,
+  .site-row:hover .site-name,
+  .site-row:focus-visible .site-name {
+    color: var(--accent);
+  }
+
+  .project-meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: auto;
+    padding-top: 1.5rem;
+  }
+
+  .supporting-project,
+  .site-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1.5rem;
+    border-top: 1px solid var(--card-border);
+    padding-block: 1.25rem;
+  }
+
+  .supporting-project:last-child,
+  .site-row:last-child {
+    border-bottom: 1px solid var(--card-border);
+  }
+
+  .project-name,
+  .post-title {
+    overflow-wrap: anywhere;
+  }
+
+  .writing-row:hover .post-title,
+  .writing-row:focus-visible .post-title {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+  }
+
+  a:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+  }
+
+  @media (min-width: 48rem) {
+    .project-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .project-grid > li + li {
+      border-top: 0;
+      border-left: 1px solid var(--card-border);
+    }
+
+    .project-card {
+      padding: 1.75rem 1.5rem;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .hero-line > span {
-      animation: none !important;
-      transform: none !important;
+      animation: none;
+      transform: none;
+    }
+
+    .text-link,
+    .project-card {
+      transition: none;
     }
   }
 </style>
