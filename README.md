@@ -29,6 +29,7 @@ apps/slides/    → 幻灯前端；源在 hosting/slides/（dev/build 由 plugin
 packages/
   site-meta/    → 作者 / 版权 / 共用字体
   site-theme/   → blog·slides 主题 CSS；brand 色供 root 对齐
+  project-catalog/ → 项目登记（Lab、文档入口、官网地址）
 hosting/        → 静态资源子模块（见下）
   images/
     blog/             → 博客配图（如 blog/simple-cache/）
@@ -41,7 +42,7 @@ hosting/        → 静态资源子模块（见下）
     national-scholarship/
 ```
 
-博客 frontmatter / 排版规范：[AGENTS.md — 博客规范](./AGENTS.md#博客规范)。
+博客 frontmatter / 排版规范：[AGENTS.md — 博客规范](./AGENTS.md#博客规范)。Lab（`lab.zrr.dev`）和文档（`docs.zrr.dev`）的边界见 [docs/platform.md](./docs/platform.md)。这两个站点尚未部署，`blog.zrr.dev` 与 `slides.zrr.dev` 保持现有应用。
 
 ## 部署模型
 
