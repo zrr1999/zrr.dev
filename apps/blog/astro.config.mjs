@@ -51,6 +51,16 @@ export default defineConfig({
     typst({
       options: {
         remPx: 14,
+        cheerio: {
+          postprocess($, source) {
+            if ($("svg").length === 0) {
+              throw new Error(
+                `Typst produced no SVG for ${source.mainFilePath}. Check the compiler diagnostics above.`
+              );
+            }
+            return $;
+          },
+        },
       },
       target: id => {
         if (id.includes("/data/")) return "html";
