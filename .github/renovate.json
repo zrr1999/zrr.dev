@@ -1,4 +1,11 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>zrr1999/renovate-config"]
+  "extends": ["github>zrr1999/renovate-config"],
+  "packageRules": [
+    {
+      "description": "Keep the TypeScript programmatic API required by astro check until native compiler support is available.",
+      "matchPackageNames": ["typescript"],
+      "allowedVersions": "<7"
+    }
+  ]
 }
