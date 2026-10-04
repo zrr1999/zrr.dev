@@ -8,13 +8,13 @@
 
 仓库根：
 
-| 命令             | 说明                             |
-| :--------------- | :------------------------------- |
-| `vp install`     | 安装依赖                         |
-| `vp run dev`     | 各 app 开发服务（过滤 `apps/*`） |
-| `vp run build`   | 全部应用生产构建 → `apps/*/dist` |
-| `vp run preview` | 预览构建结果                     |
-| `vp check`       | 格式 + lint + 类型               |
+| 命令             | 说明                                          |
+| :--------------- | :-------------------------------------------- |
+| `vp install`     | 安装依赖                                      |
+| `vp run dev`     | 各 app 开发服务（过滤 `apps/*`）              |
+| `vp run build`   | 全部应用 Astro 检查与生产构建 → `apps/*/dist` |
+| `vp run preview` | 预览构建结果                                  |
+| `vp check`       | 格式 + lint + 类型                            |
 
 另有 `vp fmt`、`vp lint`、`vp test`（见 AGENTS）。Pre-commit、[prek](https://github.com/j178/prek)：`vp install` 会跑 `prepare` 写入钩子；首次克隆可再执行 `prek install-hooks`。
 
@@ -55,7 +55,7 @@ hosting/        → 静态资源子模块（见下）
 
 串联示例：`vp run build:cf:root && vp run deploy:cf:root`。
 
-发布需 `wrangler login` 或环境变量 **`CLOUDFLARE_API_TOKEN`**（及按需 **`CLOUDFLARE_ACCOUNT_ID`**）。干净环境：`corepack enable && pnpm install --frozen-lockfile`。
+发布需 `wrangler login` 或环境变量 **`CLOUDFLARE_API_TOKEN`**（及按需 **`CLOUDFLARE_ACCOUNT_ID`**）。干净环境：`vp install --frozen-lockfile`。
 
 ### 旧域名跳转
 
