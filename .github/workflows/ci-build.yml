@@ -31,5 +31,8 @@ jobs:
           run-install: |
             args: ["--frozen-lockfile"]
 
+      - name: Test offline OG rendering
+        run: vp test run
+
       - name: Build all sites
         run: vp run build
