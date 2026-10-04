@@ -11,8 +11,6 @@ on:
       - "hosting"
       - "hosting/**/*.md"
   pull_request:
-    branches:
-      - main
     paths:
       - ".vale.ini"
       - ".github/styles/**"

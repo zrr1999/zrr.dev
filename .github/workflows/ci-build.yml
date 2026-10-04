@@ -1,24 +1,25 @@
-name: "CI - Static Checks"
+name: CI - Build
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
 
 concurrency:
-  group: ci-static-${{ github.ref }}
+  group: ci-build-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
 
 jobs:
-  prek:
-    name: prek
+  workspace:
+    name: Build workspace
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          submodules: recursive
 
       - uses: j178/prek-action@v3.0.0
         with:
@@ -27,5 +28,8 @@ jobs:
       - uses: voidzero-dev/setup-vp@v1
         with:
           cache: true
+          run-install: |
+            args: ["--frozen-lockfile"]
 
-      - uses: j178/prek-action@v3.0.0
+      - name: Build all sites
+        run: vp run build
