@@ -242,6 +242,11 @@ body {
   .hero-line {
     display: block;
     overflow: hidden;
+    line-height: 0.86;
+  }
+
+  .hero-line--accent {
+    margin-left: 0.7em;
   }
 
   .hero-line > span {
