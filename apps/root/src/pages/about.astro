@@ -29,11 +29,13 @@ const upstream = [
   "astral-sh/uv",
   "lepture/mistune",
 ];
+const heading = "关于";
 ---
 
 <Layout
   title={`关于 — ${SITE_AUTHOR}`}
   description={`关于${SITE_AUTHOR}。${vision}`}
+  serifText={heading}
 >
   <Header />
 
@@ -44,7 +46,7 @@ const upstream = [
         span="col-span-1 md:col-span-6 lg:col-span-8"
         delay={0}
       >
-        <h1 class="bento-title">关于</h1>
+        <h1 class="bento-title">{heading}</h1>
         <p class="bento-lede bento-muted mt-4 max-w-2xl">
           嗨，我是{SITE_AUTHOR}。现在在{currentRole.org}做{currentRole.group}研发，也持续构建自己的编程语言、深度学习框架和智能体系统。{background}
         </p>

@@ -17,6 +17,7 @@ import {
 } from "@/profile";
 import { spore, spark, volvox } from "@/projects";
 import { fetchRecentPosts } from "@/lib/recentPosts";
+import { stripTrailingPeriod } from "@/lib/serifFont";
 
 const avatarSrc =
   "https://raw.githubusercontent.com/zrr1999/hosting/main/images/profile/personal/avatar.png";
@@ -42,18 +43,19 @@ const sites = [
   },
 ];
 
+const headline = stripTrailingPeriod(vision);
 const posts = await fetchRecentPosts();
 const sporeSample = spore.sample ?? "";
 ---
 
-<Layout description={`${SITE_AUTHOR}的个人网站。${vision}`}>
+<Layout description={`${SITE_AUTHOR}的个人网站。${vision}`} serifText={headline}>
   <Header />
 
   <PageContent>
     <BentoGrid>
       <BentoCell
         tone="tint"
-        span="bento-order-identity col-span-1 md:col-span-6 lg:col-span-8 lg:row-span-2"
+        span="bento-order-identity col-span-1 justify-center md:col-span-6 lg:col-span-8"
         delay={0}
       >
         <div class="flex items-center gap-3 sm:gap-4">
@@ -62,15 +64,15 @@ const sporeSample = spore.sample ?? "";
             alt={`${SITE_AUTHOR}的头像`}
             width="80"
             height="80"
-            class="size-16 shrink-0 rounded-full border border-(--card-border) bg-[color-mix(in_srgb,var(--accent)_12%,var(--bg))] object-cover object-top sm:size-20 lg:size-36"
+            class="size-18 shrink-0 rounded-full border border-(--card-border) bg-[color-mix(in_srgb,var(--accent)_12%,var(--bg))] object-cover object-top sm:size-20"
           />
           <div class="min-w-0">
             <p class="bento-heading">{SITE_AUTHOR}</p>
             <p class="mono text-sm text-(--muted)">zrr1999</p>
           </div>
         </div>
-        <h1 class="bento-headline mt-auto pt-8 md:pt-10">
-          {vision}
+        <h1 class="bento-headline mt-6 md:mt-8">
+          {headline}
         </h1>
       </BentoCell>
 
@@ -103,13 +105,13 @@ const sporeSample = spore.sample ?? "";
 
       <BentoCell
         tone="plain"
-        span="bento-order-sites col-span-1 md:col-span-6 lg:col-span-4"
+        span="bento-order-sites col-span-1 md:col-span-6 lg:col-span-12"
         delay={2}
       >
-        <div class="flex h-full flex-col justify-between gap-4">
+        <div class="flex h-full flex-col justify-between gap-4 lg:flex-row lg:gap-10">
           {
             sites.map(site => (
-              <a href={site.href} class="group min-w-0">
+              <a href={site.href} class="group min-w-0 lg:flex-1">
                 <p class="flex flex-wrap items-baseline gap-x-3">
                   <span class="bento-heading group-hover:text-(--accent)">
                     {site.name}
@@ -118,7 +120,7 @@ const sporeSample = spore.sample ?? "";
                     {site.domain}
                   </span>
                 </p>
-                <p class="bento-muted mt-1 text-sm leading-relaxed">
+                <p class="bento-muted mt-1 text-sm leading-relaxed text-pretty">
                   {site.description}
                 </p>
               </a>

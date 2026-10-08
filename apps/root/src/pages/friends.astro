@@ -60,11 +60,13 @@ const steps: {
 ];
 
 const criteria = ["内容以原创为主，转载内容尽可能少", "站点使用 HTTPS"];
+const heading = "友链";
 ---
 
 <Layout
   title={`友链 — ${SITE_AUTHOR}`}
   description="朋友们的站点，以及互换友链的方式与标准。"
+  serifText={heading}
 >
   <Header />
 
@@ -75,7 +77,7 @@ const criteria = ["内容以原创为主，转载内容尽可能少", "站点使
         span="col-span-1 md:col-span-6 lg:col-span-12"
         delay={0}
       >
-        <h1 class="bento-title">友链</h1>
+        <h1 class="bento-title">{heading}</h1>
         <p class="bento-lede bento-muted mt-4 max-w-2xl">
           朋友们的站点。想出现在名单里，先在你那边放上本站，再通过 GitHub 提交。
         </p>
