@@ -16,7 +16,7 @@
 ## 网站展示
 
 - 网站统一使用“六个骨头”作为展示名，通过 `packages/site-meta` 的 `SITE_AUTHOR` 复用；中文介绍不使用简历姓名；页脚版权署名使用 `Zhan Rongrui`，通过共享的 `copyrightText()` 生成。
-- 根站点页面由 `BentoGrid` 与 `BentoCell` 组成。只用品牌强调色，单元格共用一个圆角；单元格用短标签，不写章节序号。首页身份标题与页面 h1 用 Noto Serif SC 子集，由 `Layout` 的 `serifText` 单独加载，不改共享字体。
+- 根站点页面由 `BentoGrid` 与 `BentoCell` 组成。只用品牌强调色，单元格共用一个圆角；单元格用短标签，不写章节序号。首页由一张个人资料卡（头像、名字 h1、当前工作与学历）开头，不使用衬线字体；「关于」的 h1 与愿景导语、友链 h1 用 Noto Serif SC 子集，由 `Layout` 的 `serifText` 单独加载（子集须覆盖该页所有衬线文字），不改共享字体。
 
 ## 工具链
 

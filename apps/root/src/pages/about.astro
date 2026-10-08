@@ -6,6 +6,7 @@ import BentoGrid from "@/components/BentoGrid.astro";
 import BentoCell from "@/components/BentoCell.astro";
 import SiteFooter from "@/components/SiteFooter.astro";
 import { SITE_AUTHOR } from "@zrr-website/site-meta";
+import { stripTrailingPeriod } from "@/lib/serifFont";
 import {
   vision,
   background,
@@ -30,12 +31,13 @@ const upstream = [
   "lepture/mistune",
 ];
 const heading = "关于";
+const lede = stripTrailingPeriod(vision);
 ---
 
 <Layout
   title={`关于 — ${SITE_AUTHOR}`}
   description={`关于${SITE_AUTHOR}。${vision}`}
-  serifText={heading}
+  serifText={heading + lede}
 >
   <Header />
 
@@ -47,11 +49,11 @@ const heading = "关于";
         delay={0}
       >
         <h1 class="bento-title">{heading}</h1>
-        <p class="bento-lede bento-muted mt-4 max-w-2xl">
-          嗨，我是{SITE_AUTHOR}。现在在{currentRole.org}做{currentRole.group}研发，也持续构建自己的编程语言、深度学习框架和智能体系统。{background}
+        <p class="bento-headline mt-4">{lede}</p>
+        <p class="bento-lede bento-muted mt-5 max-w-2xl">
+          嗨，我是{SITE_AUTHOR}，现在在{currentRole.org}做{currentRole.group}研发，也持续构建自己的编程语言、深度学习框架和智能体系统。{background}
         </p>
         <p class="mono mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs text-(--subtle)">
-          <span>{currentRole.org} {currentRole.group}</span>
           <span>{currentRole.community}</span>
           <span>{school} 计算机硕士</span>
         </p>

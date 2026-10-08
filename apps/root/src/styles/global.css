@@ -224,9 +224,10 @@ body {
 
   /*
    * Type scale (one step per role):
-   *   headline  1.5-1.875rem 500 serif  home identity h1 only
+   *   headline  1.25-1.5rem  500 serif  about vision lede
    *   title     1.5-1.75rem 500 serif  page h1 (about, friends)
    *             1.5-1.75rem 700 sans   project names (h2)
+   *   name      1.5-1.75rem 600 sans   home profile h1
    *   heading   1.125rem   600  cell titles, list item names
    *   lede      1-1.0625rem     intro paragraph under a title
    *   body      0.875rem        default cell text (text-sm)
@@ -237,9 +238,9 @@ body {
     max-width: 22em;
     font-family: var(--font-serif);
     font-synthesis: none;
-    font-size: clamp(1.5rem, 2.2vw, 1.875rem);
+    font-size: clamp(1.25rem, 1.1rem + 0.5vw, 1.5rem);
     font-weight: 500;
-    line-height: 1.55;
+    line-height: 1.6;
     letter-spacing: 0.01em;
     color: color-mix(in srgb, var(--fg) 90%, transparent);
     text-wrap: balance;
@@ -260,6 +261,14 @@ body {
     font-weight: 700;
     line-height: 1.15;
     letter-spacing: -0.02em;
+  }
+
+  .bento-name {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 1.3rem + 0.6vw, 1.75rem);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
   }
 
   .bento-heading {
@@ -301,11 +310,8 @@ body {
     white-space: pre;
   }
 
-  .bento-order-identity {
+  .bento-order-profile {
     order: 1;
-  }
-  .bento-order-now {
-    order: 2;
   }
   .bento-order-project {
     order: 3;
@@ -336,8 +342,7 @@ body {
     gap: 1rem;
   }
 
-  .bento-order-identity,
-  .bento-order-now,
+  .bento-order-profile,
   .bento-order-project,
   .bento-order-research,
   .bento-order-writing,

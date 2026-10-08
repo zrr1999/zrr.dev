@@ -4,7 +4,7 @@ export const vision =
 export const researchFocus = "可组合基础设施 · 编程模型 · 自我改进系统";
 
 export const background =
-  "已有工作涉及深度学习框架的程序捕获与数值正确性，以及长期运行的智能体基础设施；当前探索可组合运行时和人机协作编程模型。";
+  "已有工作涉及深度学习框架的程序捕获与数值正确性，以及长期运行的智能体基础设施；目前的尝试集中在可组合运行时和人机协作编程模型。";
 
 export const currentRole = {
   org: "百度",
