@@ -44,12 +44,8 @@ const upstream = [
         span="col-span-1 md:col-span-6 lg:col-span-8"
         delay={0}
       >
-        <h1
-          class="display-font text-[clamp(2.6rem,7vw,5.5rem)] leading-[0.95] font-bold tracking-[-0.03em]"
-        >
-          关于
-        </h1>
-        <p class="mt-5 max-w-2xl text-base leading-relaxed text-(--muted) md:text-lg">
+        <h1 class="bento-title">关于</h1>
+        <p class="bento-lede bento-muted mt-4 max-w-2xl">
           嗨，我是{SITE_AUTHOR}。现在在{currentRole.org}做{currentRole.group}研发，也持续构建自己的编程语言、深度学习框架和智能体系统。{background}
         </p>
         <p class="mono mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs text-(--subtle)">
@@ -96,7 +92,7 @@ const upstream = [
               }
               delay={2 + index}
             >
-              <h2 class="text-xl font-semibold tracking-tight">{direction.title}</h2>
+              <h2 class="bento-heading">{direction.title}</h2>
               <p class="mt-3 text-base leading-relaxed">{direction.question}</p>
               <p class="bento-muted mt-3 text-sm leading-relaxed">{direction.detail}</p>
             </BentoCell>

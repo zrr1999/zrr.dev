@@ -56,38 +56,22 @@ const sporeSample = spore.sample ?? "";
         span="bento-order-identity col-span-1 md:col-span-6 lg:col-span-8 lg:row-span-2"
         delay={0}
       >
-        <div class="flex items-center gap-4">
-          <div class="shrink-0 rounded-2xl bg-white p-1">
-            <img
-              src={avatarSrc}
-              alt={`${SITE_AUTHOR}的头像`}
-              width="80"
-              height="80"
-              class="size-20 rounded-[0.9rem]"
-            />
+        <div class="flex items-center gap-3 sm:gap-4">
+          <img
+            src={avatarSrc}
+            alt={`${SITE_AUTHOR}的头像`}
+            width="80"
+            height="80"
+            class="size-16 shrink-0 rounded-full border border-(--card-border) bg-[color-mix(in_srgb,var(--accent)_12%,var(--bg))] object-cover object-top sm:size-20 lg:size-36"
+          />
+          <div class="min-w-0">
+            <p class="bento-heading">{SITE_AUTHOR}</p>
+            <p class="mono text-sm text-(--muted)">zrr1999</p>
           </div>
-          <p class="mono text-xs tracking-wide text-(--muted)">
-            {SITE_AUTHOR} / zrr1999
-          </p>
         </div>
-        <h1
-          aria-label="Zhan Rongrui"
-          class="display-font mt-6 text-[clamp(2.6rem,6vw,4.75rem)] leading-[0.95] font-bold tracking-[-0.035em] uppercase"
-        >
-          <span class="hero-line"><span>Zhan</span></span>
-          <span class="hero-line hero-line--accent">
-            <span>Rongrui</span>
-          </span>
-        </h1>
-        <p class="mt-5 max-w-xl text-lg leading-relaxed md:text-xl">
+        <h1 class="bento-headline mt-auto pt-8 md:pt-10">
           {vision}
-        </p>
-        <div class="mt-auto flex flex-wrap items-center gap-x-6 pt-6">
-          <a href="/about" class="text-link font-medium">关于我</a>
-          <a href="/about#research" class="text-link text-(--muted)">
-            研究方向
-          </a>
-        </div>
+        </h1>
       </BentoCell>
 
       <BentoCell
@@ -95,8 +79,8 @@ const sporeSample = spore.sample ?? "";
         span="bento-order-now col-span-1 md:col-span-6 lg:col-span-4"
         delay={1}
       >
-        <p class="text-sm font-medium">{currentRole.org}</p>
-        <p class="mt-1 text-lg font-semibold tracking-tight">
+        <p class="bento-label">{currentRole.org}</p>
+        <p class="bento-heading">
           {currentRole.group}
         </p>
         <p class="bento-muted mt-1 text-sm">{currentRole.detail}</p>
@@ -127,7 +111,7 @@ const sporeSample = spore.sample ?? "";
             sites.map(site => (
               <a href={site.href} class="group min-w-0">
                 <p class="flex flex-wrap items-baseline gap-x-3">
-                  <span class="display-font text-xl font-bold tracking-tight group-hover:text-(--accent)">
+                  <span class="bento-heading group-hover:text-(--accent)">
                     {site.name}
                   </span>
                   <span class="mono text-xs break-all text-(--subtle)">
@@ -154,7 +138,7 @@ const sporeSample = spore.sample ?? "";
           {
             researchDirections.map(direction => (
               <div>
-                <p class="text-base font-semibold">{direction.title}</p>
+                <p class="bento-heading">{direction.title}</p>
                 <p class="bento-muted mt-1 text-sm leading-relaxed">
                   {direction.id === "self-improvement"
                     ? "开放方向"
@@ -174,10 +158,10 @@ const sporeSample = spore.sample ?? "";
         span="bento-order-project col-span-1 md:col-span-6 lg:col-span-8"
         delay={4}
       >
-        <p class="bento-muted text-xs">
+        <p class="bento-label">
           {researchDirection(spore.direction).title}
         </p>
-        <h2 class="display-font mt-3 text-4xl font-bold tracking-tight md:text-5xl">
+        <h2 class="bento-title">
           {spore.name}
         </h2>
         <p class="bento-muted mt-3 max-w-2xl text-sm leading-relaxed">
@@ -196,10 +180,10 @@ const sporeSample = spore.sample ?? "";
         span="bento-order-project col-span-1 md:col-span-3 lg:col-span-4"
         delay={5}
       >
-        <p class="bento-muted text-xs">
+        <p class="bento-label">
           {researchDirection(spark.direction).title}
         </p>
-        <h2 class="display-font mt-3 text-3xl font-bold tracking-tight">
+        <h2 class="bento-title">
           {spark.name}
         </h2>
         <p class="bento-muted mt-3 text-sm leading-relaxed">
@@ -217,10 +201,10 @@ const sporeSample = spore.sample ?? "";
         span="bento-order-project col-span-1 md:col-span-3 lg:col-span-4"
         delay={6}
       >
-        <p class="bento-muted text-xs">
+        <p class="bento-label">
           {researchDirection(volvox.direction).title}
         </p>
-        <h2 class="display-font mt-3 text-3xl font-bold tracking-tight">
+        <h2 class="bento-title">
           {volvox.name}
         </h2>
         <p class="bento-muted mt-3 text-sm leading-relaxed">

@@ -75,12 +75,8 @@ const criteria = ["内容以原创为主，转载内容尽可能少", "站点使
         span="col-span-1 md:col-span-6 lg:col-span-12"
         delay={0}
       >
-        <h1
-          class="display-font text-[clamp(2.6rem,7vw,5.5rem)] leading-[0.95] font-bold tracking-[-0.03em]"
-        >
-          友链
-        </h1>
-        <p class="mt-5 max-w-2xl text-base leading-relaxed text-(--muted) md:text-lg">
+        <h1 class="bento-title">友链</h1>
+        <p class="bento-lede bento-muted mt-4 max-w-2xl">
           朋友们的站点。想出现在名单里，先在你那边放上本站，再通过 GitHub 提交。
         </p>
         <a href="#exchange" class="text-link mt-4 font-medium">互换方式</a>
@@ -94,7 +90,7 @@ const criteria = ["内容以原创为主，转载内容尽可能少", "站点使
             span="col-span-1 md:col-span-2 lg:col-span-4"
             delay={1 + index}
           >
-            <h2 class="text-lg font-semibold tracking-tight">{friend.name}</h2>
+            <h2 class="bento-heading">{friend.name}</h2>
             <p class="mono bento-muted mt-2 text-xs break-all">
               {new URL(friend.url).host}
             </p>

@@ -3,6 +3,9 @@
 
 :root {
   color-scheme: light dark;
+  --font-display:
+    "Space Grotesk", "Noto Sans SC", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial;
   --bg: #f6f7fb;
   --fg: #0b1220;
   --muted: rgba(11, 18, 32, 0.72);
@@ -12,10 +15,12 @@
   --card-border: rgba(11, 18, 32, 0.12);
   --card-hover: rgba(255, 255, 255, 0.96);
   --cell-plain: color-mix(in srgb, var(--card) 55%, transparent);
-  --cell-on-accent: #f6f7fb;
+  /* Calm accent surface: brand blue pulled toward slate, never the neon accent. */
+  --cell-accent: color-mix(in srgb, var(--brand-accent-bright) 58%, #1c2438);
+  --cell-on-accent: color-mix(in srgb, #fff 94%, var(--cell-accent));
+  --cell-on-accent-muted: color-mix(in srgb, #fff 80%, var(--cell-accent));
 
   --accent: var(--brand-accent-bright);
-  --accent-2: var(--brand-teal);
   --ring: color-mix(in srgb, var(--brand-accent-bright) 40%, transparent);
 
   --radius-cell: 1.25rem;
@@ -40,19 +45,6 @@ body {
     "Apple Color Emoji",
     "Segoe UI Emoji";
   background: var(--bg);
-}
-
-.display-font {
-  font-family:
-    "Space Grotesk",
-    "Noto Sans SC",
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    "Helvetica Neue",
-    Arial;
 }
 
 .mono {
@@ -94,10 +86,9 @@ body {
     --card-border: rgba(255, 255, 255, 0.12);
     --card-hover: rgba(255, 255, 255, 0.1);
     --cell-plain: rgba(255, 255, 255, 0.04);
-    --cell-on-accent: #0b1220;
+    --cell-accent: color-mix(in srgb, var(--brand-accent-dark) 34%, var(--bg));
 
     --accent: var(--brand-accent-dark);
-    --accent-2: #59e3c9;
     --ring: color-mix(in srgb, var(--brand-accent-dark) 55%, transparent);
   }
 }
@@ -118,15 +109,6 @@ body {
   }
   to {
     opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes hero-rise {
-  from {
-    transform: translateY(110%);
-  }
-  to {
     transform: translateY(0);
   }
 }
@@ -179,8 +161,9 @@ body {
     flex-direction: column;
     scroll-margin-top: 5.5rem;
     border: 1px solid var(--card-border);
+    color: var(--fg);
     border-radius: var(--radius-cell);
-    padding: 1.25rem 1.35rem;
+    padding: 1.25rem;
     animation: rise 700ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
     animation-delay: calc(var(--bento-i, 0) * 55ms);
   }
@@ -194,7 +177,7 @@ body {
   }
 
   .bento-cell--accent {
-    background: var(--accent);
+    background: var(--cell-accent);
     color: var(--cell-on-accent);
     border-color: transparent;
   }
@@ -205,12 +188,11 @@ body {
 
   .bento-cell--accent .bento-label,
   .bento-cell--accent .bento-muted {
-    color: color-mix(in srgb, var(--cell-on-accent) 78%, transparent);
+    color: var(--cell-on-accent-muted);
   }
 
   a.bento-cell {
     text-decoration: none;
-    color: inherit;
     transition:
       transform var(--duration-press) var(--ease-out),
       background-color var(--duration-hover) ease,
@@ -227,8 +209,63 @@ body {
       background: var(--card-hover);
     }
 
+    a.bento-cell--accent:hover {
+      background: color-mix(in srgb, var(--cell-accent) 90%, #fff);
+    }
+
     a.bento-cell:active {
       transform: translateY(0) scale(0.99);
+    }
+  }
+
+  /*
+   * Type scale (one step per role):
+   *   headline  1.5-2rem   600  home identity h1 only
+   *   title     1.5-1.75rem 700  page h1, project names
+   *   heading   1.125rem   600  cell titles, list item names
+   *   lede      1-1.0625rem     intro paragraph under a title
+   *   body      0.875rem        default cell text (text-sm)
+   *   label     0.75rem         cell label / eyebrow (.bento-label)
+   *   meta      0.75rem mono    dates, domains, tags
+   */
+  .bento-headline {
+    max-width: 24em;
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 1.15rem + 1.1vw, 2rem);
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+    word-break: auto-phrase;
+  }
+
+  .bento-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 1.3rem + 0.6vw, 1.75rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  .bento-heading {
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+  }
+
+  .bento-lede {
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  @media (min-width: 48rem) {
+    .bento-lede {
+      font-size: 1.0625rem;
+    }
+
+    .bento-cell {
+      padding: 1.5rem;
     }
   }
 
@@ -237,30 +274,6 @@ body {
     font-size: 0.75rem;
     line-height: 1.4;
     color: var(--subtle);
-  }
-
-  .hero-line {
-    display: block;
-    overflow: hidden;
-    line-height: 0.86;
-  }
-
-  .hero-line--accent {
-    margin-left: 0.7em;
-  }
-
-  .hero-line > span {
-    display: block;
-    animation: hero-rise 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-
-  .hero-line--accent > span {
-    color: var(--accent);
-    animation-delay: 0.12s;
-  }
-
-  .bento-cell--accent .hero-line--accent > span {
-    color: inherit;
   }
 
   .code-sample {
@@ -320,8 +333,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bento-cell,
-  .hero-line > span {
+  .bento-cell {
     animation: none;
     transform: none;
   }
