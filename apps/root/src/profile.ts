@@ -8,7 +8,7 @@ export const background =
 
 export const currentRole = {
   org: "百度",
-  group: "飞桨基础框架",
+  group: "预训练工程组",
   detail: "大模型预训练部",
   community: "PaddlePaddle Committer",
 };
@@ -24,7 +24,7 @@ export const experiences = [
   {
     period: "2025-至今",
     title: "百度 · 大模型预训练部",
-    detail: "飞桨基础框架研发，负责正确性与生态兼容方向。",
+    detail: "在预训练工程组负责正确性与生态兼容方向。",
   },
   {
     period: "2023-2025",
