@@ -72,6 +72,9 @@ importers:
       '@vite-pwa/astro':
         specifier: 'catalog:'
         version: 1.2.0(astro@7.1.1(@astrojs/markdown-remark@7.3.1(supports-color@10.2.2))(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@26.0.0)(jiti@2.7.0)(rollup@4.62.2)(terser@5.48.0)(typescript@6.0.3)(yaml@2.9.1))(vite-plugin-pwa@1.3.0(@voidzero-dev/vite-plus-core@1.0.0(@types/node@26.0.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(typescript@6.0.3)(yaml@2.9.1))(supports-color@10.2.2)(workbox-build@7.4.1(@types/babel__core@7.20.5)(supports-color@10.2.2))(workbox-window@7.4.1))
+      '@zrr-website/blog-posts':
+        specifier: workspace:*
+        version: link:../../packages/blog-posts
       '@zrr-website/site-meta':
         specifier: workspace:*
         version: link:../../packages/site-meta
@@ -169,6 +172,9 @@ importers:
       '@types/react-dom':
         specifier: ^19.2.7
         version: 19.3.0(@types/react@19.3.0)
+      '@zrr-website/blog-posts':
+        specifier: workspace:*
+        version: link:../../packages/blog-posts
       '@zrr-website/site-meta':
         specifier: workspace:*
         version: link:../../packages/site-meta
@@ -228,6 +234,8 @@ importers:
       vite-plus:
         specifier: 1.0.0
         version: 1.0.0(@types/node@26.0.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(typescript@6.0.3)(yaml@2.9.1)
+
+  packages/blog-posts: {}
 
   packages/site-meta: {}
 

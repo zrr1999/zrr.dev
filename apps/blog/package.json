@@ -21,6 +21,7 @@
     "@resvg/resvg-js": "^2.6.2",
     "@tailwindcss/vite": "catalog:",
     "@vite-pwa/astro": "catalog:",
+    "@zrr-website/blog-posts": "workspace:*",
     "@zrr-website/site-meta": "workspace:*",
     "@zrr-website/site-theme": "workspace:*",
     "astro": "catalog:",

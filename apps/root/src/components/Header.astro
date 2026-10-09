@@ -1,6 +1,10 @@
 ---
 const pathname = Astro.url.pathname.replace(/\/+$/, "");
-const navItems = [
+const offsite = [
+  { name: "博客", href: "https://blog.zrr.dev" },
+  { name: "幻灯片", href: "https://slides.zrr.dev" },
+];
+const pages = [
   { name: "关于", href: "/about" },
   { name: "友链", href: "/friends" },
 ];
@@ -10,24 +14,49 @@ const navItems = [
   class="fixed inset-x-0 top-0 z-10 border-b border-(--card-border) bg-(--bg)/85 backdrop-blur"
 >
   <div
-    class="mx-auto flex max-w-6xl items-baseline justify-between px-5 py-4 md:px-8"
+    class="mx-auto flex h-14 max-w-6xl items-center justify-between px-5 md:h-16 md:px-8"
   >
     <a href="/" class="mono text-sm font-semibold tracking-tight text-(--fg)">
       zrr<span class="text-(--subtle)">.dev</span>
     </a>
-    <nav class="mono flex items-baseline gap-5 text-xs text-(--muted) md:gap-7">
-      {
-        navItems.map(item => (
-          <a
-            class:list={["nav-link", { "text-(--fg)": pathname === item.href }]}
-            href={item.href}
-            aria-current={pathname === item.href ? "page" : undefined}
-          >
-            {item.name}
-          </a>
-        ))
-      }
-      <a class="nav-link" href="https://blog.zrr.dev/rss.xml">RSS</a>
+    <nav
+      class="mono flex items-center text-xs text-(--muted)"
+      aria-label="站点导航"
+    >
+      <div class="flex items-center gap-4 md:gap-5">
+        {
+          offsite.map(item => (
+            <a
+              class="nav-link inline-flex items-baseline gap-0.5"
+              href={item.href}
+              aria-label={`${item.name}，站外`}
+            >
+              {item.name}
+              <span aria-hidden="true">↗</span>
+            </a>
+          ))
+        }
+      </div>
+      <span
+        class="mx-4 h-3 w-px shrink-0 bg-(--card-border) md:mx-5"
+        aria-hidden="true"
+      ></span>
+      <div class="flex items-center gap-4 md:gap-5">
+        {
+          pages.map(item => (
+            <a
+              class:list={[
+                "nav-link",
+                { "text-(--fg)": pathname === item.href },
+              ]}
+              href={item.href}
+              aria-current={pathname === item.href ? "page" : undefined}
+            >
+              {item.name}
+            </a>
+          ))
+        }
+      </div>
     </nav>
   </div>
 </header>

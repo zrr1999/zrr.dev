@@ -3,22 +3,32 @@
 
 :root {
   color-scheme: light dark;
+  --font-display:
+    "Space Grotesk", "Noto Sans SC", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  /* Subset loaded per page via Layout `serifText`; Latin falls back to display. */
+  --font-serif:
+    "Noto Serif SC", "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC",
+    serif;
   --bg: #f6f7fb;
   --fg: #0b1220;
   --muted: rgba(11, 18, 32, 0.72);
   --subtle: rgba(11, 18, 32, 0.6);
 
-  --card: rgba(255, 255, 255, 0.75);
+  --card: rgba(255, 255, 255, 0.78);
   --card-border: rgba(11, 18, 32, 0.12);
-  --card-hover: rgba(255, 255, 255, 0.92);
+  --card-hover: rgba(255, 255, 255, 0.96);
+  --cell-plain: color-mix(in srgb, var(--card) 55%, transparent);
+  /* Calm accent surface: brand blue pulled toward slate, never the neon accent. */
+  --cell-accent: color-mix(in srgb, var(--brand-accent-bright) 58%, #1c2438);
+  --cell-on-accent: color-mix(in srgb, #fff 94%, var(--cell-accent));
+  --cell-on-accent-muted: color-mix(in srgb, #fff 80%, var(--cell-accent));
 
   --accent: var(--brand-accent-bright);
-  --accent-2: var(--brand-teal);
   --ring: color-mix(in srgb, var(--brand-accent-bright) 40%, transparent);
 
-  --g1: color-mix(in srgb, var(--brand-accent-bright) 18%, transparent);
-  --g2: color-mix(in srgb, var(--brand-teal) 12%, transparent);
-  --g3: rgba(255, 163, 74, 0.1);
+  --radius-cell: 1.25rem;
+  --radius-chip: 999px;
 
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --duration-hover: 150ms;
@@ -41,24 +51,10 @@ body {
   background: var(--bg);
 }
 
-.display-font {
-  font-family:
-    "Space Grotesk",
-    "Noto Sans SC",
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    "Helvetica Neue",
-    Arial;
-}
-
 .mono {
   font-family: "IBM Plex Mono", "Noto Sans SC", ui-monospace, monospace;
 }
 
-/* 顶栏导航链接（React island 内也会用到，故放在全局） */
 .nav-link {
   position: relative;
   transition: color var(--duration-hover) ease;
@@ -92,15 +88,12 @@ body {
 
     --card: rgba(255, 255, 255, 0.06);
     --card-border: rgba(255, 255, 255, 0.12);
-    --card-hover: rgba(255, 255, 255, 0.09);
+    --card-hover: rgba(255, 255, 255, 0.1);
+    --cell-plain: rgba(255, 255, 255, 0.04);
+    --cell-accent: color-mix(in srgb, var(--brand-accent-dark) 34%, var(--bg));
 
     --accent: var(--brand-accent-dark);
-    --accent-2: #59e3c9;
     --ring: color-mix(in srgb, var(--brand-accent-dark) 55%, transparent);
-
-    --g1: color-mix(in srgb, var(--brand-accent-dark) 22%, transparent);
-    --g2: rgba(89, 227, 201, 0.14);
-    --g3: rgba(255, 214, 120, 0.08);
   }
 }
 
@@ -124,58 +117,257 @@ body {
   }
 }
 
-.reveal {
-  animation: rise 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.reveal-2 {
-  animation-delay: 90ms;
-}
-
-.reveal-3 {
-  animation-delay: 180ms;
-}
-
-.link-row {
-  transform-origin: left center;
-  transition:
-    transform var(--duration-press) var(--ease-out),
-    color var(--duration-hover) ease;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .link-row:hover {
-    transform: translateX(1rem);
+@layer components {
+  .text-link {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    gap: 0.4rem;
+    text-underline-offset: 0.3em;
+    transition: color var(--duration-hover) ease;
   }
 
-  .link-row:hover:active {
-    transform: translateX(1rem) scale(0.99);
+  .text-link:hover,
+  .text-link:focus-visible {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-chip);
+    padding: 0.2rem 0.75rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+    transition:
+      color var(--duration-hover) ease,
+      border-color var(--duration-hover) ease;
+  }
+
+  .chip:hover,
+  .chip:focus-visible {
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 40%, var(--card-border));
+  }
+
+  .bento-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+
+  .bento-cell {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    scroll-margin-top: 5.5rem;
+    border: 1px solid var(--card-border);
+    color: var(--fg);
+    border-radius: var(--radius-cell);
+    padding: 1.25rem;
+    animation: rise 700ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    animation-delay: calc(var(--bento-i, 0) * 55ms);
+  }
+
+  .bento-cell--plain {
+    background: var(--cell-plain);
+  }
+
+  .bento-cell--tint {
+    background: var(--card);
+  }
+
+  .bento-cell--accent {
+    background: var(--cell-accent);
+    color: var(--cell-on-accent);
+    border-color: transparent;
+  }
+
+  .bento-muted {
+    color: var(--muted);
+  }
+
+  .bento-cell--accent .bento-label,
+  .bento-cell--accent .bento-muted {
+    color: var(--cell-on-accent-muted);
+  }
+
+  a.bento-cell {
+    text-decoration: none;
+    transition:
+      transform var(--duration-press) var(--ease-out),
+      background-color var(--duration-hover) ease,
+      border-color var(--duration-hover) ease;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    a.bento-cell:hover {
+      transform: translateY(-2px);
+    }
+
+    a.bento-cell--plain:hover,
+    a.bento-cell--tint:hover {
+      background: var(--card-hover);
+    }
+
+    a.bento-cell--accent:hover {
+      background: color-mix(in srgb, var(--cell-accent) 90%, #fff);
+    }
+
+    a.bento-cell:active {
+      transform: translateY(0) scale(0.99);
+    }
+  }
+
+  /*
+   * Type scale (one step per role):
+   *   headline  1.25-1.5rem  500 serif  about vision lede
+   *   title     1.5-1.75rem 500 serif  page h1 (about, friends)
+   *             1.5-1.75rem 700 sans   project names (h2)
+   *   name      1.5-1.75rem 600 sans   home profile h1
+   *   heading   1.125rem   600  cell titles, list item names
+   *   lede      1-1.0625rem     intro paragraph under a title
+   *   body      0.875rem        default cell text (text-sm)
+   *   label     0.75rem         cell label / eyebrow (.bento-label)
+   *   meta      0.75rem mono    dates, domains, tags
+   */
+  .bento-headline {
+    max-width: 22em;
+    font-family: var(--font-serif);
+    font-synthesis: none;
+    font-size: clamp(1.25rem, 1.1rem + 0.5vw, 1.5rem);
+    font-weight: 500;
+    line-height: 1.6;
+    letter-spacing: 0.01em;
+    color: color-mix(in srgb, var(--fg) 90%, transparent);
+    text-wrap: balance;
+    word-break: auto-phrase;
+  }
+
+  h1.bento-title {
+    font-family: var(--font-serif);
+    font-synthesis: none;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+  }
+
+  .bento-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 1.3rem + 0.6vw, 1.75rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  .bento-name {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 1.3rem + 0.6vw, 1.75rem);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  .bento-heading {
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+  }
+
+  .bento-lede {
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  @media (min-width: 48rem) {
+    .bento-lede {
+      font-size: 1.0625rem;
+    }
+
+    .bento-cell {
+      padding: 1.5rem;
+    }
+  }
+
+  .bento-label {
+    margin-bottom: 0.75rem;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: var(--subtle);
+  }
+
+  .code-sample {
+    overflow-x: auto;
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--fg) 6%, transparent);
+    padding: 0.9rem 1rem;
+    font-size: 0.75rem;
+    line-height: 1.55;
+    white-space: pre;
+  }
+
+  .bento-order-profile {
+    order: 1;
+  }
+  .bento-order-project {
+    order: 3;
+  }
+  .bento-order-research {
+    order: 4;
+  }
+  .bento-order-writing {
+    order: 5;
+  }
+  .bento-order-sites {
+    order: 6;
+  }
+  .bento-order-friends {
+    order: 7;
   }
 }
 
-.link-row:active {
-  transform: scale(0.99);
+@media (min-width: 48rem) {
+  .bento-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 64rem) {
+  .bento-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .bento-order-profile,
+  .bento-order-project,
+  .bento-order-research,
+  .bento-order-writing,
+  .bento-order-sites,
+  .bento-order-friends {
+    order: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal,
-  .reveal-2,
-  .reveal-3 {
-    animation: rise 200ms ease both;
+  .bento-cell {
+    animation: none;
+    transform: none;
   }
 
-  @keyframes rise {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+  a.bento-cell,
+  .text-link,
+  .chip,
+  .nav-link,
+  .nav-link::after {
+    transition: none;
   }
 
-  .link-row:hover,
-  .link-row:active,
-  .link-row:hover:active {
+  a.bento-cell:hover,
+  a.bento-cell:active {
     transform: none;
   }
 }
