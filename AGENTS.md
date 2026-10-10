@@ -4,19 +4,29 @@
 
 ## 结构
 
-| 路径                   | 说明                                                                    |
-| :--------------------- | :---------------------------------------------------------------------- |
-| `apps/root/`           | 主页 `zrr.dev`（`sixbones.dev` → 308）                                  |
-| `apps/blog/`           | 博客 `blog.zrr.dev`；`public/images` → `hosting/images/`                |
-| `apps/slides/`         | 幻灯片 `slides.zrr.dev`；源在 `hosting/slides/<slug>/`                  |
-| `packages/site-meta/`  | 站点身份：作者、版权文案、共用字体 URL                                  |
-| `packages/site-theme/` | blog/slides 共用主题 CSS；`brand.css` 供 root 对齐品牌色                |
-| `hosting/`             | 静态资源子模块（[zrr1999/hosting](https://github.com/zrr1999/hosting)） |
+| 路径                        | 说明                                                                                              |
+| :-------------------------- | :------------------------------------------------------------------------------------------------ |
+| `apps/root/`                | 主页 `zrr.dev`（`sixbones.dev` → 308）                                                            |
+| `apps/blog/`                | 博客 `blog.zrr.dev`；`public/images` → `hosting/images/`                                          |
+| `apps/slides/`              | 幻灯片 `slides.zrr.dev`；源在 `hosting/slides/<slug>/`                                            |
+| `packages/site-meta/`       | 站点身份：作者、版权文案、共用字体 URL                                                            |
+| `packages/site-theme/`      | blog/slides 共用主题 CSS；`brand.css` 供 root 对齐品牌色                                          |
+| `packages/project-catalog/` | 项目登记：Lab、文档入口、官网地址与 `zrr.dev` 跳转。规范见 [docs/platform.md](./docs/platform.md) |
+| `hosting/`                  | 静态资源子模块（[zrr1999/hosting](https://github.com/zrr1999/hosting)）                           |
 
 ## 网站展示
 
 - 网站统一使用“六个骨头”作为展示名，通过 `packages/site-meta` 的 `SITE_AUTHOR` 复用；中文介绍不使用简历姓名；页脚版权署名使用 `Zhan Rongrui`，通过共享的 `copyrightText()` 生成。
 - 根站点页面由 `BentoGrid` 与 `BentoCell` 组成。只用品牌强调色，单元格共用一个圆角；单元格用短标签，不写章节序号。首页由一张个人资料卡（头像、名字 h1、当前工作与学历）开头，不使用衬线字体；「关于」的 h1 与愿景导语、友链 h1 用 Noto Serif SC 子集，由 `Layout` 的 `serifText` 单独加载（子集须覆盖该页所有衬线文字），不改共享字体。
+
+## 平台边界
+
+Lab、中央文档和产品官网的职责见 [docs/platform.md](./docs/platform.md)。
+
+- 小项目介绍和 `docs.zrr.dev/<id>/` 由本仓库发布。文档原稿在各项目仓库。
+- 产品官网在项目侧仓库构建和发布。`<project>.zrr.dev` 与专有域名上的 `/docs` 跳到 `docs.zrr.dev/<id>/`。
+- 获得专有域名时改入口和跳转。官网源码不因为购买域名再搬一次；官网可以留在代码仓库，也可以放在所属组织下的单独网站仓库。
+- 公开项目写入 `packages/project-catalog/projects/<id>.toml`。`apps/lab` 与 `apps/docs` 还没有创建。首页项目列表仍在 `apps/root`，接到 Lab 之前，改名单时两处一起改。
 
 ## 工具链
 

@@ -237,6 +237,16 @@ importers:
 
   packages/blog-posts: {}
 
+  packages/project-catalog:
+    dependencies:
+      smol-toml:
+        specifier: 1.7.1
+        version: 1.7.1
+    devDependencies:
+      vite-plus:
+        specifier: 0.3.3
+        version: 0.3.3(@types/node@26.0.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(typescript@6.0.3)(yaml@2.9.1)
+
   packages/site-meta: {}
 
   packages/site-theme:

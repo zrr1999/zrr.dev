@@ -1,0 +1,11 @@
+name = "Spore"
+repository = "spore-lang/spore"
+summary = "意图编程语言（实验阶段）：用函数签名表达类型、可失败结果与 effect，以 hole 承载尚未完成的实现，让人和智能体在同一份约束上协作。"
+status = "active"
+
+# 官网已经在组织下的单独仓库。代码仍在 repository。
+# 文档仍由 docs.spore-lang.dev 发布，中央文档接入前不在这里登记 docs。
+[site]
+kind = "external"
+url = "https://spore-lang.dev/"
+repository = "spore-lang/spore-lang.dev"
