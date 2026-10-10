@@ -19,6 +19,7 @@
     "@tailwindcss/vite": "catalog:",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
+    "@zrr-website/blog-posts": "workspace:*",
     "@zrr-website/site-meta": "workspace:*",
     "@zrr-website/site-theme": "workspace:*",
     "astro": "catalog:",
