@@ -1,18 +1,11 @@
 import type { CollectionEntry } from "astro:content";
+import { listingSortKey } from "@zrr-website/blog-posts";
 import postFilter from "./postFilter";
 
 const getSortedPosts = (posts: CollectionEntry<"blog">[]) => {
   return posts
     .filter(postFilter)
-    .sort(
-      (a, b) =>
-        Math.floor(
-          new Date(b.data.modDatetime ?? b.data.pubDatetime).getTime() / 1000
-        ) -
-        Math.floor(
-          new Date(a.data.modDatetime ?? a.data.pubDatetime).getTime() / 1000
-        )
-    );
+    .sort((a, b) => listingSortKey(b.data) - listingSortKey(a.data));
 };
 
 export default getSortedPosts;

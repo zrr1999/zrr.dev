@@ -1,0 +1,33 @@
+---
+import RssCopy from "@/components/RssCopy";
+import { copyrightText } from "@zrr-website/site-meta";
+
+export interface Props {
+  showHome?: boolean;
+}
+
+const { showHome = false } = Astro.props;
+---
+
+<footer
+  class="mono mt-8 flex flex-wrap items-baseline justify-between gap-3 px-1 pt-4 text-xs text-(--subtle)"
+>
+  <span>{copyrightText()}</span>
+  <div class="flex flex-wrap items-center gap-x-2">
+    {
+      showHome && (
+        <>
+          <a href="/" class="text-link min-h-0">
+            首页
+          </a>
+          <span aria-hidden="true">·</span>
+        </>
+      )
+    }
+    <RssCopy client:load />
+    <span aria-hidden="true">·</span>
+    <a href="https://github.com/zrr1999" class="text-link min-h-0">
+      GitHub
+    </a>
+  </div>
+</footer>
