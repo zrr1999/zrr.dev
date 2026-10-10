@@ -45,8 +45,12 @@
   },
   "devDependencies": {
     "@astrojs/sitemap": "^3.7.3",
+    "@fontpkg/source-han-sans-sc": "2.5.3",
+    "@fontsource/ibm-plex-mono": "5.3.0",
     "@tailwindcss/typography": "catalog:",
     "@types/lodash.kebabcase": "^4.1.9",
+    "@types/subset-font": "2.3.0",
+    "subset-font": "2.9.0",
     "vite": "catalog:",
     "vite-plus": "catalog:"
   }
