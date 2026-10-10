@@ -15,8 +15,8 @@
 
 ## 网站展示
 
-- 网站统一使用“六个骨头”作为展示名，通过 `packages/site-meta` 的 `SITE_AUTHOR` 复用；中文介绍不使用简历姓名；首页主标题保留英文 `Zhan Rongrui`，沿用 `Zhan` 在上、`Rongrui` 在下方靠右的两行布局；页脚版权署名使用 `Zhan Rongrui`，通过共享的 `copyrightText()` 生成。
-- 根站点的章节标题使用 `PageContent` 与 `SectionHeading`，按显示顺序自动编号，不手写章节序号。
+- 网站统一使用“六个骨头”作为展示名，通过 `packages/site-meta` 的 `SITE_AUTHOR` 复用；中文介绍不使用简历姓名；页脚版权署名使用 `Zhan Rongrui`，通过共享的 `copyrightText()` 生成。
+- 根站点页面由 `BentoGrid` 与 `BentoCell` 组成。只用品牌强调色，单元格共用一个圆角；单元格用短标签，不写章节序号。首页由一张个人资料卡（头像、名字 h1、当前工作与学历）开头，不使用衬线字体；「关于」的 h1 与愿景导语、友链 h1 用 Noto Serif SC 子集，由 `Layout` 的 `serifText` 单独加载（子集须覆盖该页所有衬线文字），不改共享字体。
 
 ## 工具链
 
@@ -42,7 +42,7 @@
 
 博客写作使用 `writing-style` skill。
 
-文章在 `apps/blog/data/blog/`（Markdown / Typst），用一层 `_主题/` 目录分组。目录名以下划线开头，只给作者侧定位，不进入 URL；文件名在整个 `data/blog/` 下保持唯一，已发布路由仍是 `/posts/<slug>`。Frontmatter 必填：`title`、`description`、`pubDatetime`、`tags`（默认 `["未分类"]`）；可选 `modDatetime`、`draft`、`featured` 等（见 `content.config.ts`）。
+文章在 `apps/blog/data/blog/`（Markdown / Typst），用一层 `_主题/` 目录分组。目录名以下划线开头，只给作者侧定位，不进入 URL；文件名在整个 `data/blog/` 下保持唯一，已发布路由仍是 `/posts/<slug>`。Frontmatter 必填：`title`、`description`、`pubDatetime`、`tags`（默认 `["未分类"]`）；可选 `modDatetime`、`draft`、`featured` 等（见 `content.config.ts`）。首页最近文章在构建期经 `@zrr-website/blog-posts` 读这些文件，与博客共用发布过滤、排序和路径，不解析线上 RSS。
 
 当前主题：`_language/`、`_ai/`、`_engineering/`、`_homelab/`、`_math/`。新文放入最接近的主题，其余维度用 `tags`。是否发布看 `draft`，不要靠 `_drafts/` 这类目录名隐藏。Typst 配图用项目根路径（如 `/public/images/blog/...`），避免相对 `../` 随目录深度变化。
 
