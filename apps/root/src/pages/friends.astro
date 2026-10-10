@@ -2,9 +2,11 @@
 import Layout from "@/components/Layout.astro";
 import Header from "@/components/Header.astro";
 import PageContent from "@/components/PageContent.astro";
-import SectionHeading from "@/components/SectionHeading.astro";
+import BentoGrid from "@/components/BentoGrid.astro";
+import BentoCell from "@/components/BentoCell.astro";
+import SiteFooter from "@/components/SiteFooter.astro";
 import CopySnippet from "@/components/CopySnippet";
-import { SITE_AUTHOR, copyrightText } from "@zrr-website/site-meta";
+import { SITE_AUTHOR } from "@zrr-website/site-meta";
 import { friends } from "@/friends";
 
 const githubEdit =
@@ -58,124 +60,91 @@ const steps: {
 ];
 
 const criteria = ["内容以原创为主，转载内容尽可能少", "站点使用 HTTPS"];
+const heading = "友链";
 ---
 
 <Layout
   title={`友链 — ${SITE_AUTHOR}`}
   description="朋友们的站点，以及互换友链的方式与标准。"
-  ambient={false}
+  serifText={heading}
 >
   <Header />
 
   <PageContent>
-    <section class="reveal">
-      <h1
-        class="display-font text-[clamp(3rem,10vw,7.5rem)] leading-[0.95] font-bold tracking-[-0.03em] text-(--fg) uppercase"
+    <BentoGrid>
+      <BentoCell
+        tone="tint"
+        span="col-span-1 md:col-span-6 lg:col-span-12"
+        delay={0}
       >
-        友链<span class="text-(--accent)"> / Friends</span>
-      </h1>
-      <p
-        class="mt-8 max-w-2xl text-base leading-relaxed text-(--muted) md:text-lg"
+        <h1 class="bento-title">{heading}</h1>
+        <p class="bento-lede bento-muted mt-4 max-w-2xl">
+          朋友们的站点。想出现在名单里，先在你那边放上本站，再通过 GitHub 提交。
+        </p>
+        <a href="#exchange" class="text-link mt-4 font-medium">互换方式</a>
+      </BentoCell>
+
+      {
+        friends.map((friend, index) => (
+          <BentoCell
+            href={friend.url}
+            tone="plain"
+            span="col-span-1 md:col-span-2 lg:col-span-4"
+            delay={1 + index}
+          >
+            <h2 class="bento-heading">{friend.name}</h2>
+            <p class="mono bento-muted mt-2 text-xs break-all">
+              {new URL(friend.url).host}
+            </p>
+            <p class="bento-muted mt-auto pt-6 text-right text-lg" aria-hidden="true">
+              ↗
+            </p>
+          </BentoCell>
+        ))
+      }
+
+      <BentoCell
+        id="exchange"
+        tone="tint"
+        label="互换"
+        span="col-span-1 md:col-span-6 lg:col-span-12"
+        delay={4}
       >
-        朋友们的站点。想出现在名单里，先在你那边放上本站，再通过 GitHub 提交。
-      </p>
-      <a
-        href="#exchange"
-        class="mt-5 inline-block text-[15px] font-medium text-(--fg) underline decoration-(--subtle) underline-offset-4 transition-colors hover:text-(--accent)"
-      >
-        互换方式 →
-      </a>
-    </section>
-
-    <section class="reveal reveal-2 mt-20 md:mt-24">
-      <SectionHeading>朋友们 / Friends</SectionHeading>
-
-      <div class="mt-4">
-        {
-          friends.map(friend => (
-            <a
-              href={friend.url}
-              class="link-row group grid grid-cols-[1fr_auto] items-baseline gap-6 border-t border-(--card-border) py-4 last:border-b"
-            >
-              <span class="flex items-baseline gap-6">
-                <span class="text-[15px] font-medium text-(--fg) transition-colors duration-150 group-hover:text-(--accent)">
-                  {friend.name}
-                </span>
-                <span class="mono text-xs text-(--subtle)">
-                  {new URL(friend.url).host}
-                </span>
-              </span>
-              <span
-                class="text-sm text-(--subtle) transition-colors duration-150 group-hover:text-(--accent)"
-                aria-hidden="true"
-              >
-                ↗
-              </span>
-            </a>
-          ))
-        }
-      </div>
-    </section>
-
-    <section
-      id="exchange"
-      class="reveal reveal-3 mt-20 scroll-mt-24 md:mt-24"
-    >
-      <SectionHeading>互换 / Exchange</SectionHeading>
-
-      <p class="mt-5 max-w-2xl text-sm leading-relaxed text-(--muted)">
-        先友后链：你的站点放上本站之后，再把你的站点提交过来。
-      </p>
-
-      <ul
-        class="mt-4 max-w-2xl list-disc space-y-1 pl-5 text-sm leading-relaxed text-(--muted)"
-      >
-        {criteria.map(item => <li>{item}</li>)}
-      </ul>
-
-      <div class="mt-4">
-        {
-          steps.map(step => (
-            <div class="border-t border-(--card-border) py-6 last:border-b">
-              <h3 class="text-[15px] font-medium text-(--fg)">{step.title}</h3>
-              <p class="mt-1 max-w-2xl text-sm leading-relaxed text-(--muted)">
-                {step.detail}
-              </p>
-              {step.code && (
-                <div class="relative mt-3 max-w-2xl border border-(--card-border)">
-                  <div class="absolute top-2.5 right-3">
-                    <CopySnippet client:load text={step.code} />
-                  </div>
-                  <pre class="mono px-4 py-3 pr-14 text-xs whitespace-pre-wrap break-all text-(--muted)">
+        <p class="max-w-2xl text-sm leading-relaxed text-(--muted)">
+          先友后链：你的站点放上本站之后，再把你的站点提交过来。
+        </p>
+        <ul class="mt-3 max-w-2xl list-disc space-y-1 pl-5 text-sm leading-relaxed text-(--muted)">
+          {criteria.map(item => <li>{item}</li>)}
+        </ul>
+        <div class="mt-4">
+          {
+            steps.map(step => (
+              <div class="border-t border-(--card-border) py-5 first:border-t-0 first:pt-0 last:pb-0">
+                <h3 class="text-[15px] font-medium">{step.title}</h3>
+                <p class="mt-1 max-w-2xl text-sm leading-relaxed text-(--muted)">
+                  {step.detail}
+                </p>
+                {step.code && (
+                  <div class="relative mt-3 max-w-2xl">
+                    <div class="absolute top-2.5 right-3">
+                      <CopySnippet client:load text={step.code} />
+                    </div>
+                    <pre class="code-sample mono pr-14">
 {step.code}</pre>
-                </div>
-              )}
-              {step.link && (
-                <a
-                  href={step.link.href}
-                  class="mt-3 inline-block text-[15px] font-medium text-(--fg) underline decoration-(--subtle) underline-offset-4 transition-colors hover:text-(--accent)"
-                >
-                  {step.link.text} ↗
-                </a>
-              )}
-            </div>
-          ))
-        }
-      </div>
-    </section>
+                  </div>
+                )}
+                {step.link && (
+                  <a href={step.link.href} class="text-link mt-2 text-sm">
+                    {step.link.text} ↗
+                  </a>
+                )}
+              </div>
+            ))
+          }
+        </div>
+      </BentoCell>
+    </BentoGrid>
 
-    <footer
-      class="mono mt-24 flex flex-wrap items-baseline justify-between gap-3 border-t border-(--card-border) pt-6 text-xs text-(--subtle)"
-    >
-      <span>{copyrightText()}</span>
-      <span>
-        <a href="/" class="transition-colors hover:text-(--fg)">首页</a>
-        <span class="mx-2">·</span>
-        <a
-          href="https://github.com/zrr1999"
-          class="transition-colors hover:text-(--fg)">GitHub</a
-        >
-      </span>
-    </footer>
+    <SiteFooter showHome />
   </PageContent>
 </Layout>
