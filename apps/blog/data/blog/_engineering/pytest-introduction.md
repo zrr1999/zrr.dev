@@ -251,20 +251,21 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 
 addopts = [
-    "--strict-markers",
-    "--tb=short",
-    "-n", "auto",              # pytest-xdist: 自动并行
-    "--timeout=300",           # pytest-timeout: 5 分钟超时
-    "--instafail",             # pytest-instafail: 即时失败
-    "--randomly",              # pytest-randomly: 随机顺序
-    "--cov=boning",            # pytest-cov: 覆盖率
-    "--cov-report=term-missing",
+  "--strict-markers",
+  "--tb=short",
+  "-n",
+  "auto", # pytest-xdist: 自动并行
+  "--timeout=300", # pytest-timeout: 5 分钟超时
+  "--instafail", # pytest-instafail: 即时失败
+  "--randomly", # pytest-randomly: 随机顺序
+  "--cov=boning", # pytest-cov: 覆盖率
+  "--cov-report=term-missing",
 ]
 
 markers = [
-    "slow: marks tests as slow",
-    "integration: marks tests as integration tests",
-    "benchmark: marks tests as benchmark tests",
+  "slow: marks tests as slow",
+  "integration: marks tests as integration tests",
+  "benchmark: marks tests as benchmark tests",
 ]
 
 timeout = 300
