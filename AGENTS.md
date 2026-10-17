@@ -40,7 +40,7 @@
 
 ## 博客规范
 
-博客写作使用 `writing-style` skill。
+新增完整博文使用仓库内的 [blog-writing](.agents/skills/blog-writing/SKILL.md) skill，个人文风使用 `writing-style`。已有文章的润色由 `writing-style` 处理，不因此新建文章或重构全文；排版继续遵循本节。
 
 文章在 `apps/blog/data/blog/`（Markdown / Typst），用一层 `_主题/` 目录分组。目录名以下划线开头，只给作者侧定位，不进入 URL；文件名在整个 `data/blog/` 下保持唯一，已发布路由仍是 `/posts/<slug>`。Frontmatter 必填：`title`、`description`、`pubDatetime`、`tags`（默认 `["未分类"]`）；可选 `modDatetime`、`draft`、`featured` 等（见 `content.config.ts`）。首页最近文章在构建期经 `@zrr-website/blog-posts` 读这些文件，与博客共用发布过滤、排序和路径，不解析线上 RSS。
 
@@ -52,6 +52,6 @@
 
 ## 代理自检
 
-- [ ] 拉代码后 `vp install`
+- [ ] 首次准备、依赖变化或环境未就绪时 `vp install`
 - [ ] 改完跑 `vp check`（及需要时的 `vp test` / 相关 `build`）
 - [ ] 提交信息简洁；密钥不进仓库
