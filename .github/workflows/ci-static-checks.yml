@@ -31,3 +31,6 @@ jobs:
           cache: true
 
       - uses: j178/prek-action@v3.0.1
+
+      - name: Test offline OG rendering
+        run: vp test run

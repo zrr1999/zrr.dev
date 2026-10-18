@@ -1,6 +1,6 @@
 import satori from "satori";
 import { SITE } from "@/config";
-import loadGoogleFonts from "../loadGoogleFont";
+import loadOgFonts from "../loadOgFonts";
 
 export default async () => {
   return satori(
@@ -8,6 +8,7 @@ export default async () => {
       type: "div",
       props: {
         style: {
+          fontFamily: "IBM Plex Mono, Source Han Sans SC",
           background: "#fefbfb",
           width: "100%",
           height: "100%",
@@ -122,7 +123,7 @@ export default async () => {
       width: 1200,
       height: 630,
       embedFont: true,
-      fonts: await loadGoogleFonts(SITE.title + SITE.desc + SITE.website),
+      fonts: await loadOgFonts(SITE.title + SITE.desc + SITE.website),
     }
   );
 };

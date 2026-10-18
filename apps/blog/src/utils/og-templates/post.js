@@ -1,7 +1,7 @@
 import satori from "satori";
 // import { html } from "satori-html";
 import { SITE } from "@/config";
-import loadGoogleFonts from "../loadGoogleFont";
+import loadOgFonts from "../loadOgFonts";
 
 // const markup = html`<div
 //       style={{
@@ -100,6 +100,7 @@ export default async post => {
       props: {
         style: {
           background: "#fefbfb",
+          fontFamily: "IBM Plex Mono, Source Han Sans SC",
           width: "100%",
           height: "100%",
           display: "flex",
@@ -221,7 +222,7 @@ export default async post => {
       width: 1200,
       height: 630,
       embedFont: true,
-      fonts: await loadGoogleFonts(
+      fonts: await loadOgFonts(
         post.data.title + post.data.author + SITE.title + "by"
       ),
     }
