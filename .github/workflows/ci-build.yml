@@ -21,11 +21,11 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: j178/prek-action@v3.0.0
+      - uses: j178/prek-action@4e14d07f9231acabce116ccfca13b13dd9755ece # v3.0.0
         with:
           install-only: true
 
-      - uses: voidzero-dev/setup-vp@v1
+      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1
         with:
           cache: true
           run-install: |
