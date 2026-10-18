@@ -55,7 +55,7 @@ export default defineConfig({
           postprocess($, source) {
             if ($("svg").length === 0) {
               throw new Error(
-                `Typst produced no SVG for ${source.mainFilePath}. Check the compiler diagnostics above.`
+                `Typst produced no SVG for ${source.mainFilePath ?? "inline Typst content"}. Check the compiler diagnostics above.`
               );
             }
             return $;
