@@ -9,6 +9,8 @@ on:
       - "README.md"
       - ".github/workflows/ci-links.yml"
   pull_request:
+    branches:
+      - main
     paths:
       - "AGENTS.md"
       - "README.md"
