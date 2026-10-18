@@ -27,12 +27,12 @@ jobs:
 
       - name: Check PR title
         if: github.event.pull_request.user.login != 'renovate[bot]'
-        uses: zendev-lab/zendev/actions/validate-title@v0.5.0
+        uses: zendev-lab/zendev/actions/validate-title@f3b5d8e7c55524e34be316c9824275ad43e8de56 # v0.5.0
         with:
           text: ${{ github.event.pull_request.title }}
 
       - name: Check PR body
-        uses: zendev-lab/zendev/actions/validate-body@v0.5.0
+        uses: zendev-lab/zendev/actions/validate-body@f3b5d8e7c55524e34be316c9824275ad43e8de56 # v0.5.0
         with:
           body: ${{ github.event.pull_request.body }}
           template: .github/pull_request_template.md
