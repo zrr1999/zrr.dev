@@ -7,7 +7,7 @@ modDatetime: 2026-02-15
 tags: ["编译/IR", "E-graph", "egg", "egglog", "等价饱和", "Term Rewriting"]
 ---
 
-[第一篇](egglog-quickstart-01) 用 Peano 构造和纯重写规则定义了自然数的加法与乘法。本文从自然数出发，**逐步扩展**到整数与有理数，在此过程中展示 `constructor` 扩展、`rule`、`:when`、`relation`、`birewrite` 等 egglog 特性。第三篇将介绍内置类型，并以复数为例展示其应用。
+[第一篇](/posts/egglog-quickstart-01/) 用 Peano 构造和纯重写规则定义了自然数的加法与乘法。本文从自然数出发，**逐步扩展**到整数与有理数，在此过程中展示 `constructor` 扩展、`rule`、`:when`、`relation`、`birewrite` 等 egglog 特性。第三篇将介绍内置类型，并以复数为例展示其应用。
 
 ## 从自然数到整数：引入 Neg
 
