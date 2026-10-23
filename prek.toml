@@ -17,7 +17,7 @@ hooks = [
 
 [[repos]]
 repo = "https://github.com/tombi-toml/tombi-pre-commit"
-rev = "v0.9.20"
+rev = "v1.9.0"
 hooks = [
   { id = "tombi-format", exclude = "^Cargo\\.lock$" },
   {
@@ -35,7 +35,7 @@ hooks = [{ id = "actionlint" }]
 
 [[repos]]
 repo = "https://github.com/crate-ci/typos"
-rev = "v1.33.1"
+rev = "v1.51.1"
 hooks = [{ id = "typos", args = ["--force-exclude"] }]
 
 [[repos]]
@@ -46,11 +46,5 @@ hooks = [{ id = "zendev-message-check" }]
 [[repos]]
 repo = "local"
 hooks = [
-  {
-    id = "vp-check",
-    name = "vp check --fix",
-    entry = "vp check --fix",
-    language = "system",
-    pass_filenames = false
-  },
+  { id = "vp-check", name = "vp check --fix", entry = "vp check --fix", language = "system", pass_filenames = false },
 ]
