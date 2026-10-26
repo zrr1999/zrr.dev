@@ -25,7 +25,7 @@
     "@zrr-website/site-meta": "workspace:*",
     "@zrr-website/site-theme": "workspace:*",
     "astro": "catalog:",
-    "astro-mermaid": "2.1.0",
+    "astro-mermaid": "2.2.0",
     "astro-pagefind": "^2.0.1",
     "astro-typst": "^0.12.3",
     "caniuse-lite": "^1.0.30001806",
@@ -39,7 +39,7 @@
     "remark-collapse": "^0.1.2",
     "remark-math": "^6.0.0",
     "remark-toc": "^9.0.0",
-    "satori": "^0.62.0",
+    "satori": "^0.63.0",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"
   },
