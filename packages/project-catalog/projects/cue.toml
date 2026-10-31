@@ -1,0 +1,7 @@
+name = "Cue"
+repository = "zendev-lab/cue"
+summary = "持久、可观察的命令执行底座，让人和智能体共享执行状态，支持断线恢复、共享 session 与多观察者 PTY。"
+status = "active"
+
+[site]
+kind = "lab"
