@@ -25,9 +25,9 @@
     "prepare": "pnpx @j178/prek install"
   },
   "devDependencies": {
-    "oxlint": "1.89.0",
+    "oxlint": "1.93.0",
     "vite-plus": "catalog:",
-    "wrangler": "4.152.0"
+    "wrangler": "4.162.0"
   },
-  "packageManager": "pnpm@12.16.1"
+  "packageManager": "pnpm@12.21.0"
 }
