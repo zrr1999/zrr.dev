@@ -17,7 +17,7 @@ catalog:
   "@tailwindcss/vite": "^4.3.3"
   "@tailwindcss/typography": "^0.5.20"
   "@astrojs/check": "^0.9.9"
-  "@vite-pwa/astro": "^1.2.0"
+  "@vite-pwa/astro": "^2.0.0"
 
 minimumReleaseAgeExclude:
   - astro@7.1.1
