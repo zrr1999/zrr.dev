@@ -2,6 +2,11 @@ import { defineConfig } from "vite-plus";
 import { sharedLintIgnorePatterns } from "./oxlint.config.ts";
 
 export default defineConfig({
+  test: {
+    environment: "node",
+    globals: true,
+    include: ["packages/project-catalog/src/**/*.test.ts"],
+  },
   lint: {
     ignorePatterns: [...sharedLintIgnorePatterns],
   },

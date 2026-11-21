@@ -1,0 +1,15 @@
+name = "Rill"
+repository = "zrr1999/rill"
+summary = "macOS 语音输入、Record 与可配置工作流"
+status = "active"
+
+[site]
+kind = "lab"
+
+# 文档站目前占用 rill.zrr.dev。这是日后的产品主机名。
+# docs.zrr.dev/rill/ 上线前不要部署这条跳转；产品化时删掉它，把主机交给官网。
+[docs]
+ref = "main"
+builder = "zensical"
+config = "zensical.toml"
+legacy_hosts = ["rill.zrr.dev"]
