@@ -11,8 +11,8 @@ catalog:
   # astro check 仍依赖 TS 6 的 sys API；TS 7 原生编译器尚不兼容（withastro/astro#17268）
   typescript: "6.0.3"
   vite: "npm:@voidzero-dev/vite-plus-core@1.6.0"
-  vite-plus: "1.6.0"
-  vitest: "5.1.0"
+  vite-plus: "1.7.0"
+  vitest: "5.1.1"
   tailwindcss: "^4.3.3"
   "@tailwindcss/vite": "^4.3.3"
   "@tailwindcss/typography": "^0.5.20"
