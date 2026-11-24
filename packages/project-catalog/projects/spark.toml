@@ -1,0 +1,7 @@
+name = "Spark"
+repository = "zendev-lab/spark"
+summary = "让智能体工作跨越一次终端会话：本地 daemon 托管会话、执行与恢复，支撑长期任务与跨工作区委托。"
+status = "active"
+
+[site]
+kind = "lab"

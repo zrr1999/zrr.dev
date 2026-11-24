@@ -1,0 +1,16 @@
+{
+  "name": "@zrr-website/project-catalog",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./load": "./src/load.ts"
+  },
+  "dependencies": {
+    "smol-toml": "1.7.1"
+  },
+  "devDependencies": {
+    "vite-plus": "catalog:"
+  }
+}

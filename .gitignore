@@ -1,5 +1,7 @@
 # build output
 dist/
+# docs assembly workspace; see docs/platform.md
+.work/
 # generated types
 .astro/
 .svelte-kit/

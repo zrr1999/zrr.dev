@@ -1,0 +1,14 @@
+name = "Zendev"
+repository = "zendev-lab/zendev"
+summary = "Repository-native development workflow toolkit"
+status = "active"
+
+[site]
+kind = "lab"
+
+# 旧文档站。docs.zrr.dev/zendev/ 提供相同页面之后，再部署这个主机的跳转。
+[docs]
+ref = "main"
+builder = "zensical"
+config = "zensical.toml"
+legacy_hosts = ["docs.zendev.zrr.dev"]
